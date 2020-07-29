@@ -1,0 +1,18 @@
+* If Windows, open Anaconda Prompt else open terminal
+* Optional, check and upgrade conda
+conda --version
+conda upgrade conda
+
+-- optional update python
+conda update python
+
+conda env create --name mandel --file <path_to_environment.yml>
+e.g. ~/Python/envbuild/mandel/environment.yml
+
+conda activate mandel
+
+conda list
+-- to check
+
+conda deactivate
+

@@ -1,0 +1,1 @@
+from mandel_app.model.mandelbrot.algorithm.box_algorithm.box_algorithm import BoxAlgorithm

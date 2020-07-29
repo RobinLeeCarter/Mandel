@@ -1,0 +1,16 @@
+name: mandel
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python
+  - pipdeptree
+  - numpy
+  - numexpr
+  - matplotlib
+  - scipy
+  - pandas
+  - sqlalchemy
+  - pytables
+  - cupy
+  - pyqt

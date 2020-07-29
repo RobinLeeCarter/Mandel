@@ -1,0 +1,1 @@
+from mandel_app.model.mandelbrot.compute.compute_manager import ComputeManager
