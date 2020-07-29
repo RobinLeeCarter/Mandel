@@ -1,13 +1,13 @@
 # Mandel
-open-source Mandelbrot Explorer using Python, Qt, Cuda and threading.\
+Open-source Mandelbrot Explorer using Python, Qt, Cuda and threading.\
 Designed as a project to improve my general Python skills, so any comment or feedback is very welcome.
 
 **Current requirements:**
-- A fairly recent Nvidia graphics card (for Cuda).
-- Linux (tested on Ubuntu 19.10).
-- Conda (sorry pip fans!).
+- A fairly recent Nvidia graphics card (for Cuda)
+- Linux (tested on Ubuntu 19.10)
+- Conda
 
-I intend to try to get it to run on Window 10 in the near future also. I simply have not yet tried it yet.
+I intend to try to get it to run on Window 10 in the near future also. I have not tried it yet.
 
 See build_script.md for how to build the Conda environment from environment.yml if unfamiliar.
 Or if having problems you could try using environment-exact-YYYY-MM-DD.yml instead to use the same versions I had for testing master.\
