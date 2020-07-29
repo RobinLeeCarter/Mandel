@@ -1,5 +1,5 @@
 # Mandel
-open-source Mandelbrot Explorer using Python, Qt, Cuda and threading.\
+Open-source Mandelbrot Explorer using Python, Qt, Cuda and threading.\
 Designed as a project to improve my general Python skills, so any comment or feedback is very welcome.
 
 **Current requirements:**
