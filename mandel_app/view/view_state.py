@@ -53,7 +53,9 @@ class ViewState:
         return self.action_in_progress in (enums.ImageAction.NONE,
                                            enums.ImageAction.ROTATED,
                                            enums.ImageAction.PANNED,
-                                           enums.ImageAction.ZOOMED)
+                                           enums.ImageAction.ZOOMED,
+                                           enums.ImageAction.DRAWING)
+
     @property
     def is_drawing(self) -> bool:
         return self.action_in_progress == enums.ImageAction.DRAWING

@@ -50,6 +50,9 @@ class View:
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         self._set_action(enums.ImageAction.DRAWING)
+        print(f"show_mandel")
+        # import time
+        # time.sleep(5)
         self._window.central.show_mandel(mandel)
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
@@ -249,8 +252,10 @@ class View:
     def _on_mandel_mouse_scroll(self, event: backend_bases.MouseEvent):
         mandel_image = self._window.central.mandel_image
         view_state_ = self._view_state
+        print("_on_mandel_mouse_scroll")
 
         if view_state_.ready_to_zoom:
+            # print(f"event.step={event.step}")
             extra_scaling = 0.9 ** float(event.step)
             view_state_.scaling_requested *= extra_scaling
             if event.step > 0:  # zooming in
@@ -294,6 +299,9 @@ class View:
 
         pixel_point = view_state_.scaling_pixel_point
         scaling = view_state_.scaling_requested
+        print(f"zoom pixel_point={pixel_point} scaling={scaling:.2f}")
+        # import time
+        # time.sleep(5)
 
         mandel_image.zoom_mandel_frame(pixel_point, scaling)
         self._controller.point_zoom_request(pixel_point, scaling)

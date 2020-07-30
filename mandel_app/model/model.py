@@ -66,7 +66,7 @@ class Model:
             self.new_mandel,
             save_history=save_history
         )
-        self._calc_thread_manager.request_work(job, queue_as=thread.QueueAs.SINGULAR)
+        self._calc_thread_manager.request_job(job, queue_as=thread.QueueAs.SINGULAR)
 
     def new_is_displayed(self, save_history: bool = True):
         if save_history and self.displayed_mandel is not None:
@@ -141,13 +141,13 @@ class Model:
         assert isinstance(mandel, mandelbrot.Mandel)
         assert isinstance(job, mandelbrot.MandelJob)
         self.new_mandel = mandel
-
+        print(f"job_complete = {job.job_number}")
         if job.progress_estimator:  # only show time for borderless calculation
             self.new_mandel.time_taken = job.progress_estimator.timer.total
         self._controller.new_is_ready(job.save_history)
 
-        if not self.new_mandel.has_border:
-            self._add_border()
+        # if not self.new_mandel.has_border:
+        #     self._add_border()
 
     def _add_border(self):
         self.new_mandel.add_border(14*4*5, 14*4*5)
@@ -157,5 +157,5 @@ class Model:
             display_progress=False,  # background job
             save_history=False
         )
-        self._calc_thread_manager.request_work(job, queue_as=thread.QueueAs.ENQUEUE)
+        self._calc_thread_manager.request_job(job, queue_as=thread.QueueAs.ENQUEUE)
     # endregion
