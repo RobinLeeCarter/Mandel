@@ -43,9 +43,9 @@ class Controller:
     # region View requests
     def point_zoom_request(self,
                            pixel_point: Optional[tuples.PixelPoint] = None,
-                           magnification: float = 1.0):
+                           scaling: float = 1.0):
         image_space: tuples.ImageShape = self._view.get_image_space()
-        self._model.zoom_and_calc(image_space, pixel_point, magnification)
+        self._model.zoom_and_calc(image_space, pixel_point, scaling)
 
     def back_request(self):
         self._model.restore_previous_as_new()

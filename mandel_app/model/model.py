@@ -80,17 +80,17 @@ class Model:
     def zoom_and_calc(self,
                       image_space: tuples.ImageShape,
                       pixel_point: Optional[tuples.PixelPoint],
-                      magnification: float):
+                      scaling: float):
         if pixel_point is None:
             new_centre = self.displayed_mandel.centre
         else:
             new_centre = self.displayed_mandel.get_complex_point(pixel_point)
 
-        save_history: bool = (magnification < 1)
+        save_history: bool = (scaling < 1)
 
         self.new_mandel = mandelbrot.Mandel(
             centre=new_centre,
-            size_per_gap=self.displayed_mandel.size_per_gap * magnification,
+            size_per_gap=self.displayed_mandel.size_per_gap * scaling,
             shape=image_space,
             theta_degrees=self.displayed_mandel.theta_degrees,
             expected_iterations_per_pixel=self.displayed_mandel.iterations_per_pixel

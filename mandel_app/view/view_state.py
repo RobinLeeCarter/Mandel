@@ -21,12 +21,12 @@ class ViewState:
         self.released_pan_delta: Optional[tuples.PixelPoint] = None
         self.released_theta_delta: int = 0
 
-        self.magnification_requested: float = 1.0
+        self.scaling_requested: float = 1.0
 
     def reset(self):
         self.released_pan_delta = None
         self.released_theta_delta = 0
-        self.magnification_requested = 1.0
+        self.scaling_requested = 1.0
 
     @property
     def is_waiting(self) -> bool:

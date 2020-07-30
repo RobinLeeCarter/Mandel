@@ -169,7 +169,7 @@ class View:
         central.mandel_image.on_resized(central.image_space)
 
         # have to zoom, ready or not
-        self._zoom(magnification=1.0)
+        self._zoom(scaling=1.0)
     # endregion
 
     # region MandelImage Slots
@@ -181,7 +181,7 @@ class View:
         if event.button == backend_bases.MouseButton.LEFT:
             if event.dblclick:
                 if view_state_.ready_to_zoom:
-                    self._zoom(view_state_.pan_start, magnification=0.1)
+                    self._zoom(view_state_.pan_start, scaling=0.1)
             if view_state_.ready_to_pan:
                 view_state_.pan_start = mandel_image.get_image_point(event)
                 view_state_.pan_end = view_state_.pan_start
@@ -194,9 +194,9 @@ class View:
         elif event.button == backend_bases.MouseButton.RIGHT:
             if view_state_.ready_to_zoom:
                 if event.dblclick:
-                    self._zoom(view_state_.pan_start, magnification=10.0)
+                    self._zoom(view_state_.pan_start, scaling=10.0)
                 else:
-                    self._zoom(view_state_.pan_start, magnification=2.0)
+                    self._zoom(view_state_.pan_start, scaling=2.0)
 
     @QtCore.pyqtSlot()
     def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
@@ -221,7 +221,7 @@ class View:
                 view_state_.pan_end = mandel_image.get_image_point(event)
                 if view_state_.tiny_pan:
                     # point zoom
-                    self._zoom(pixel_point=view_state_.pan_start, magnification=0.5)
+                    self._zoom(pixel_point=view_state_.pan_start, scaling=0.5)
                 else:
                     new_pan = view_state_.total_pan
                     self._controller.pan_request(new_pan)
@@ -246,8 +246,8 @@ class View:
         view_state_ = self._view_state
 
         if view_state_.ready_to_zoom:
-            extra_magnification = 0.9 ** float(event.step)
-            view_state_.magnification_requested *= extra_magnification
+            extra_scaling = 0.9 ** float(event.step)
+            view_state_.scaling_requested *= extra_scaling
             if event.step > 0:  # zooming in
                 cursor = mandel_image.get_image_point(event)
                 zoom_point = self._get_zoom_point(cursor)
@@ -259,10 +259,13 @@ class View:
     # region InternalMethods
     def _zoom(self,
               pixel_point: Optional[tuples.PixelPoint] = None,
-              magnification: Optional[float] = None):
-        if magnification is None:
-            magnification = self._view_state.magnification_requested
-        self._controller.point_zoom_request(pixel_point, magnification)
+              scaling: Optional[float] = None):
+        mandel_image = self._window.central.mandel_image
+        if scaling is None:
+            scaling = self._view_state.scaling_requested
+
+        # mandel_image.zoom_mandel_frame(pixel_point, scaling)
+        self._controller.point_zoom_request(pixel_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)
 
     def _set_action(self, action: enums.ImageAction):
