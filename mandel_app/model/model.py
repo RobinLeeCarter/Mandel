@@ -146,6 +146,7 @@ class Model:
             self.new_mandel.time_taken = job.progress_estimator.timer.total
         self._controller.new_is_ready(job.save_history)
 
+        # TODO: re-enable borders but do so from controller potentially
         # if not self.new_mandel.has_border:
         #     self._add_border()
 
