@@ -73,9 +73,9 @@ class View:
         self._connect_escape()
         self._connect_full_screen()
         self._connect_z_mode()
-        self._connect_rotate()
-        self._connect_mandel_image()
+        self._connect_dial_rotate()
         self._connect_iteration()
+        self._connect_mandel_image()
         self._window.set_on_key_pressed(self._on_key_pressed)
         self._window.set_on_active(self._on_main_active)
         self._z_window.set_on_active(self._on_z_active)
@@ -93,7 +93,7 @@ class View:
     def _connect_z_mode(self):
         self._window.actions.z_mode.set_on_triggered(on_triggered=self._on_set_z_mode)
 
-    def _connect_rotate(self):
+    def _connect_dial_rotate(self):
         self._window.toolbars.dial.set_on_rotating(on_rotating=self._on_rotating)
         self._window.toolbars.dial.set_on_rotated(on_rotated=self._controller.rotate_request)
 
