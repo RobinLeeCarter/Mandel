@@ -43,9 +43,9 @@ class Worker(QtCore.QObject):
             self.job_queue.append(job_)
             if self.is_running:
                 self.interrupt_requested = True
-            debug = f"is_running = {self.is_running}\n" + \
-                    f"interrupt_requested = {self.interrupt_requested}"
-            self.debugMessage.emit(debug)
+            # debug = f"is_running = {self.is_running}\n" + \
+            #         f"interrupt_requested = {self.interrupt_requested}"
+            # self.debugMessage.emit(debug)
 
         if not self.is_running:
             self._do_job_queue()

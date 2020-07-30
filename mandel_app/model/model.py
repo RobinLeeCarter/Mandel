@@ -141,14 +141,14 @@ class Model:
         assert isinstance(mandel, mandelbrot.Mandel)
         assert isinstance(job, mandelbrot.MandelJob)
         self.new_mandel = mandel
-        print(f"job_complete = {job.job_number}")
+        # print(f"completed job id = {id(job)}")
         if job.progress_estimator:  # only show time for borderless calculation
             self.new_mandel.time_taken = job.progress_estimator.timer.total
         self._controller.new_is_ready(job.save_history)
 
-        # TODO: re-enable borders but do so from controller potentially
-        # if not self.new_mandel.has_border:
-        #     self._add_border()
+        # TODO: control generation of borders in controller rather than automatically firing?
+        if not self.new_mandel.has_border:
+            self._add_border()
 
     def _add_border(self):
         self.new_mandel.add_border(14*4*5, 14*4*5)

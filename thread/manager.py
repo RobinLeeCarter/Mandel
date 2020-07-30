@@ -48,7 +48,7 @@ class Manager(QtCore.QObject):
     def request_job(self, job_: job.Job, queue_as: enums.QueueAs):
         if queue_as == enums.QueueAs.SINGULAR:
             self._singular_job = job_
-            print(f"singular_job.job_number = {self._singular_job.job_number}")
+            # print(f"singular_job.id = {id(self._singular_job)}")
         self._request_job.emit(job_, queue_as)
 
     def request_stop(self):
@@ -62,16 +62,17 @@ class Manager(QtCore.QObject):
             self._on_progress_update(progress, job_number)
 
     @QtCore.pyqtSlot()
-    # TODO: Noneify self._singular_job here if stopped
     def stop_success_slot(self):
         if self._on_stop_success is not None:
+            self._singular_job = None
             self._on_stop_success()
 
     @QtCore.pyqtSlot(job.Job)
     def job_complete_slot(self, job_: job.Job):
         if self._on_job_complete is not None:
             if self._singular_job:
-                if job_ == self._singular_job:
+                if job_ is self._singular_job:
+                    # print(f"same job {id(job_)} is {id(self._singular_job)}")
                     self._on_job_complete(job_)
                     self._singular_job = None
             else:

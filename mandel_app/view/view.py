@@ -50,7 +50,7 @@ class View:
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         self._set_action(enums.ImageAction.DRAWING)
-        print(f"show_mandel")
+        # print(f"show_mandel")
         # import time
         # time.sleep(5)
         self._window.central.show_mandel(mandel)
@@ -62,7 +62,7 @@ class View:
         # let other events fire such as mousewheel without acting on them for the new mandel
         # since this wouldn't be what the user wanted
         # enums.ImageAction.DRAWING prevents view acting on most events
-        QtWidgets.QApplication.processEvents()
+        # QtWidgets.QApplication.processEvents()
         self._set_action(enums.ImageAction.NONE)
         # self._window.central.mandel_image.save("mandel_icon.png")
 
@@ -72,8 +72,9 @@ class View:
         self._window.status_bar.q_progress_bar.setVisible(True)
 
     def stop_success(self):
-        self._window.status_bar.q_progress_bar.setVisible(False)
-        self._set_action(enums.ImageAction.NONE)
+        self.show_mandel(self._window.central.mandel_image.mandel)
+        # self._window.status_bar.q_progress_bar.setVisible(False)
+        # self._set_action(enums.ImageAction.NONE)
     # endregion
 
     # region Event Connections
@@ -202,9 +203,9 @@ class View:
         elif event.button == backend_bases.MouseButton.RIGHT:
             if view_state_.ready_to_zoom:
                 if event.dblclick:
-                    self._zoom(view_state_.pan_start, scaling=10.0)
+                    self._zoom(scaling=10.0)
                 else:
-                    self._zoom(view_state_.pan_start, scaling=2.0)
+                    self._zoom(scaling=2.0)
 
     @QtCore.pyqtSlot()
     def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
@@ -252,7 +253,7 @@ class View:
     def _on_mandel_mouse_scroll(self, event: backend_bases.MouseEvent):
         mandel_image = self._window.central.mandel_image
         view_state_ = self._view_state
-        print("_on_mandel_mouse_scroll")
+        # print("_on_mandel_mouse_scroll")
 
         if view_state_.ready_to_zoom:
             # print(f"event.step={event.step}")
@@ -273,13 +274,14 @@ class View:
         return max_iterations
 
     def _get_zoom_point(self, cursor: tuples.PixelPoint) -> tuples.PixelPoint:
-        center = self._window.central.mandel_image.center_pixel_point
-        displacement = tuples.PixelPoint(cursor.x - center.x, cursor.y - center.y)
-        zoom_point = tuples.PixelPoint(
-            x=center.x + 0.5 * displacement.x,
-            y=center.y + 0.5 * displacement.y
-        )
-        return zoom_point
+        return cursor
+        # center = self._window.central.mandel_image.center_pixel_point
+        # displacement = tuples.PixelPoint(cursor.x - center.x, cursor.y - center.y)
+        # zoom_point = tuples.PixelPoint(
+        #     x=center.x + 0.5 * displacement.x,
+        #     y=center.y + 0.5 * displacement.y
+        # )
+        # return zoom_point
 
     def _zoom(self,
               pixel_point: Optional[tuples.PixelPoint] = None,
@@ -299,7 +301,7 @@ class View:
 
         pixel_point = view_state_.scaling_pixel_point
         scaling = view_state_.scaling_requested
-        print(f"zoom pixel_point={pixel_point} scaling={scaling:.2f}")
+        # print(f"zoom pixel_point={pixel_point} scaling={scaling:.2f}")
         # import time
         # time.sleep(5)
 
