@@ -205,7 +205,7 @@ class View:
 
         if view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = mandel_image.get_image_point(event)
-            mandel_image.pan_mandel_frame(pan=view_state_.total_pan)
+            mandel_image.pan_mandel(pan=view_state_.total_pan)
             self._set_action(enums.ImageAction.PANNING)
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
             view_state_.rotate_end = mandel_image.get_image_point(event)
@@ -257,33 +257,31 @@ class View:
     # endregion
 
     # region InternalMethods
-    def _zoom(self,
-              pixel_point: Optional[tuples.PixelPoint] = None,
-              scaling: Optional[float] = None):
-        mandel_image = self._window.central.mandel_image
-        if scaling is None:
-            scaling = self._view_state.scaling_requested
-
-        # mandel_image.zoom_mandel_frame(pixel_point, scaling)
-        self._controller.point_zoom_request(pixel_point, scaling)
-        self._set_action(enums.ImageAction.ZOOMED)
-
-    def _set_action(self, action: enums.ImageAction):
-        self._view_state.action_in_progress = action
-        self._window.central.mandel_image.set_cursor(self._view_state.cursor_shape)
-
     def _display_max_iterations(self, power: int) -> int:
         max_iterations = 2 ** power
         self._window.toolbars.set_iterations_label(max_iterations)
         return max_iterations
 
     def _get_zoom_point(self, cursor: tuples.PixelPoint) -> tuples.PixelPoint:
-        shape = self._window.central.mandel_image.mandel.shape
-        center = tuples.PixelPoint(shape.x * 0.5, shape.y * 0.5)
+        center = self._window.central.mandel_image.center_pixel_point
         displacement = tuples.PixelPoint(cursor.x - center.x, cursor.y - center.y)
         zoom_point = tuples.PixelPoint(
             x=center.x + 0.5 * displacement.x,
             y=center.y + 0.5 * displacement.y
         )
         return zoom_point
+
+    def _zoom(self,
+              pixel_point: Optional[tuples.PixelPoint] = None,
+              scaling: Optional[float] = None):
+        mandel_image = self._window.central.mandel_image
+        if scaling is None:
+            scaling = self._view_state.scaling_requested
+        mandel_image.zoom_mandel_frame(pixel_point, scaling)
+        self._controller.point_zoom_request(pixel_point, scaling)
+        self._set_action(enums.ImageAction.ZOOMED)
+
+    def _set_action(self, action: enums.ImageAction):
+        self._view_state.action_in_progress = action
+        self._window.central.mandel_image.set_cursor(self._view_state.cursor_shape)
     # endregion
