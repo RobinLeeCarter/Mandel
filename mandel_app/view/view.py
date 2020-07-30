@@ -49,12 +49,17 @@ class View:
         return self._view_state.ready_to_display_new_mandel
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
+        self._set_action(enums.ImageAction.DRAWING)
         self._window.central.show_mandel(mandel)
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
             self._window.status_bar.complete(mandel.time_taken)
         self._window.status_bar.q_progress_bar.setVisible(False)
         self._view_state.reset()
+        # let other events fire such as mousewheel without acting on them for the new mandel
+        # since this wouldn't be what the user wanted
+        # enums.ImageAction.DRAWING prevents view acting on most events
+        QtWidgets.QApplication.processEvents()
         self._set_action(enums.ImageAction.NONE)
         # self._window.central.mandel_image.save("mandel_icon.png")
 
