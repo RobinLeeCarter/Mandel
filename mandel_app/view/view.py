@@ -14,6 +14,7 @@ from mandel_app.view import window, enums, view_state, icon, z_window
 
 
 class View:
+    # region Setup
     def __init__(self):
         self._controller: Optional[controller.Controller] = None
         self._application: Optional[QtWidgets.QApplication] = None
@@ -34,9 +35,9 @@ class View:
         self._z_window = z_window.ZWindow(self._window.q_main_window)
 
         self._connect_signals()
+    # endregion
 
-    # Controller requests
-
+    # region Controller Messages
     def get_image_space(self) -> tuples.ImageShape:
         return self._window.central.image_space
 
@@ -65,9 +66,9 @@ class View:
     def stop_success(self):
         self._window.status_bar.q_progress_bar.setVisible(False)
         self._set_action(enums.ImageAction.NONE)
+    # endregion
 
-    # signals and slots
-
+    # region Event Connections
     def _connect_signals(self):
         self._connect_escape()
         self._connect_full_screen()
@@ -90,7 +91,7 @@ class View:
         self._z_window.actions.full_screen.set_on_triggered(on_triggered=self._on_z_full_screen)
 
     def _connect_z_mode(self):
-        self._window.actions.z_mode.set_on_triggered(on_triggered=self._set_z_mode)
+        self._window.actions.z_mode.set_on_triggered(on_triggered=self._on_set_z_mode)
 
     def _connect_rotate(self):
         self._window.toolbars.dial.set_on_rotating(on_rotating=self._on_rotating)
@@ -102,6 +103,15 @@ class View:
         q_slider.sliderMoved.connect(self._on_iteration_slider_moved)
         q_slider.valueChanged.connect(self._on_iteration_slider_value_changed)
 
+    def _connect_mandel_image(self):
+        mandel_image = self._window.central.mandel_image
+        mandel_image.add_connection("button_press_event", self._on_mandel_mouse_press)
+        mandel_image.add_connection("motion_notify_event", self._on_mandel_mouse_move)
+        mandel_image.add_connection("button_release_event", self._on_mandel_mouse_release)
+        mandel_image.add_connection("scroll_event", self._on_mandel_mouse_scroll)
+    # endregion
+
+    # region General Slots
     def _on_full_screen(self, full_screen: bool):
         self._window.set_full_screen(full_screen)
         if self._view_state.is_z_mode:
@@ -133,32 +143,37 @@ class View:
         max_iterations = self._display_max_iterations(value)
         self._controller.new_compute_parameters_request(max_iterations, early_stopping=False)
 
-    def _display_max_iterations(self, power: int) -> int:
-        max_iterations = 2 ** power
-        self._window.toolbars.set_iterations_label(max_iterations)
-        return max_iterations
-
-    def _connect_mandel_image(self):
-        mandel_image = self._window.central.mandel_image
-        mandel_image.add_connection("button_press_event", self._on_mandel_mouse_press)
-        mandel_image.add_connection("motion_notify_event", self._on_mandel_mouse_move)
-        mandel_image.add_connection("button_release_event", self._on_mandel_mouse_release)
-        mandel_image.add_connection("scroll_event", self._on_mandel_mouse_scroll)
-        # mandel_image.add_connection("key_press_event", test)
-
     def _on_escape(self, _: bool):
         self._controller.stop_request()
 
-    def _set_z_mode(self, is_z_mode: bool):
+    def _on_key_pressed(self, key_event: QtGui.QKeyEvent):
+        key = key_event.key()
+        if key == QtCore.Qt.Key_F10:
+            print("F10")
+
+    def _on_set_z_mode(self, is_z_mode: bool):
         self._view_state.is_z_mode = is_z_mode
         self._z_window.q_main_window.setVisible(self._view_state.is_z_mode)
 
-    def _set_action(self, action: enums.ImageAction):
-        self._view_state.action_in_progress = action
-        self._window.central.mandel_image.set_cursor(self._view_state.cursor_shape)
+    def _on_main_active(self):
+        self._window.is_active = True
+        self._z_window.is_active = False
 
-    # view slots
+    def _on_z_active(self):
+        self._z_window.is_active = True
+        self._window.is_active = False
 
+    def _on_resized(self, resize_event: QtGui.QResizeEvent):
+        central = self._window.central
+        central.set_image_space()
+        central.mandel_image.on_resized(central.image_space)
+
+        # have to zoom, ready or not
+        self._controller.point_zoom_request()
+        self._set_action(enums.ImageAction.ZOOMED)
+    # endregion
+
+    # region MandelImage Slots
     @QtCore.pyqtSlot()
     def _on_mandel_mouse_press(self, event: backend_bases.MouseEvent):
         mandel_image = self._window.central.mandel_image
@@ -249,6 +264,17 @@ class View:
                 self._controller.point_zoom_request(magnification=view_state_.magnification_requested)
 
             self._set_action(enums.ImageAction.ZOOMED)
+    # endregion
+
+    # region InternalMethods
+    def _set_action(self, action: enums.ImageAction):
+        self._view_state.action_in_progress = action
+        self._window.central.mandel_image.set_cursor(self._view_state.cursor_shape)
+
+    def _display_max_iterations(self, power: int) -> int:
+        max_iterations = 2 ** power
+        self._window.toolbars.set_iterations_label(max_iterations)
+        return max_iterations
 
     def _get_zoom_point(self, cursor: tuples.PixelPoint) -> tuples.PixelPoint:
         shape = self._window.central.mandel_image.mandel.shape
@@ -259,25 +285,4 @@ class View:
             y=center.y + 0.5 * displacement.y
         )
         return zoom_point
-
-    def _on_key_pressed(self, key_event: QtGui.QKeyEvent):
-        key = key_event.key()
-        if key == QtCore.Qt.Key_F10:
-            print("F10")
-
-    def _on_main_active(self):
-        self._window.is_active = True
-        self._z_window.is_active = False
-
-    def _on_z_active(self):
-        self._z_window.is_active = True
-        self._window.is_active = False
-
-    def _on_resized(self, resize_event: QtGui.QResizeEvent):
-        central = self._window.central
-        central.set_image_space()
-        central.mandel_image.on_resized(central.image_space)
-
-        # have to zoom, ready or not
-        self._controller.point_zoom_request()
-        self._set_action(enums.ImageAction.ZOOMED)
+    # endregion
