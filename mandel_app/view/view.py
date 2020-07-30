@@ -275,8 +275,21 @@ class View:
               pixel_point: Optional[tuples.PixelPoint] = None,
               scaling: Optional[float] = None):
         mandel_image = self._window.central.mandel_image
-        if scaling is None:
-            scaling = self._view_state.scaling_requested
+        view_state_ = self._view_state
+
+        if scaling is not None:
+            view_state_.scaling_requested = scaling
+
+        # if not yet set, then set, else ignore the new pixel point and adjust the zoom on the current point
+        if view_state_.scaling_pixel_point is None:
+            if pixel_point is None:
+                view_state_.scaling_pixel_point = mandel_image.center_pixel_point
+            else:
+                view_state_.scaling_pixel_point = pixel_point
+
+        pixel_point = view_state_.scaling_pixel_point
+        scaling = view_state_.scaling_requested
+
         mandel_image.zoom_mandel_frame(pixel_point, scaling)
         self._controller.point_zoom_request(pixel_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)
