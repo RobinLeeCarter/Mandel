@@ -32,6 +32,10 @@ class MandelImage:
 
         self.connections = {}
 
+    @property
+    def center_pixel_point(self) -> tuples.PixelPoint:
+        return tuples.PixelPoint(self.mandel.shape.x * 0.5, self.mandel.shape.y * 0.5)
+
     def get_dpi(self):
         q_application = QtWidgets.QApplication.instance()   # get singleton
         screen: QtGui.QScreen = q_application.screens()[0]
@@ -58,34 +62,64 @@ class MandelImage:
         self._transform_and_draw()
 
     def rotate_mandel_mouse(self, total_theta_delta: int):
-        self._transform_and_draw(degrees=-1*total_theta_delta)
+        self._rotate_mandel(-total_theta_delta)
 
     def rotate_mandel_frame(self, to_theta_degrees: int):
+        # new rotation is required rotation minus current rotation
         theta_delta = to_theta_degrees - self.mandel.theta_degrees
-        if theta_delta != 0:
-            # self.action_in_progress = enums.ImageAction.ROTATING
-            # to rotate frame one way we must rotate the image in the other
-            self._transform_and_draw(degrees=-theta_delta)
+        # to rotate the frame one direction we must rotate the image in the opposite direction
+        degrees = -theta_delta
+        self._rotate_mandel(degrees)
 
-    def pan_mandel_frame(self, pan: tuples.PixelPoint):
-        self._transform_and_draw(pan=pan)
+    def _rotate_mandel(self, degrees: int):
+        centre = self.center_pixel_point
+        transform = transforms.Affine2D() \
+            .translate(-centre.x, -centre.y) \
+            .rotate_deg(degrees) \
+            .translate(centre.x, centre.y)
+        self._transform_and_draw(transform)
 
-    def _transform_and_draw(self, degrees: int = 0, pan: tuples.PixelPoint = None):
-        transform = transforms.Affine2D()
-        # perform any rotation
-        # if self.action_in_progress == enums.ImageAction.ROTATING and degrees != 0:
-        if degrees != 0:
-            centre_x = int(float(self.mandel.shape.x) / 2.0)
-            centre_y = int(float(self.mandel.shape.y) / 2.0)
-            transform = transform \
-                .translate(-centre_x, -centre_y) \
-                .rotate_deg(degrees) \
-                .translate(centre_x, centre_y)
-        # perform any pan
-        # if self.action_in_progress == enums.ImageAction.PANNING and pan != tuples.PixelPoint(0, 0):
-        elif pan and not None and pan != tuples.PixelPoint(0, 0):
-            transform = transform.translate(-pan.x, -pan.y)
-        # centre centre_point of image in widget.
+    def zoom_mandel_frame(self,
+                          zoom_point: Optional[tuples.PixelPoint] = None,
+                          scaling: Optional[float] = None):
+        centre = self.center_pixel_point
+        if zoom_point is None:
+            zoom_point = self.center_pixel_point
+        if scaling is None:
+            magnification = 1.0
+        else:
+            magnification = 1.0 / scaling
+
+        transform = transforms.Affine2D() \
+            .translate(-zoom_point.x, -zoom_point.y) \
+            .scale(magnification) \
+            .translate(centre.x, centre.y)
+        self._transform_and_draw(transform)
+
+    def pan_mandel(self, pan: tuples.PixelPoint):
+        transform = transforms.Affine2D().translate(-pan.x, -pan.y)
+        self._transform_and_draw(transform)
+
+    # def _transform_and_draw(self, degrees: int = 0, pan: tuples.PixelPoint = None):
+    #     transform: transforms.Affine2D = transforms.Affine2D()
+    #     # perform any rotation
+    #     # if self.action_in_progress == enums.ImageAction.ROTATING and degrees != 0:
+    #     if degrees != 0:
+    #         centre_x = int(float(self.mandel.shape.x) / 2.0)
+    #         centre_y = int(float(self.mandel.shape.y) / 2.0)
+    #         transform = transform \
+    #             .translate(-centre_x, -centre_y) \
+    #             .rotate_deg(degrees) \
+    #             .translate(centre_x, centre_y)
+    #     # perform any pan
+    #     # if self.action_in_progress == enums.ImageAction.PANNING and pan != tuples.PixelPoint(0, 0):
+    #     elif pan and not None and pan != tuples.PixelPoint(0, 0):
+    #         transform = transform.translate(-pan.x, -pan.y)
+    #     # centre centre_point of image in widget.
+
+    def _transform_and_draw(self, transform: Optional[transforms.Affine2D] = None):
+        if transform is None:  # no transformation, just draw
+            transform = transforms.Affine2D()
         # widget places image in top left. Our co-ordinate system is bottom right.
         if self.mandel.offset != tuples.PixelPoint(0, 0):
             transform = transform.translate(self.mandel.offset.x, -self.mandel.offset.y)

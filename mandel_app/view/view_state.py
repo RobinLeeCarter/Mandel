@@ -10,7 +10,7 @@ class ViewState:
     def __init__(self):
         self.is_z_mode: bool = False  # Pan button on toolbar depressed
 
-        self.action_in_progress: enums.ImageAction = enums.ImageAction.NONE  # could be "PANNING" or "ROTATING"
+        self.action_in_progress: enums.ImageAction = enums.ImageAction.NONE
         self.pan_start: Optional[tuples.PixelPoint] = None
         self.pan_end: Optional[tuples.PixelPoint] = None
 
@@ -21,12 +21,14 @@ class ViewState:
         self.released_pan_delta: Optional[tuples.PixelPoint] = None
         self.released_theta_delta: int = 0
 
-        self.magnification_requested: float = 1.0
+        self.scaling_pixel_point: Optional[tuples.PixelPoint] = None
+        self.scaling_requested: float = 1.0
 
     def reset(self):
         self.released_pan_delta = None
         self.released_theta_delta = 0
-        self.magnification_requested = 1.0
+        self.scaling_pixel_point = None
+        self.scaling_requested = 1.0
 
     @property
     def is_waiting(self) -> bool:
@@ -51,7 +53,12 @@ class ViewState:
         return self.action_in_progress in (enums.ImageAction.NONE,
                                            enums.ImageAction.ROTATED,
                                            enums.ImageAction.PANNED,
-                                           enums.ImageAction.ZOOMED)
+                                           enums.ImageAction.ZOOMED,
+                                           enums.ImageAction.DRAWING)
+
+    @property
+    def is_drawing(self) -> bool:
+        return self.action_in_progress == enums.ImageAction.DRAWING
 
     @property
     def ready_to_rotate(self) -> bool:

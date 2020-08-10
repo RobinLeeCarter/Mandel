@@ -66,7 +66,7 @@ class Model:
             self.new_mandel,
             save_history=save_history
         )
-        self._calc_thread_manager.request_work(job, queue_as=thread.QueueAs.SINGULAR)
+        self._calc_thread_manager.request_job(job, queue_as=thread.QueueAs.SINGULAR)
 
     def new_is_displayed(self, save_history: bool = True):
         if save_history and self.displayed_mandel is not None:
@@ -80,17 +80,17 @@ class Model:
     def zoom_and_calc(self,
                       image_space: tuples.ImageShape,
                       pixel_point: Optional[tuples.PixelPoint],
-                      magnification: float):
+                      scaling: float):
         if pixel_point is None:
             new_centre = self.displayed_mandel.centre
         else:
             new_centre = self.displayed_mandel.get_complex_point(pixel_point)
 
-        save_history: bool = (magnification < 1)
+        save_history: bool = (scaling < 1)
 
         self.new_mandel = mandelbrot.Mandel(
             centre=new_centre,
-            size_per_gap=self.displayed_mandel.size_per_gap * magnification,
+            size_per_gap=self.displayed_mandel.size_per_gap * scaling,
             shape=image_space,
             theta_degrees=self.displayed_mandel.theta_degrees,
             expected_iterations_per_pixel=self.displayed_mandel.iterations_per_pixel
@@ -141,11 +141,12 @@ class Model:
         assert isinstance(mandel, mandelbrot.Mandel)
         assert isinstance(job, mandelbrot.MandelJob)
         self.new_mandel = mandel
-
+        # print(f"completed job id = {id(job)}")
         if job.progress_estimator:  # only show time for borderless calculation
             self.new_mandel.time_taken = job.progress_estimator.timer.total
         self._controller.new_is_ready(job.save_history)
 
+        # TODO: control generation of borders in controller rather than automatically firing?
         if not self.new_mandel.has_border:
             self._add_border()
 
@@ -157,5 +158,5 @@ class Model:
             display_progress=False,  # background job
             save_history=False
         )
-        self._calc_thread_manager.request_work(job, queue_as=thread.QueueAs.ENQUEUE)
+        self._calc_thread_manager.request_job(job, queue_as=thread.QueueAs.ENQUEUE)
     # endregion
