@@ -5,7 +5,7 @@ from typing import Optional, List
 
 from mandel_app import controller, tuples
 import thread
-from mandel_app.model import mandelbrot
+from mandel_app.model import mandelbrot, z_model
 
 MAX_ITERATIONS = 1000000
 
@@ -19,6 +19,7 @@ class Model:
         self.new_mandel: Optional[mandelbrot.Mandel] = None
         self.displayed_mandel: Optional[mandelbrot.Mandel] = None
         self.mandel_history: List[mandelbrot.Mandel] = []
+        self.z_model: Optional[z_model.ZModel] = None
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
@@ -31,6 +32,10 @@ class Model:
             on_stop_success=self._on_stop_success,
             on_job_complete=self._on_job_complete
         )
+        self.z_model = z_model.ZModel()
+        # self.z_model = z_model.ZModel(z0=complex(real=0.24091, imag=0.55),
+        #                               image_shape=tuples.ImageShape(x=700, y=700))
+
         self._calc_thread_manager.start_thread()
 
     def _initial_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:

@@ -3,22 +3,44 @@ from typing import List, Optional
 
 import numpy as np
 
+from mandel_app import tuples
+
 
 class Field:
-    def __init__(self, z0: Optional[complex] = None, solutions: Optional[List[complex]] = None):
+    def __init__(self,
+                 z0: Optional[complex] = None,
+                 solutions: Optional[List[complex]] = None,
+                 image_shape: Optional[tuples.ImageShape] = None):
         self.z0: Optional[complex] = z0
-        if z0 is not None and solutions is not None:
-            self.build(z0, solutions)
+        self.solutions: Optional[List[complex]] = solutions
+        self.image_shape: Optional[tuples.ImageShape] = image_shape
+        if self._build_requirements_met:
+            self.build(self.z0, self.solutions, self.image_shape)
+
+    @property
+    def _build_requirements_met(self) -> bool:
+        return self.z0 is not None and self.solutions is not None and self.image_shape is not None
 
     # noinspection PyAttributeOutsideInit
-    def build(self, z0: complex, solutions: List[complex]) -> Field:
-        self.z0 = z0
+    def build(self,
+              z0: Optional[complex] = None,
+              solutions: Optional[List[complex]] = None,
+              image_shape: Optional[tuples.ImageShape] = None
+              ):
+        if z0 is not None:
+            self.z0 = z0
+            self.solutions = solutions
+        if image_shape is not None:
+            self.image_shape = image_shape
+
+        if not self._build_requirements_met:
+            raise Exception("model.z_model.field.Field build requirements not met")
+
         min_val = -2.0
         max_val = 2.0
-        steps = 700
 
-        y, x = np.ogrid[min_val: max_val: steps * 1j,
-                        min_val: max_val: steps * 1j]
+        y, x = np.ogrid[min_val: max_val: self.image_shape.y * 1j,
+                        min_val: max_val: self.image_shape.x * 1j]
         z = x + y*1j
         z_next = z*z + self.z0
         diff = z_next - z
@@ -29,7 +51,7 @@ class Field:
         self.vy = np.imag(diff)
         self.vr = np.abs(diff)
 
-        s1, s2 = solutions  # unpack
+        s1, s2 = self.solutions  # unpack
         self.d1_before = np.abs(z - s1)
         self.d1_after = np.abs(z_next - s1)
         self.d2_before = np.abs(z - s2)
@@ -42,8 +64,6 @@ class Field:
 
         self.s1_attraction_intensity = 0.3 + 0.7 * (1.0 - self.s1_ratio)
         self.s2_attraction_intensity = 0.3 + 0.7 * (1.0 - self.s2_ratio)
-
-        return self
 
         # self.s1_attraction = np.zeros(shape=z.shape, dtype=float)
         # self.s2_attraction = np.zeros(shape=z.shape, dtype=float)

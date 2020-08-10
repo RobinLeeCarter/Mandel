@@ -13,11 +13,10 @@ class Trace:
         if z0 is not None:
             self.build(z0)
 
-    def build(self, z0: complex) -> Trace:
+    def build(self, z0: complex):
         self.z0 = z0
         self._generate_z_values()
         self._convert_to_x_y_arrays()
-        return self
 
     def _generate_z_values(self):
         i: int = 0
