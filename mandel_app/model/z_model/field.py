@@ -7,33 +7,24 @@ from mandel_app import tuples
 
 
 class Field:
-    def __init__(self,
-                 z0: Optional[complex] = None,
-                 solutions: Optional[List[complex]] = None,
-                 image_shape: Optional[tuples.ImageShape] = None):
-        self.z0: Optional[complex] = z0
-        self.solutions: Optional[List[complex]] = solutions
-        self.image_shape: Optional[tuples.ImageShape] = image_shape
-        if self._build_requirements_met:
-            self.build(self.z0, self.solutions, self.image_shape)
-
-    @property
-    def _build_requirements_met(self) -> bool:
-        return self.z0 is not None and self.solutions is not None and self.image_shape is not None
+    def __init__(self):
+        self.z0: Optional[complex] = None
+        self.solutions: Optional[List[complex]] = None
+        self.image_shape: Optional[tuples.ImageShape] = None
 
     # noinspection PyAttributeOutsideInit
     def build(self,
               z0: Optional[complex] = None,
               solutions: Optional[List[complex]] = None,
               image_shape: Optional[tuples.ImageShape] = None
-              ):
+              ) -> Field:
         if z0 is not None:
             self.z0 = z0
             self.solutions = solutions
         if image_shape is not None:
             self.image_shape = image_shape
 
-        if not self._build_requirements_met:
+        if self.z0 is None or self.solutions is None or self.image_shape is None:
             raise Exception("model.z_model.field.Field build requirements not met")
 
         min_val = -2.0
@@ -64,6 +55,8 @@ class Field:
 
         self.s1_attraction_intensity = 0.3 + 0.7 * (1.0 - self.s1_ratio)
         self.s2_attraction_intensity = 0.3 + 0.7 * (1.0 - self.s2_ratio)
+
+        return self
 
         # self.s1_attraction = np.zeros(shape=z.shape, dtype=float)
         # self.s2_attraction = np.zeros(shape=z.shape, dtype=float)

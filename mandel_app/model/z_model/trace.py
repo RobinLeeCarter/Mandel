@@ -5,18 +5,17 @@ MAX_ITERATIONS = 10000
 
 
 class Trace:
-    def __init__(self, z0: Optional[complex] = None):
-        self.z0: Optional[complex] = z0
+    def __init__(self):
+        self.z0: Optional[complex] = None
         self.x_values: List[float] = []
         self.y_values: List[float] = []
         self.z_values: List[complex] = []
-        if z0 is not None:
-            self.build(z0)
 
-    def build(self, z0: complex):
+    def build(self, z0: complex) -> Trace:
         self.z0 = z0
         self._generate_z_values()
         self._convert_to_x_y_arrays()
+        return self
 
     def _generate_z_values(self):
         i: int = 0

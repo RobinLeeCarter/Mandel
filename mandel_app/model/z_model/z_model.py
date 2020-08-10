@@ -7,36 +7,33 @@ from mandel_app.model.z_model import trace, field
 
 
 class ZModel:
-    def __init__(self,
-                 z0: Optional[complex] = None,
-                 image_shape: Optional[tuples.ImageShape] = None):
-        self.z0: Optional[complex] = z0
-        self.image_shape: Optional[tuples.ImageShape] = image_shape
+    def __init__(self):
+        self._z0: Optional[complex] = None
         self.solutions: List[complex] = []
+        self.image_shape: Optional[tuples.ImageShape] = None
         self.trace = trace.Trace()
         self.field = field.Field()
-        if self._build_requirements_met:
-            self.build(self.z0, self.image_shape)
 
+    # self.solutions must always be recalculated when z0 is changed so make z0 a property
     @property
-    def _build_requirements_met(self) -> bool:
-        return self.z0 is not None and self.image_shape is not None
+    def z0(self) -> complex:
+        return self._z0
 
     def build(self,
               z0: Optional[complex] = None,
               image_shape: Optional[tuples.ImageShape] = None):
         if z0 is not None:
-            self.z0 = z0
-            self.solutions = self._calc_solutions(self.z0)
+            self._z0 = z0
+            self.solutions = self._calc_solutions(self._z0)
         if image_shape is not None:
             self.image_shape = image_shape
 
-        if not self._build_requirements_met:
+        if self._z0 is None or self.image_shape is None:
             raise Exception("model.z_model.z_model.ZModel build requirements not met")
 
         if z0 is not None:
-            self.trace.build(self.z0)
-        self.field.build(self.z0, self.solutions, self.image_shape)
+            self.trace.build(self._z0)
+        self.field.build(self._z0, self.solutions, self.image_shape)
 
     @staticmethod
     def _calc_solutions(z0: complex) -> List[complex]:
