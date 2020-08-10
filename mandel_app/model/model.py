@@ -33,8 +33,8 @@ class Model:
             on_job_complete=self._on_job_complete
         )
         self.z_model = z_model.ZModel()
-        # self.z_model = z_model.ZModel(z0=complex(real=0.24091, imag=0.55),
-        #                               image_shape=tuples.ImageShape(x=700, y=700))
+        self.z_model.build(z0=complex(real=0.24091, imag=0.55),
+                           image_shape=tuples.ImageShape(x=700, y=700))
 
         self._calc_thread_manager.start_thread()
 

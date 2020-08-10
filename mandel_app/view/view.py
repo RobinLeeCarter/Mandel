@@ -88,6 +88,7 @@ class View:
         self._window.set_on_key_pressed(self._on_key_pressed)
         self._window.set_on_active(self._on_main_active)
         self._z_window.set_on_active(self._on_z_active)
+        self._z_window.set_on_close(self._on_z_close)
         # self._window.set_focus_in_function(self.on_focus_in)
         self._window.central.set_resize_event_function(self._on_resized)
 
@@ -171,6 +172,9 @@ class View:
     def _on_z_active(self):
         self._z_window.is_active = True
         self._window.is_active = False
+
+    def _on_z_close(self):
+        self._window.actions.z_mode.q_action.setChecked(False)
 
     def _on_resized(self, resize_event: QtGui.QResizeEvent):
         central = self._window.central

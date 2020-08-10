@@ -10,7 +10,7 @@ class ZWindow:
         self.q_main_window = XMainWindow(parent=parent)
         # Set some main window's properties
         self.q_main_window.setWindowTitle('Z Tracing')
-        self.q_main_window.setGeometry(200, 200, 400, 400)
+        self.q_main_window.setGeometry(200, 200, 700, 700)
 
         stylesheet = self.get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
@@ -60,10 +60,19 @@ class ZWindow:
         # noinspection PyUnresolvedReferences
         self.q_main_window.activationChangeSignal.connect(slot)
 
+    def set_on_close(self, on_close: Callable[[], None]):
+        @QtCore.pyqtSlot()
+        def slot():
+            on_close()
+
+        # noinspection PyUnresolvedReferences
+        self.q_main_window.closeSignal.connect(slot)
+
 
 class XMainWindow(QtWidgets.QMainWindow):
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
+    closeSignal = QtCore.pyqtSignal()
 
     def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
         # noinspection PyUnresolvedReferences
@@ -74,3 +83,8 @@ class XMainWindow(QtWidgets.QMainWindow):
         if event.type() == QtCore.QEvent.ActivationChange and self.isActiveWindow():
             self.activationChangeSignal.emit()
         super().changeEvent(event)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        if event.spontaneous():
+            self.closeSignal.emit()
+        super().closeEvent(event)
