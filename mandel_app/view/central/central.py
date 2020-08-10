@@ -74,10 +74,10 @@ class Central:
 
         return tuples.ImageShape(x, y)
 
-    def set_resize_event_function(self, resized: Callable[[QtGui.QResizeEvent], None]):
+    def set_on_resize(self, on_resize: Callable[[QtGui.QResizeEvent], None]):
         @QtCore.pyqtSlot()
         def slot(resize_event: QtGui.QResizeEvent):
-            resized(resize_event)
+            on_resize(resize_event)
 
         # noinspection PyUnresolvedReferences
         self.q_scroll_area.resizeEventSignal.connect(slot)

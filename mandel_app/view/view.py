@@ -90,7 +90,7 @@ class View:
         self._z_window.set_on_active(self._on_z_active)
         self._z_window.set_on_close(self._on_z_close)
         # self._window.set_focus_in_function(self.on_focus_in)
-        self._window.central.set_resize_event_function(self._on_resized)
+        self._window.central.set_on_resize(self._on_resized)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
