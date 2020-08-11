@@ -48,6 +48,12 @@ class View:
     def hide_z_graph(self):
         self._z_window.central.hide_graph()
 
+    def show_z0_on_mandel(self, z0: complex):
+        self._window.central.canvas.show_z0_marker(z0)
+
+    def hide_z0_on_mandel(self):
+        self._window.central.canvas.hide_z0_marker()
+
     def run(self):
         sys.exit(self._application.exec_())
 
