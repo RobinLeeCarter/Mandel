@@ -61,11 +61,11 @@ class Canvas:
         self.ax_image: image.AxesImage = self.ax.imshow(
             transformed_iterations,
             interpolation='none', origin='lower',
-            cmap='hot', vmin=0, vmax=100, alpha=0.3, zorder=0)
-        self.ax.plot([500], [500], marker='x', markersize=30, color="blue", zorder=2)
+            cmap='hot', vmin=0, vmax=100, alpha=1.0, zorder=0)
+        # self.ax.plot([500], [500], marker='x', markersize=30, color="blue", zorder=2)
 
-        self.figure_canvas.draw()
-        # self._transform_and_draw()
+        # self.figure_canvas.draw()
+        self._transform_and_draw()
 
     def rotate_mandel_mouse(self, total_theta_delta: int):
         self._rotate_mandel(-total_theta_delta)
@@ -106,23 +106,6 @@ class Canvas:
         transform = transforms.Affine2D().translate(-pan.x, -pan.y)
         self._transform_and_draw(transform)
 
-    # def _transform_and_draw(self, degrees: int = 0, pan: tuples.PixelPoint = None):
-    #     transform: transforms.Affine2D = transforms.Affine2D()
-    #     # perform any rotation
-    #     # if self.action_in_progress == enums.ImageAction.ROTATING and degrees != 0:
-    #     if degrees != 0:
-    #         centre_x = int(float(self.mandel.shape.x) / 2.0)
-    #         centre_y = int(float(self.mandel.shape.y) / 2.0)
-    #         transform = transform \
-    #             .translate(-centre_x, -centre_y) \
-    #             .rotate_deg(degrees) \
-    #             .translate(centre_x, centre_y)
-    #     # perform any pan
-    #     # if self.action_in_progress == enums.ImageAction.PANNING and pan != tuples.PixelPoint(0, 0):
-    #     elif pan and not None and pan != tuples.PixelPoint(0, 0):
-    #         transform = transform.translate(-pan.x, -pan.y)
-    #     # centre centre_point of image in widget.
-
     def _transform_and_draw(self, transform: Optional[transforms.Affine2D] = None):
         if transform is None:  # no transformation, just draw
             transform = transforms.Affine2D()
@@ -132,7 +115,7 @@ class Canvas:
         trans_data = transform + self.ax.transData
         self.ax_image.set_transform(trans_data)
         # self.ax.add_line(self._z0_marker)
-        self.ax.plot([0.1], [0.1], marker='x', markersize=10, color="blue", zorder=10)
+        # self.ax.plot([0.1], [0.1], marker='x', markersize=10, color="blue", zorder=10)
         self.figure_canvas.draw()
 
     def show_z0_marker(self, z0: complex):
