@@ -65,14 +65,16 @@ class Canvas:
 
     def draw_graph(self, z_model_: z_model.ZModel):
         self._z_model = z_model_
-        # self.mandel_canvas.resize(self.mandel.shape.x, self.mandel.shape.y)
-        # self._ax.clear()
 
         self._draw_background()
         self._draw_legend()
         counter = self._draw_counter()
         self._snake.draw_snake(trace_=z_model_.trace, counter=counter)
         self._figure_canvas.draw()
+
+    def clear_graph(self):
+        self._snake.stop_snake()
+        self._ax.clear()
 
     def _draw_background(self):
         field = self._z_model.field

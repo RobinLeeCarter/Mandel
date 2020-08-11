@@ -69,4 +69,10 @@ class Controller:
             self._model.new_mandel.remove_border()
         # Save history in case press back don't want to lose the work
         self._model.calc_new_mandel(save_history=True)
+
+    def show_z_graph(self):
+        self._view.show_z_graph(self._model.z_model)
+
+    def hide_z_graph(self):
+        self._view.hide_z_graph()
     # endregion

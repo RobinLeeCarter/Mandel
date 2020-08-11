@@ -51,6 +51,9 @@ class Central:
         self.q_main.resize(self.image_space.x, self.image_space.y)  # changed
         self.q_main_layout.update()
 
+    def hide_graph(self):
+        self.canvas.clear_graph()
+
     def set_image_space(self):
         self.image_space = self._get_image_space()
 

@@ -96,3 +96,8 @@ class Snake:
         for i in range(self._tail_point, self._head_point+1):
             self._frame_x.append(self._trace.x_values[i])
             self._frame_y.append(self._trace.y_values[i])
+
+    def stop_snake(self):
+        if self._ani is not None:
+            self._ani.event_source.stop()
+            self._ani = None

@@ -44,6 +44,9 @@ class View:
     def show_z_graph(self, z_model_: z_model.ZModel):
         self._z_window.central.show_graph(z_model_)
 
+    def hide_z_graph(self):
+        self._z_window.central.hide_graph()
+
     def run(self):
         sys.exit(self._application.exec_())
 
@@ -165,8 +168,12 @@ class View:
             print("F10")
 
     def _on_set_z_mode(self, is_z_mode: bool):
+        if is_z_mode:
+            self._controller.show_z_graph()
+        else:
+            self._controller.hide_z_graph()
         self._view_state.is_z_mode = is_z_mode
-        self._z_window.q_main_window.setVisible(self._view_state.is_z_mode)
+        self._z_window.q_main_window.setVisible(is_z_mode)
 
     def _on_main_active(self):
         self._window.is_active = True
@@ -177,7 +184,10 @@ class View:
         self._window.is_active = False
 
     def _on_z_close(self):
-        self._window.actions.z_mode.q_action.setChecked(False)
+        q_action = self._window.actions.z_mode.q_action
+        if q_action.isChecked():
+            q_action.trigger()
+        # self._window.actions.z_mode.q_action.setChecked(False)
 
     def _on_resized(self, resize_event: QtGui.QResizeEvent):
         central = self._window.central
