@@ -43,6 +43,7 @@ class View:
 
     def show_z_graph(self, z_model_: z_model.ZModel):
         self._z_window.central.show_graph(z_model_)
+        self._z_window.q_main_window.raise_()
 
     def hide_z_graph(self):
         self._z_window.central.hide_graph()
@@ -169,7 +170,7 @@ class View:
 
     def _on_set_z_mode(self, is_z_mode: bool):
         if is_z_mode:
-            self._controller.show_z_graph()
+            self._controller.show_default_z_trace()
         else:
             self._controller.hide_z_graph()
         self._view_state.is_z_mode = is_z_mode
@@ -177,10 +178,12 @@ class View:
         self._update_cursor()
 
     def _on_main_active(self):
+        # print("_on_main_active")
         self._window.is_active = True
         self._z_window.is_active = False
 
     def _on_z_active(self):
+        # print("_on_z_active")
         self._z_window.is_active = True
         self._window.is_active = False
 
@@ -206,10 +209,10 @@ class View:
         view_state_ = self._view_state
 
         if event.button == backend_bases.MouseButton.LEFT:
-            if event.dblclick:
+            if event.dblclick and not view_state_.is_z_mode:
                 if view_state_.ready_to_zoom:
                     self._zoom(view_state_.pan_start, scaling=0.1)
-            if view_state_.ready_to_pan:
+            elif view_state_.ready_to_pan:
                 view_state_.pan_start = mandel_image.get_image_point(event)
                 view_state_.pan_end = view_state_.pan_start
                 self._set_action(enums.ImageAction.PANNING)
@@ -247,8 +250,12 @@ class View:
             if view_state_.action_in_progress == enums.ImageAction.PANNING:
                 view_state_.pan_end = mandel_image.get_image_point(event)
                 if view_state_.tiny_pan:
-                    # point zoom
-                    self._zoom(pixel_point=view_state_.pan_start, scaling=0.5)
+                    if view_state_.is_z_mode:
+                        # change z0 for z-tracing
+                        self._update_z0(pixel_point=view_state_.pan_start)
+                    else:
+                        # point zoom
+                        self._zoom(pixel_point=view_state_.pan_start, scaling=0.5)
                 else:
                     new_pan = view_state_.total_pan
                     self._controller.pan_request(new_pan)
@@ -326,6 +333,10 @@ class View:
         mandel_image.zoom_mandel_frame(pixel_point, scaling)
         self._controller.point_zoom_request(pixel_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)
+
+    def _update_z0(self, pixel_point: tuples.PixelPoint):
+        self._controller.update_z0_request(pixel_point)
+        self._set_action(enums.ImageAction.NONE)
 
     def _set_action(self, action: enums.ImageAction):
         self._view_state.action_in_progress = action

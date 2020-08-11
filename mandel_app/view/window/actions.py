@@ -31,8 +31,8 @@ class Actions(actions.Actions):
         self.z_mode = action.Action(
             q_main_window=self._q_main_window,
             name="z_mode",
-            icon_filename="cursor-openhand.png",
-            text="z_mode",
+            icon_filename="pin.png",
+            text="z-mode",
             status_tip="Trace the z values for a point",
             checkable=True
         )
