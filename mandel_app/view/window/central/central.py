@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
-from mandel_app.view.window.central import mandel_image
+from mandel_app.view.window.central import canvas
 
 
 class Central:
@@ -33,17 +33,17 @@ class Central:
 
         self.q_main.setLayout(self.q_main_layout)
 
-        self.mandel_image = mandel_image.MandelImage()
+        self.canvas = canvas.Canvas()
 
-        self.q_main_layout.addWidget(self.mandel_image.figure_canvas)
+        self.q_main_layout.addWidget(self.canvas.figure_canvas)
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
 
-        # self.layout.setAlignment(self.mandel_image.mandel_canvas, QtCore.Qt.AlignCenter)
+        # self.layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
 
         self.q_scroll_area.setWidget(self.q_main)
 
         # self.q_scroll_area.setAlignment(Qt.AlignBottom)
-        # self.q_scroll_area.setWidget(self.mandel_image.mandel_canvas)
+        # self.q_scroll_area.setWidget(self.canvas.mandel_canvas)
 
         # q_main_window.setCentralWidget(self.q_main)
         q_main_window.setCentralWidget(self.q_scroll_area)
@@ -51,8 +51,8 @@ class Central:
         # getting image shape at this point gives a false reading
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
-        self.mandel_image.draw_mandel(mandel)
-        # self.mandel_image.draw_mandel_test(mandel)
+        self.canvas.draw_mandel(mandel)
+        # self.canvas.draw_mandel_test(mandel)
         self.q_main.setVisible(True)
         self.q_main.resize(mandel.shape.x, mandel.shape.y)
         self.q_main_layout.update()

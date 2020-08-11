@@ -17,7 +17,7 @@ from mandel_app.model import mandelbrot
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
 
 
-class MandelImage:
+class Canvas:
     def __init__(self):
         # was in learnpyqt tutorial and probably no harm but doesn't seem to do anything
         matplotlib.use('Qt5Agg')
