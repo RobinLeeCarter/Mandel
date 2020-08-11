@@ -27,7 +27,7 @@ class MandelImage:
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self.fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.ax: figure.Axes = self.fig.subplots()
-        self.mandel_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
+        self.figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
         self.ax_image: Optional[image.AxesImage] = None
 
         self.connections = {}
@@ -49,7 +49,7 @@ class MandelImage:
         transformed_iterations = 100*np.mod(np.log10(1+self.mandel.iteration), 1)
         transformed_iterations[self.mandel.iteration == self.mandel.max_iteration] = 0
 
-        self.mandel_canvas.resize(self.mandel.shape.x, self.mandel.shape.y)
+        self.figure_canvas.resize(self.mandel.shape.x, self.mandel.shape.y)
         self.ax.clear()
         # don't appear to do anything with fig.subplots_adjust set
         self.ax.set_axis_off()
@@ -125,7 +125,7 @@ class MandelImage:
             transform = transform.translate(self.mandel.offset.x, -self.mandel.offset.y)
         trans_data = transform + self.ax.transData
         self.ax_image.set_transform(trans_data)
-        self.mandel_canvas.draw()
+        self.figure_canvas.draw()
 
     def save(self, file_path: str):
         self.fig.savefig(IMAGE_PATH + file_path, format="png",
@@ -133,17 +133,17 @@ class MandelImage:
 
     #     """See: https://matplotlib.org/3.1.1/users/event_handling.html"""
     def add_connection(self, event_name: str, func: Callable[[backend_bases.Event], None]):
-        connection_id = self.mandel_canvas.mpl_connect(event_name, func)
+        connection_id = self.figure_canvas.mpl_connect(event_name, func)
         # print(connection_id, event_name)
         self.connections[event_name] = connection_id
 
     def remove_connection(self, event_name: str):
         connection_id = self.connections[event_name]
-        self.mandel_canvas.mpl_disconnect(connection_id)
+        self.figure_canvas.mpl_disconnect(connection_id)
 
     def set_cursor(self, cursor_shape: Qt.CursorShape):
         cursor = QtGui.QCursor(cursor_shape)
-        self.mandel_canvas.setCursor(cursor)
+        self.figure_canvas.setCursor(cursor)
 
     def on_resized(self, new_image_space: tuples.ImageShape):
         image_shape = self.mandel.shape

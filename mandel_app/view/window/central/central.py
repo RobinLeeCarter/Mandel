@@ -35,7 +35,7 @@ class Central:
 
         self.mandel_image = mandel_image.MandelImage()
 
-        self.q_main_layout.addWidget(self.mandel_image.mandel_canvas)
+        self.q_main_layout.addWidget(self.mandel_image.figure_canvas)
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
 
         # self.layout.setAlignment(self.mandel_image.mandel_canvas, QtCore.Qt.AlignCenter)

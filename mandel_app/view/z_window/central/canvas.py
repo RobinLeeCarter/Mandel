@@ -13,7 +13,7 @@ from mandel_app.view.z_window.central import snake
 
 
 class Canvas:
-    def __init__(self, image_space: tuples.ImageShape):
+    def __init__(self, image_shape: tuples.ImageShape):
         # was in learnpyqt tutorial and probably no harm but doesn't seem to do anything
         matplotlib.use('Qt5Agg')
 
@@ -23,19 +23,22 @@ class Canvas:
         self._figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self._fig)
         self._snake = snake.Snake(fig=self._fig, ax=self._ax)
         self._z_model: Optional[z_model.ZModel] = None
-        self._image_space = image_space
+        self._image_shape = image_shape
         self.build()
 
     def build(self):
         self._set_margins()
         self._ax.set_aspect(aspect='equal')
         self._ax.autoscale(enable=False)
-        self._ax.set_xlim(left=-2, right=2)
-        self._ax.set_ylim(bottom=-2, top=2)
+        self._set_limits()
         # self._ax.set_facecolor('darkgrey')
 
+    def _set_limits(self):
+        self._ax.set_xlim(left=-2, right=2)
+        self._ax.set_ylim(bottom=-2, top=2)
+
     def _set_margins(self):
-        width_px, height_px = self._image_space
+        width_px, height_px = self._image_shape
         left_px, right_px = 40, 20
         bottom_px, top_px = 20, 0
         left_pc = left_px / width_px
@@ -66,6 +69,7 @@ class Canvas:
     def draw_graph(self, z_model_: z_model.ZModel):
         self._z_model = z_model_
 
+        self._set_limits()  # reset limits because sometimes matplotlib gets confused
         self._draw_background()
         self._draw_legend()
         counter = self._draw_counter()
@@ -74,6 +78,7 @@ class Canvas:
 
     def clear_graph(self):
         self._snake.stop_snake()
+        self._figure_canvas.resize(self._image_shape.x, self._image_shape.y)
         self._ax.clear()
 
     def _draw_background(self):
