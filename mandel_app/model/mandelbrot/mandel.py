@@ -98,4 +98,8 @@ class Mandel:
         real = self.centre.real + x_dist * self.x_unit.real + y_dist * self.y_unit.real
         imag = self.centre.imag + x_dist * self.x_unit.imag + y_dist * self.y_unit.imag
         return tuples.ComplexPoint(real, imag)
+
+    @property
+    def centre_complex(self) -> complex:
+        return complex(real=self.centre.real, imag=self.centre.imag)
     # endregion

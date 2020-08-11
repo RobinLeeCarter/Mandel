@@ -71,6 +71,7 @@ class Controller:
         self._model.calc_new_mandel(save_history=True)
 
     def show_z_graph(self):
+        self._model.z_model.build(z0=self._model.displayed_mandel.centre_complex)
         self._view.show_z_graph(self._model.z_model)
 
     def hide_z_graph(self):
