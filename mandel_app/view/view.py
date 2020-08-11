@@ -174,6 +174,7 @@ class View:
             self._controller.hide_z_graph()
         self._view_state.is_z_mode = is_z_mode
         self._z_window.q_main_window.setVisible(is_z_mode)
+        self._update_cursor()
 
     def _on_main_active(self):
         self._window.is_active = True
@@ -328,5 +329,8 @@ class View:
 
     def _set_action(self, action: enums.ImageAction):
         self._view_state.action_in_progress = action
+        self._update_cursor()
+
+    def _update_cursor(self):
         self._window.central.mandel_image.set_cursor(self._view_state.cursor_shape)
     # endregion
