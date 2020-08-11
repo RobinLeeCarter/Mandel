@@ -12,7 +12,7 @@ from mandel_app import tuples
 @dataclass
 class Mandel:
     # region Setup
-    centre: tuples.ComplexPoint
+    centre: complex
     shape: tuples.ImageShape
     size: float = 0.0
     size_per_gap: float = 0.0
@@ -56,12 +56,12 @@ class Mandel:
         return math.radians(self.theta_degrees)
 
     @property
-    def x_unit(self) -> tuples.ComplexPoint:
-        return tuples.ComplexPoint(math.cos(self.theta_radians), math.sin(self.theta_radians))
+    def x_unit(self) -> complex:
+        return complex(math.cos(self.theta_radians), math.sin(self.theta_radians))
 
     @property
-    def y_unit(self) -> tuples.ComplexPoint:
-        return tuples.ComplexPoint(-math.sin(self.theta_radians), math.cos(self.theta_radians))
+    def y_unit(self) -> complex:
+        return complex(-math.sin(self.theta_radians), math.cos(self.theta_radians))
     # endregion
 
     # region Methods
@@ -90,14 +90,13 @@ class Mandel:
         self.offset = tuples.PixelPoint(x=0, y=0)
         self.has_border = False
 
-    def get_complex_point(self, pixel_point: tuples.PixelPoint) -> tuples.ComplexPoint:
+    def get_complex_point(self, pixel_point: tuples.PixelPoint) -> complex:
         x_scale = (float(pixel_point.x) / float(self.shape.x)) - 0.5
         y_scale = (float(pixel_point.y) / float(self.shape.y)) - 0.5
         x_dist = x_scale * self.x_size
         y_dist = y_scale * self.y_size
-        real = self.centre.real + x_dist * self.x_unit.real + y_dist * self.y_unit.real
-        imag = self.centre.imag + x_dist * self.x_unit.imag + y_dist * self.y_unit.imag
-        return tuples.ComplexPoint(real, imag)
+
+        return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
 
     @property
     def centre_complex(self) -> complex:

@@ -40,20 +40,20 @@ class Model:
         self._calc_thread_manager.start_thread()
 
     def _initial_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=tuples.ComplexPoint(-0.5, 0.0), size=2.4,
+        mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0), size=2.4,
                                    shape=image_space,
                                    expected_iterations_per_pixel=1750
                                    )
         return mandel
 
     def _test_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=tuples.ComplexPoint(0.1, 0.1), size=0.2,
+        mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1), size=0.2,
                                    shape=image_space
                                    )
         return mandel
 
     def _different_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=tuples.ComplexPoint(-0.745428, 0.113009), size=3.0E-5,
+        mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009), size=3.0E-5,
                                    shape=image_space
                                    )
         return mandel
