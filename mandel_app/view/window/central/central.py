@@ -1,12 +1,10 @@
 from typing import Optional, Callable
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import Qt
 
-import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
-from mandel_app.view.central import mandel_image
+from mandel_app.view.window.central import mandel_image
 
 
 class Central:

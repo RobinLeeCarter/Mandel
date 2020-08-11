@@ -2,22 +2,28 @@ from typing import Callable
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from mandel_app.view.z_window import actions
+from mandel_app import tuples
+from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
-    def __init__(self, parent: QtWidgets.QMainWindow):
+    def __init__(self, parent: QtWidgets.QMainWindow, image_shape: tuples.ImageShape):
         self.q_main_window = XMainWindow(parent=parent)
-        # Set some main window's properties
-        self.q_main_window.setWindowTitle('Z Tracing')
-        self.q_main_window.setGeometry(200, 200, 700, 700)
+        self.is_active = False
+        self.actions = actions.Actions(self.q_main_window)
+        self.central = central.Central(self.q_main_window, image_shape)
 
+        self.build(image_shape)
+
+    def build(self, image_shape: tuples.ImageShape):
+        self.q_main_window.setWindowTitle('Z Tracing')
+        self.q_main_window.setGeometry(200, 200, image_shape.x, image_shape.y)
         stylesheet = self.get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
+        self.q_main_window.show()
+        self.central.set_image_space()
+        self.q_main_window.setVisible(False)
 
-        self.is_active = False
-
-        self.actions = actions.Actions(self.q_main_window)
         # self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
         # self.toolbars = toolbars.Toolbars(self.q_main_window, self.actions.action_dict)
 
@@ -26,9 +32,6 @@ class ZWindow:
         # self.status_bar = status_bar.StatusBar(self.q_main_window)
 
         # self.q_main_window.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.q_main_window.show()
-        self.q_main_window.setVisible(False)
-        # self.central.set_image_space()
 
     def get_stylesheet(self):
         stylesheet = """

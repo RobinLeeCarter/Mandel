@@ -2,8 +2,7 @@ from typing import Callable
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from mandel_app.view import central
-from mandel_app.view.window import actions, menu, toolbars, status_bar
+from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
 class Window:

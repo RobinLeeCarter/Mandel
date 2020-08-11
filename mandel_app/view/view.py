@@ -8,8 +8,7 @@ from matplotlib import backend_bases
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
-from mandel_app.model import mandelbrot
-
+from mandel_app.model import mandelbrot, z_model
 from mandel_app.view import window, enums, view_state, icon, z_window
 
 
@@ -32,7 +31,8 @@ class View:
         self._application.setWindowIcon(self._dock_icon.q_icon)
         self._window = window.Window()
         self._window.central.mandel_image.set_cursor(self._view_state.cursor_shape)
-        self._z_window = z_window.ZWindow(self._window.q_main_window)
+        z_window_shape = tuples.ImageShape(700, 700)
+        self._z_window = z_window.ZWindow(self._window.q_main_window, z_window_shape)
 
         self._connect_signals()
     # endregion
@@ -40,6 +40,9 @@ class View:
     # region Controller Messages
     def get_image_space(self) -> tuples.ImageShape:
         return self._window.central.image_space
+
+    def show_z_graph(self, z_model_: z_model.ZModel):
+        self._z_window.central.show_graph(z_model_)
 
     def run(self):
         sys.exit(self._application.exec_())
