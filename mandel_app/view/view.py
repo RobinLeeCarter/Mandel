@@ -258,6 +258,7 @@ class View:
                 if view_state_.tiny_pan:
                     if view_state_.is_z_mode:
                         # change z0 for z-tracing
+                        # print(f"clicked at: {view_state_.pan_start}")
                         self._update_z0(pixel_point=view_state_.pan_start)
                     else:
                         # point zoom

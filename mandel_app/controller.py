@@ -71,12 +71,12 @@ class Controller:
         self._model.calc_new_mandel(save_history=True)
 
     def show_default_z_trace(self):
-        z0 = self._model.displayed_mandel.centre_complex
+        z0 = self._model.displayed_mandel.centre
         self.show_z_trace(z0)
 
     def update_z0_request(self, pixel_point: tuples.PixelPoint):
         self._view.hide_z_graph()
-        z0 = self._model.displayed_mandel.get_complex_point(pixel_point)
+        z0 = self._model.displayed_mandel.get_complex_from_pixel(pixel_point)
         self.show_z_trace(z0)
 
     def show_z_trace(self, z0: complex):

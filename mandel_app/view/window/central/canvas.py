@@ -30,9 +30,9 @@ class Canvas:
         self.figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
         self.ax_image: Optional[image.AxesImage] = None
         # self._z0_marker: lines.Line2D
-        # self._z0_marker = lines.Line2D([0.5], [0.5], marker='x', markersize=10, color="blue", visible=True)
-        # self.ax.add_line(self._z0_marker)
-        self._z0_marker, = self.ax.plot([1], [1], marker='x', markersize=10, color="blue")
+        self._z0: Optional[complex] = None
+        self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue", zorder=1, visible=False)
+        # self._z0_marker, = self.ax.plot([1], [1], marker='x', markersize=10, color="blue")
 
         self.connections = {}
 
@@ -62,7 +62,9 @@ class Canvas:
             transformed_iterations,
             interpolation='none', origin='lower',
             cmap='hot', vmin=0, vmax=100, alpha=1.0, zorder=0)
-        # self.ax.plot([500], [500], marker='x', markersize=30, color="blue", zorder=2)
+        self.ax.add_line(self._z0_marker)
+        if self._z0 is not None:
+            self._set_z0_marker()
 
         # self.figure_canvas.draw()
         self._transform_and_draw()
@@ -114,20 +116,30 @@ class Canvas:
             transform = transform.translate(self.mandel.offset.x, -self.mandel.offset.y)
         trans_data = transform + self.ax.transData
         self.ax_image.set_transform(trans_data)
+        self._z0_marker.set_transform(trans_data)
         # self.ax.add_line(self._z0_marker)
         # self.ax.plot([0.1], [0.1], marker='x', markersize=10, color="blue", zorder=10)
         self.figure_canvas.draw()
 
     def show_z0_marker(self, z0: complex):
-        pass
-        # self._z0_marker.set_data([z0.real], [z0.imag])
+        self._z0 = z0
+        self._set_z0_marker()
+        # # self._z0_marker.set_data([z0.real], [z0.imag])
+        # self._z0_marker.set_data([200], [200])
+        # # self._z0_marker.set_transform(self._trans_data)
         # self._z0_marker.set_visible(True)
-        # self.figure_canvas.draw()
+        self.figure_canvas.draw()
+
+    def _set_z0_marker(self):
+        pixel_point = self.mandel.get_pixel_from_complex(self._z0)
+        # print(f"draw at: {pixel_point}")
+        self._z0_marker.set_data([pixel_point.x], [pixel_point.y])
+        self._z0_marker.set_visible(True)
 
     def hide_z0_marker(self):
-        pass
-        # self._z0_marker.set_visible(False)
-        # self.figure_canvas.draw()
+        self._z0 = None
+        self._z0_marker.set_visible(False)
+        self.figure_canvas.draw()
 
     def save(self, file_path: str):
         self.fig.savefig(IMAGE_PATH + file_path, format="png",

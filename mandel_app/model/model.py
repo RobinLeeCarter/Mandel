@@ -34,7 +34,7 @@ class Model:
         )
         self.z_model = z_model.ZModel()
         # self.z_model.build(z0=complex(real=0.24091, imag=0.55),
-        self.z_model.build(z0=self.new_mandel.centre_complex,
+        self.z_model.build(z0=self.new_mandel.centre,
                            image_shape=tuples.ImageShape(x=700, y=700))
 
         self._calc_thread_manager.start_thread()
@@ -90,7 +90,7 @@ class Model:
         if pixel_point is None:
             new_centre = self.displayed_mandel.centre
         else:
-            new_centre = self.displayed_mandel.get_complex_point(pixel_point)
+            new_centre = self.displayed_mandel.get_complex_from_pixel(pixel_point)
 
         save_history: bool = (scaling < 1)
 

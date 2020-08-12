@@ -76,6 +76,7 @@ class Snake:
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
         line_collection = collections.LineCollection(segments, cmap='Blues', norm=self._norm)
         line_collection.set_array(self._snake_point_numbering)
+        # line_collection.set_joinstyle('bevel')
         self._collection = self._ax.add_collection(line_collection)
 
         # head_point
