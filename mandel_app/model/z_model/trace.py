@@ -27,6 +27,8 @@ class Trace:
 
         while cont:
             z = z**2 + self.z0
+            if z in self.z_values:
+                cont = False
             self.z_values.append(z)
             z_squared_norm = self._squared_norm(z)
             if i >= MAX_ITERATIONS or z_squared_norm > 4:
