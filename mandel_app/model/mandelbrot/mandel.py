@@ -98,7 +98,7 @@ class Mandel:
 
         return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
 
-    def get_pixel_from_complex(self, z: complex) -> tuples.PixelPoint:
+    def get_pixel_from_complex(self, z: complex) -> Optional[tuples.PixelPoint]:
         dz = z - self.centre
 
         # take dot products
@@ -108,15 +108,14 @@ class Mandel:
         x_scale = x_dist / self.x_size
         y_scale = y_dist / self.y_size
 
-        x_pixel = (x_scale + 0.5) * float(self.shape.x)
-        y_pixel = (y_scale + 0.5) * float(self.shape.y)
-
-        pixel_point = tuples.PixelPoint(
-            x=round(x_pixel),
-            y=round(y_pixel)
-        )
-
-        return pixel_point
-
-
+        if -0.5 <= x_scale <= 0.5 and -0.5 <= y_scale <= 0.5:
+            x_pixel = (x_scale + 0.5) * float(self.shape.x)
+            y_pixel = (y_scale + 0.5) * float(self.shape.y)
+            pixel_point = tuples.PixelPoint(
+                x=round(x_pixel),
+                y=round(y_pixel)
+            )
+            return pixel_point
+        else:
+            return None
     # endregion

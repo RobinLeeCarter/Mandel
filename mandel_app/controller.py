@@ -70,21 +70,23 @@ class Controller:
         # Save history in case press back don't want to lose the work
         self._model.calc_new_mandel(save_history=True)
 
-    def show_default_z_trace(self):
+    def perform_default_z_trace(self):
         z0 = self._model.displayed_mandel.centre
-        self.show_z_trace(z0)
+        self.perform_z_trace(z0)
 
     def update_z0_request(self, pixel_point: tuples.PixelPoint):
         self._view.hide_z_graph()
         z0 = self._model.displayed_mandel.get_complex_from_pixel(pixel_point)
-        self.show_z_trace(z0)
+        self.perform_z_trace(z0)
 
-    def show_z_trace(self, z0: complex):
+    def perform_z_trace(self, z0: complex):
         self._view.show_z0_on_mandel(z0)
         self._model.z_model.build(z0=z0)
+        self._view.show_trace_on_mandel(self._model.z_model.trace)
         self._view.show_z_graph(self._model.z_model)
 
-    def hide_z_graph(self):
+    def hide_z_trace(self):
         self._view.hide_z0_on_mandel()
+        self._view.hide_trace_on_mandel()
         self._view.hide_z_graph()
     # endregion

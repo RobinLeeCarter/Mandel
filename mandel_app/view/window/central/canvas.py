@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 
 import numpy as np
 
@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt
 # import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
+from mandel_app.model.z_model import trace
 
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
@@ -31,8 +32,11 @@ class Canvas:
         self.ax_image: Optional[image.AxesImage] = None
         # self._z0_marker: lines.Line2D
         self._z0: Optional[complex] = None
-        self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue", zorder=1, visible=False)
-        # self._z0_marker, = self.ax.plot([1], [1], marker='x', markersize=10, color="blue")
+        self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
+                                       zorder=1, visible=False)
+        self._trace: Optional[trace.Trace] = None
+        self._trace_marker = lines.Line2D([], [], marker='x', markersize=10, color="blue", linestyle='',
+                                          zorder=1, visible=False)
 
         self.connections = {}
 
@@ -63,8 +67,11 @@ class Canvas:
             interpolation='none', origin='lower',
             cmap='hot', vmin=0, vmax=100, alpha=1.0, zorder=0)
         self.ax.add_line(self._z0_marker)
+        self.ax.add_line(self._trace_marker)
         if self._z0 is not None:
             self._set_z0_marker()
+        if self._trace is not None:
+            self._set_trace_marker()
 
         # self.figure_canvas.draw()
         self._transform_and_draw()
@@ -117,6 +124,7 @@ class Canvas:
         trans_data = transform + self.ax.transData
         self.ax_image.set_transform(trans_data)
         self._z0_marker.set_transform(trans_data)
+        self._trace_marker.set_transform(trans_data)
         # self.ax.add_line(self._z0_marker)
         # self.ax.plot([0.1], [0.1], marker='x', markersize=10, color="blue", zorder=10)
         self.figure_canvas.draw()
@@ -124,21 +132,49 @@ class Canvas:
     def show_z0_marker(self, z0: complex):
         self._z0 = z0
         self._set_z0_marker()
-        # # self._z0_marker.set_data([z0.real], [z0.imag])
-        # self._z0_marker.set_data([200], [200])
-        # # self._z0_marker.set_transform(self._trans_data)
-        # self._z0_marker.set_visible(True)
         self.figure_canvas.draw()
 
     def _set_z0_marker(self):
-        pixel_point = self.mandel.get_pixel_from_complex(self._z0)
-        # print(f"draw at: {pixel_point}")
-        self._z0_marker.set_data([pixel_point.x], [pixel_point.y])
+        pixel_x: List[int] = []
+        pixel_y: List[int] = []
+        pixel_point: Optional[tuples.PixelPoint] = self.mandel.get_pixel_from_complex(self._z0)
+        if pixel_point is not None:
+            pixel_x.append(pixel_point.x)
+            pixel_y.append(pixel_point.y)
+            # self._z0_marker.set_data([pixel_point.x], [pixel_point.y])
+        self._z0_marker.set_data(pixel_x, pixel_y)
         self._z0_marker.set_visible(True)
 
     def hide_z0_marker(self):
         self._z0 = None
         self._z0_marker.set_visible(False)
+        self.figure_canvas.draw()
+
+    def show_trace_marker(self, trace_: trace.Trace):
+        self._trace = trace_
+        self._set_trace_marker()
+        self.figure_canvas.draw()
+
+    def _set_trace_marker(self):
+        pixel_points: List[tuples.PixelPoint] = []
+
+        for z in self._trace.z_values:
+            if z != self._z0:
+                pixel_point: Optional[tuples.PixelPoint] = self.mandel.get_pixel_from_complex(z)
+                if pixel_point is not None:
+                    if pixel_point not in pixel_points:
+                        pixel_points.append(pixel_point)
+
+        pixel_x = [pixel_point.x for pixel_point in pixel_points]
+        pixel_y = [pixel_point.y for pixel_point in pixel_points]
+
+        # print(f"draw at: {pixel_point}")
+        self._trace_marker.set_data(pixel_x, pixel_y)
+        self._trace_marker.set_visible(True)
+
+    def hide_trace_marker(self):
+        self._trace = None
+        self._trace_marker.set_visible(False)
         self.figure_canvas.draw()
 
     def save(self, file_path: str):
