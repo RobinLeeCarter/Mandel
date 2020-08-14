@@ -11,7 +11,10 @@ class Compute:
     def __init__(self):  # high_precision=True)
         self._mandel_kernel: cp.RawKernel = self._load_mandel_kernel()
         # cupy mandel variables
-        self.block_size: int = 32
+        # experimentally this gives the best results
+        # self.block_size: int = 32
+        # according to cuda occupancy calculator this should give 100% occupancy vs 50% above
+        self.block_size: int = 64
 
     def _load_mandel_kernel(self) -> cp.RawKernel:
         file_name = r"mandel_app/model/mandelbrot/compute/compute_pixel.cu"

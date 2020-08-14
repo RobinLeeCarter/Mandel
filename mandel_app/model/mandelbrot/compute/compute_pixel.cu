@@ -4,7 +4,7 @@ void mandel_pixel(const complex<double>* c,
                   complex<double>* z,
                   int* iterations,
                   const int start_iter,
-                  const int max_iter
+                  const int end_iter
                  )
 {
     int tid = blockDim.x * blockIdx.x + threadIdx.x;
@@ -28,7 +28,7 @@ void mandel_pixel(const complex<double>* c,
         y = z[tid].imag();
     }
 
-    if (k == max_iter)
+    if (k == end_iter)
     {
         cont = false;
     }
@@ -46,7 +46,7 @@ void mandel_pixel(const complex<double>* c,
         y = 2*xy + cy;
         k++;
         
-        if (k == max_iter)
+        if (k == end_iter)
         {
             cont = false;
             z[tid] = complex<double>(x, y);
