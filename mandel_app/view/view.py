@@ -9,7 +9,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.model.z_model import trace
 from mandel_app.view import window, enums, view_state, icon, z_window
 
 
@@ -54,12 +53,6 @@ class View:
 
     def hide_z0_on_mandel(self):
         self._window.central.canvas.hide_z0_marker()
-
-    def show_trace_on_mandel(self, trace_: trace.Trace):
-        self._window.central.canvas.show_trace_marker(trace_)
-
-    def hide_trace_on_mandel(self):
-        self._window.central.canvas.hide_trace_marker()
 
     def run(self):
         sys.exit(self._application.exec_())
