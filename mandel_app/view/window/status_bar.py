@@ -82,4 +82,5 @@ class StatusBar:
             message = f"Completed in {total_time:.4f} seconds"
         else:
             message = "Complete..."
-        self.q_status_bar.showMessage(message)
+        self.q_left_label.setText(message)
+        # self.q_status_bar.showMessage(message)

@@ -78,8 +78,7 @@ class Central:
             on_resize(resize_event)
 
         # noinspection PyUnresolvedReferences
-        # TODO: Restore
-        # self.q_scroll_area.resizeEventSignal.connect(slot)
+        self.q_scroll_area.resizeEventSignal.connect(slot)
 
 
 # This disables the scroll-wheel since we are using it for zooming
