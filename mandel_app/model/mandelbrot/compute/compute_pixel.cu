@@ -15,7 +15,8 @@ void mandel_pixel(const complex<double>* c,
     double y;
     double xx;
     double yy;
-    double xy;
+    /* double xy; */
+    double x2;
     bool cont = true;
     if (start_iter == 0)
     {
@@ -36,14 +37,18 @@ void mandel_pixel(const complex<double>* c,
     {
         xx = x * x;
         yy = y * y;
-        xy = x * y;
+        /* xy = x * y; */
         cont = (xx + yy < 4.0);
     }
 
     while (cont)
     {
+        /* x2 = x + x; */
+        x2 = x * 2.0;
         x = xx - yy + cx;
-        y = 2*xy + cy;
+        /* y = 2*x*y + cy; */
+        y = __fma_rn(x2, y, cy);
+
         k++;
         
         if (k == end_iter)
@@ -55,7 +60,7 @@ void mandel_pixel(const complex<double>* c,
         {
             xx = x * x;
             yy = y * y;
-            xy = x * y;
+            /* xy = x * y; */
             cont = (xx + yy < 4.0);
         }
     }
