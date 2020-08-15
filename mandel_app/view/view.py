@@ -69,7 +69,7 @@ class View:
         self._window.central.show_mandel(mandel)
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
-            self._window.status_bar.complete(mandel.time_taken)
+            self._window.status_bar.display_complete_time(mandel.time_taken)
         self._window.status_bar.q_progress_bar.setVisible(False)
         self._view_state.reset()
         # let other events fire such as mousewheel without acting on them for the new mandel
@@ -80,9 +80,7 @@ class View:
         # self._window.central.canvas.save("mandel_icon.png")
 
     def display_progress(self, progress: float):
-        progress_int_percentage = round(100*progress)
-        self._window.status_bar.q_progress_bar.setValue(progress_int_percentage)
-        self._window.status_bar.q_progress_bar.setVisible(True)
+        self._window.status_bar.display_progress(progress)
 
     def stop_success(self):
         self.show_mandel(self._window.central.canvas.mandel)

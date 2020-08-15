@@ -17,8 +17,10 @@ class StatusBar:
 
         # "normal" label added to status_bar
         self.q_left_label = self.make_left_label()
+
         self.q_center_label = self.make_center_label()
-        # self.q_right_label = self.make_right_label()
+
+        self.q_right_label = self.make_right_label()
         self.q_progress_bar = self.make_progress_bar()
         self.q_right_widget = self.make_right_widget()
 
@@ -47,24 +49,26 @@ class StatusBar:
         q_center_label.setAlignment(QtCore.Qt.AlignCenter)
         return q_center_label
 
-    # def make_right_label(self) -> QtWidgets.QLabel:
-    #     q_right_label = QtWidgets.QLabel("Right text")
-    #     # q_right_label.setMaximumWidth(200)
-    #     q_right_label.setAlignment(QtCore.Qt.AlignCenter)
-    #     return q_right_label
+    def make_right_label(self) -> QtWidgets.QLabel:
+        q_right_label = QtWidgets.QLabel("")
+        # q_right_label.resize(1000, q_right_label.height())
+        q_right_label.setMinimumWidth(200)
+        q_right_label.setAlignment(QtCore.Qt.AlignCenter)
+        q_right_label.setVisible(False)
+        return q_right_label
 
     def make_right_widget(self) -> QtWidgets.QWidget:
-        q_right_widget = QtWidgets.QWidget()
-        q_right_layout = QtWidgets.QHBoxLayout()
-        q_right_widget.setLayout(q_right_layout)
-        q_right_layout.setSpacing(0)
-        q_right_layout.setContentsMargins(0, 0, 0, 0)
-        q_right_spacer = QtWidgets.QLabel("")
-        q_right_layout.addWidget(q_right_spacer)
-        q_right_layout.addWidget(self.q_progress_bar)
+        q_widget = QtWidgets.QWidget()
+        q_layout = QtWidgets.QHBoxLayout()
+        q_widget.setLayout(q_layout)
+        q_layout.setSpacing(0)
+        q_layout.setContentsMargins(0, 0, 0, 0)
+        q_layout.addStretch()   # stretch will fill any empty space
+        q_layout.addWidget(self.q_right_label)
+        q_layout.addWidget(self.q_progress_bar)
 
         # return q_right_label
-        return q_right_widget
+        return q_widget
 
     def make_progress_bar(self) -> QtWidgets.QProgressBar:
         q_progress_bar = QtWidgets.QProgressBar()
@@ -74,13 +78,22 @@ class StatusBar:
         q_progress_bar.setMaximumWidth(200)
         q_progress_bar.setTextVisible(True)
         q_progress_bar.setFormat("Calculating...")
-        # q_progress_bar.setAlignment(QtCore.Qt.AlignRight)
+        q_progress_bar.setVisible(False)
         return q_progress_bar
 
-    def complete(self, total_time):
+    def display_complete_time(self, total_time):
         if total_time != 0.0:
-            message = f"Completed in {total_time:.4f} seconds"
+            message = f"Completed in {total_time:.1f} seconds"
         else:
             message = "Complete..."
-        self.q_left_label.setText(message)
-        # self.q_status_bar.showMessage(message)
+        self.q_right_label.setText(message)
+        self.q_progress_bar.setVisible(False)
+        self.q_right_label.setVisible(True)
+
+    def display_progress(self, progress: float):
+        progress_int_percentage = round(100*progress)
+        self.q_progress_bar.setValue(progress_int_percentage)
+        self.q_right_label.setVisible(False)
+        self.q_progress_bar.setVisible(True)
+
+

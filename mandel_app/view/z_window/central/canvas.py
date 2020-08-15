@@ -109,7 +109,7 @@ class Canvas:
         self._ax.add_patch(outer_circle)
 
         z0 = self._z_model.z0
-        self._ax.plot([z0.real], [z0.imag], marker='x', markersize=10, color="blue", zorder=2)
+        self._ax.plot([z0.real], [z0.imag], marker='x', markersize=30, color="blue", zorder=2)
 
         s1, s2 = self._z_model.solutions
         # self._ax.plot([s1.real], [s1.imag], marker='x', markersize=20, color="red", zorder=5)
