@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 
 class StatusBar:
@@ -8,17 +8,33 @@ class StatusBar:
         q_main_window.setStatusBar(self.q_status_bar)
 
         # "normal" label added to status_bar
-        self.q_hello_label = QtWidgets.QLabel("Hi, I'm a status bar")
-        self.q_status_bar.addWidget(self.q_hello_label)
+        self.q_left_label = self.make_left_label()
+        # self.q_center_label = self.make_center_label()
+        self.q_progress_bar = self.make_progress_bar()
 
-        self.q_progress_bar = QtWidgets.QProgressBar(self.q_status_bar)
-        self.q_progress_bar.setRange(0, 100)
-        # self.q_progress_bar.setGeometry(30, 40, 200, 25)
-        self.q_progress_bar.setValue(50)
-        self.q_progress_bar.setMaximumHeight(15)
-        self.q_progress_bar.setMaximumWidth(200)
-        self.q_progress_bar.setVisible(False)
+        self.q_status_bar.addWidget(self.q_left_label)
         self.q_status_bar.addPermanentWidget(self.q_progress_bar)
+        # self.q_status_bar.addWidget(self.q_center_label, 1)
+        # self.q_status_bar.addPermanentWidget(self.q_center_label)
+
+    def make_left_label(self) -> QtWidgets.QLabel:
+        q_left_label = QtWidgets.QLabel("Left text")
+        q_left_label.setAlignment(QtCore.Qt.AlignLeft)
+        return q_left_label
+
+    # def make_center_label(self) -> QtWidgets.QLabel:
+    #     q_center_label = QtWidgets.QLabel("Center text")
+    #     q_center_label.setAlignment(QtCore.Qt.AlignCenter)
+    #     return q_center_label
+
+    def make_progress_bar(self) -> QtWidgets.QProgressBar:
+        q_progress_bar = QtWidgets.QProgressBar()
+        q_progress_bar.setRange(0, 100)
+        q_progress_bar.setMaximumHeight(15)
+        q_progress_bar.setMaximumWidth(200)
+        q_progress_bar.setTextVisible(True)
+        q_progress_bar.setFormat("Calculating...")
+        return q_progress_bar
 
     def complete(self, total_time):
         if total_time != 0.0:
