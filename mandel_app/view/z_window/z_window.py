@@ -18,6 +18,7 @@ class ZWindow:
     def build(self, image_shape: tuples.ImageShape):
         self.q_main_window.setWindowTitle('Z Tracing')
         self.q_main_window.setGeometry(200, 200, image_shape.x, image_shape.y)
+        self.q_main_window.setMinimumSize(200, 200)
         stylesheet = self.get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
         self.q_main_window.show()

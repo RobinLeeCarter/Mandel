@@ -12,11 +12,11 @@ class Window:
         # Set some main window's properties
         self.q_main_window.setWindowTitle('Mandel App')
         self.q_main_window.setGeometry(50, 50, 1500, 1000)
+        self.q_main_window.setMinimumSize(200, 200)
         self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         stylesheet = self.get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
-        self.q_main_window.setMinimumSize(200, 200)
 
         self.actions = actions.Actions(self.q_main_window)
         self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
