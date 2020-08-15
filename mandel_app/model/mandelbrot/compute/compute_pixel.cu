@@ -61,7 +61,10 @@ void mandel_pixel(const complex<double>* c,
             xx = x * x;
             yy = y * y;
             /* xy = x * y; */
+            /*if (xx > 2.0 || yy > 2.0)    possible further speed up
+            {*/
             cont = (xx + yy < 4.0);
+            /*}*/
         }
     }
     iterations[tid] = k;
