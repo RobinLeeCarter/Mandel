@@ -37,7 +37,7 @@ class Central:
         self.q_main_layout.setContentsMargins(0, 0, 0, 0)
 
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
-        # self.layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
+        # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
         # self.q_scroll_area.setAlignment(Qt.AlignBottom)
         # self.q_scroll_area.setWidget(self.canvas.mandel_canvas)
         # q_main_window.setCentralWidget(self.q_main)

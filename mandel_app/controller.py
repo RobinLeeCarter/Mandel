@@ -21,7 +21,8 @@ class Controller:
         image_space: tuples.ImageShape = self._view.get_image_space()
         self._model.build(image_space)
         # self._model.start_test_mandel()
-        self._model.calc_new_mandel(save_history=True)
+        # TODO: Restore
+        # self._model.calc_new_mandel(save_history=True)
         self._view.run()
     # endregion
 

@@ -27,7 +27,7 @@ class Central:
         # self.q_main_layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.BottomToTop, self.q_main)
         self.q_main_layout = QtWidgets.QVBoxLayout(self.q_main)
 
-        # self.layout = QtWidgets.QStackedLayout(self.main)
+        # self.q_layout = QtWidgets.QStackedLayout(self.main)
         self.q_main_layout.setSpacing(0)
         self.q_main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -38,7 +38,7 @@ class Central:
         self.q_main_layout.addWidget(self.canvas.figure_canvas)
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
 
-        # self.layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
+        # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
 
         self.q_scroll_area.setWidget(self.q_main)
 
@@ -78,7 +78,8 @@ class Central:
             on_resize(resize_event)
 
         # noinspection PyUnresolvedReferences
-        self.q_scroll_area.resizeEventSignal.connect(slot)
+        # TODO: Restore
+        # self.q_scroll_area.resizeEventSignal.connect(slot)
 
 
 # This disables the scroll-wheel since we are using it for zooming
