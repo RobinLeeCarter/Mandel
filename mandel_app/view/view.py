@@ -70,7 +70,7 @@ class View:
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
             self._window.status_bar.display_complete_time(mandel.time_taken)
-        self._window.status_bar.q_progress_bar.setVisible(False)
+        # self._window.status_bar.q_progress_bar.setVisible(False)
         self._view_state.reset()
         # let other events fire such as mousewheel without acting on them for the new mandel
         # since this wouldn't be what the user wanted

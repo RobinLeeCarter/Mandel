@@ -32,7 +32,7 @@ class StatusBar:
         self.q_layout.addWidget(self.q_left_label, stretch=1)
         self.q_layout.addWidget(self.q_center_label, stretch=1)
         self.q_layout.addWidget(self.q_right_widget, stretch=1)
-        # self.q_layout.addWidget(self.q_progress_bar, stretch=1000)
+        # self.q_layout.addWidget(self.q_progress_bar, stretch=1)
 
         # self.q_status_bar.addWidget(self.q_left_label)
         # self.q_status_bar.addPermanentWidget(self.q_progress_bar)
@@ -52,8 +52,8 @@ class StatusBar:
     def make_right_label(self) -> QtWidgets.QLabel:
         q_right_label = QtWidgets.QLabel("")
         # q_right_label.resize(1000, q_right_label.height())
-        q_right_label.setMinimumWidth(200)
-        q_right_label.setAlignment(QtCore.Qt.AlignCenter)
+        # q_right_label.setMinimumWidth(200)
+        # q_right_label.setAlignment(QtCore.Qt.AlignCenter)
         q_right_label.setVisible(False)
         return q_right_label
 
@@ -82,6 +82,7 @@ class StatusBar:
         return q_progress_bar
 
     def display_complete_time(self, total_time):
+        # pass
         if total_time != 0.0:
             message = f"Completed in {total_time:.1f} seconds"
         else:
@@ -91,6 +92,7 @@ class StatusBar:
         self.q_right_label.setVisible(True)
 
     def display_progress(self, progress: float):
+        # pass
         progress_int_percentage = round(100*progress)
         self.q_progress_bar.setValue(progress_int_percentage)
         self.q_right_label.setVisible(False)

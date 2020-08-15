@@ -16,6 +16,7 @@ class Window:
 
         stylesheet = self.get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
+        self.q_main_window.setMinimumSize(200, 200)
 
         self.actions = actions.Actions(self.q_main_window)
         self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
