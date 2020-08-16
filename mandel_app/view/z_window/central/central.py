@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, Callable
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from mandel_app import tuples
 from mandel_app.model import z_model
@@ -10,7 +10,7 @@ from mandel_app.view.z_window.central import canvas
 class Central:
     def __init__(self, q_main_window: QtWidgets.QMainWindow, image_shape: tuples.ImageShape):
         # components of central area
-        self.q_scroll_area = QtWidgets.QScrollArea(q_main_window)
+        self.q_scroll_area = XScrollArea(q_main_window)
         self.q_main = QtWidgets.QWidget()
         self.q_main_layout = QtWidgets.QVBoxLayout(self.q_main)
         self.canvas = canvas.Canvas(image_shape)
@@ -22,7 +22,7 @@ class Central:
         q_main_window.setCentralWidget(self.q_scroll_area)
         self.q_scroll_area.setWidget(self.q_main)
         self.q_main.setLayout(self.q_main_layout)
-        self.q_main_layout.addWidget(self.canvas.figure_canvas)
+        self.q_main_layout.addWidget(self.canvas.figure_canvas, 1)
 
         # set properties of components
         self.q_scroll_area.setAlignment(QtCore.Qt.AlignCenter)
@@ -68,3 +68,26 @@ class Central:
         # self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
         return tuples.ImageShape(x, y)
+
+    def set_on_resize(self, on_resize: Callable[[QtGui.QResizeEvent], None]):
+        @QtCore.pyqtSlot()
+        def slot(resize_event: QtGui.QResizeEvent):
+            on_resize(resize_event)
+
+        # noinspection PyUnresolvedReferences
+        self.q_scroll_area.resizeEventSignal.connect(slot)
+
+
+# This disables the scroll-wheel since we are using it for zooming
+# plus the scrollbars are disabled
+# removing the QScrollArea altogether messed up the image rendering and it was so hard to get right the first time
+class XScrollArea(QtWidgets.QScrollArea):
+    resizeEventSignal = QtCore.pyqtSignal(QtGui.QResizeEvent)
+
+    def wheelEvent(self, wheel_event: QtGui.QWheelEvent) -> None:
+        wheel_event.ignore()
+
+    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
+        # noinspection PyUnresolvedReferences
+        self.resizeEventSignal.emit(resize_event)
+        super().resizeEvent(resize_event)

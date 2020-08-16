@@ -34,6 +34,7 @@ class Snake:
         self._counter: Optional[text.Text] = None
 
     def draw_snake(self, trace_: trace.Trace, counter: text.Text):
+        self.stop_snake()
         self._trace = trace_
         self._point_count = len(self._trace.z_values)
         self._frames = self._point_count + (self._snake_length - 1)
@@ -100,8 +101,15 @@ class Snake:
 
     def stop_snake(self):
         if self._ani is not None:
+
+            if self._ani.event_source is not None:
+                # from matplotlib co-lead:
+                # https://stackoverflow.com/questions/32280140/cannot-delete-matplotlib-animation-funcanimation-objects
+                # noinspection PyProtectedMember
+                self._ani._stop()
+
             # from: https://stackoverflow.com/questions/48564181/how-to-stop-funcanimation-by-func-in-matplotlib
             # https://matplotlib.org/3.3.0/api/_as_gen/matplotlib.animation.Animation.html
             # https://gist.github.com/Seanny123/2c7efd90bebbe9c7bea6a1bd30a2133c
-            self._ani.event_source.stop()
-            self._ani = None
+            # self._ani.event_source.stop()
+            # self._ani = None

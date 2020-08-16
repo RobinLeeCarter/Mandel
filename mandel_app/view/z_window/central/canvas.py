@@ -33,10 +33,6 @@ class Canvas:
         self._set_limits()
         # self._ax.set_facecolor('darkgrey')
 
-    def _set_limits(self):
-        self._ax.set_xlim(left=-2, right=2)
-        self._ax.set_ylim(bottom=-2, top=2)
-
     def _set_margins(self):
         width_px, height_px = self._image_shape
         left_px, right_px = 40, 20
@@ -55,6 +51,10 @@ class Canvas:
 
         # self._fig.tight_layout(pad=0.0, h_pad=0.0, w_pad=0.0)
 
+    def _set_limits(self):
+        self._ax.set_xlim(left=-2, right=2)
+        self._ax.set_ylim(bottom=-2, top=2)
+
     @property
     def figure_canvas(self) -> backend_qt5agg.FigureCanvasQTAgg:
         return self._figure_canvas
@@ -69,6 +69,7 @@ class Canvas:
     def draw_graph(self, z_model_: z_model.ZModel):
         self._z_model = z_model_
 
+        self._set_margins()
         self._set_limits()  # reset limits because sometimes matplotlib gets confused
         self._draw_background()
         self._draw_legend()
@@ -145,3 +146,9 @@ class Canvas:
                                            s=text_str, fontsize=10, verticalalignment='top',
                                            bbox=patch_properties)
         return counter
+
+    def on_resized(self, new_image_shape: tuples.ImageShape) -> tuples.ImageShape:
+        self.clear_graph()
+        min_length = min(new_image_shape.x, new_image_shape.y)
+        self._image_shape = tuples.PixelPoint(x=min_length, y=min_length)
+        return self._image_shape

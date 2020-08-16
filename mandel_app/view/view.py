@@ -101,8 +101,8 @@ class View:
         self._window.set_on_active(self._on_main_active)
         self._z_window.set_on_active(self._on_z_active)
         self._z_window.set_on_close(self._on_z_close)
-        # self._window.set_focus_in_function(self.on_focus_in)
         self._window.central.set_on_resize(self._on_resized)
+        self._z_window.central.set_on_resize(self._on_z_resized)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -205,6 +205,12 @@ class View:
 
         # have to zoom, ready or not
         self._zoom(scaling=1.0)
+
+    def _on_z_resized(self, resize_event: QtGui.QResizeEvent):
+        z_central = self._z_window.central
+        z_central.set_image_space()
+        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
+        self._controller.redraw_z_trace(image_shape)
     # endregion
 
     # region Canvas Slots
