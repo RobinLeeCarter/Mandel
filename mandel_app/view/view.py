@@ -67,10 +67,10 @@ class View:
         # import time
         # time.sleep(5)
         self._window.central.show_mandel(mandel)
-        self._window.status_bar.display_mandel_statistics(mandel)
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
             self._window.status_bar.display_time_taken(mandel.time_taken)
+            self._window.status_bar.display_mandel_statistics(mandel)
         # self._window.status_bar.q_progress_bar.setVisible(False)
         self._view_state.reset()
         # let other events fire such as mousewheel without acting on them for the new mandel
@@ -237,8 +237,11 @@ class View:
     def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
-
-        if view_state_.action_in_progress == enums.ImageAction.PANNING:
+        if view_state_.is_waiting:
+            image_point: tuples.PixelPoint = canvas.get_image_point(event)
+            z: complex = canvas.mandel.get_complex_from_pixel(image_point)
+            self._window.status_bar.display_point(z)
+        elif view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = canvas.get_image_point(event)
             canvas.pan_mandel(pan=view_state_.total_pan)
             self._set_action(enums.ImageAction.PANNING)

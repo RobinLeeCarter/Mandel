@@ -44,6 +44,9 @@ class StatusBar:
         # self.q_status_bar.addWidget(self.q_center_label, 1)
         # self.q_status_bar.addPermanentWidget(self.q_center_label)
 
+        self.zoom_digits: int = 0
+        self.dp: int = 2
+
     def _build_left_label(self) -> QtWidgets.QLabel:
         q_left_label = QtWidgets.QLabel("")
         q_left_label.setAlignment(QtCore.Qt.AlignLeft)
@@ -87,11 +90,18 @@ class StatusBar:
         return q_progress_bar
     # endregion
 
-    # region display requests
+    # region display requests from View
+    def display_progress(self, progress: float):
+        # pass
+        progress_int_percentage = round(100*progress)
+        self.q_progress_bar.setValue(progress_int_percentage)
+        self.q_right_label.setVisible(False)
+        self.q_progress_bar.setVisible(True)
+
     def display_mandel_statistics(self, mandel_: mandel.Mandel):
-        zoom_digits: int = max(0, round(-math.log10(mandel_.x_size)))
-        dp = zoom_digits + 2
-        message = f"center: {mandel_.centre.real:.{dp}f} + {mandel_.centre.imag:.{dp}f}i"
+        self.zoom_digits: int = max(0, round(-math.log10(mandel_.x_size)))
+        self.dp = self.zoom_digits + 2
+        message = f"center: {mandel_.centre.real:.{self.dp}f} + {mandel_.centre.imag:.{self.dp}f}i"
         message += f"  size: {mandel_.x_size:.3g}"
         message += f"  rotation: {mandel_.theta_degrees}" + u"\N{DEGREE SIGN}"
         self.q_center_label.setText(message)
@@ -99,19 +109,16 @@ class StatusBar:
     def display_time_taken(self, total_time):
         # pass
         if total_time != 0.0:
-            message = f"Completed in {total_time:.1f} seconds"
+            message = f"Completed in {total_time:.2f} seconds"
         else:
             message = "Complete..."
         self.q_right_label.setText(message)
         self.q_progress_bar.setVisible(False)
         self.q_right_label.setVisible(True)
 
-    def display_progress(self, progress: float):
-        # pass
-        progress_int_percentage = round(100*progress)
-        self.q_progress_bar.setValue(progress_int_percentage)
-        self.q_right_label.setVisible(False)
-        self.q_progress_bar.setVisible(True)
+    def display_point(self, z: complex):
+        message = f"point: {z.real:.{self.dp}f} + {z.imag:.{self.dp}f}i"
+        self.q_left_label.setText(message)
     # endregion
 
 
