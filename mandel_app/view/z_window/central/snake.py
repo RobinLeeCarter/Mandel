@@ -107,6 +107,7 @@ class Snake:
                 # https://stackoverflow.com/questions/32280140/cannot-delete-matplotlib-animation-funcanimation-objects
                 # noinspection PyProtectedMember
                 self._ani._stop()
+                self._ani = None
 
             # from: https://stackoverflow.com/questions/48564181/how-to-stop-funcanimation-by-func-in-matplotlib
             # https://matplotlib.org/3.3.0/api/_as_gen/matplotlib.animation.Animation.html

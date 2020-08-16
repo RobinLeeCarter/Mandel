@@ -28,15 +28,15 @@ class Canvas:
 
     def build(self):
         self._set_margins()
-        self._ax.set_aspect(aspect='equal')
-        self._ax.autoscale(enable=False)
+        # self._ax.set_aspect(aspect='equal')
+        # self._ax.autoscale(enable=False)
         self._set_limits()
         # self._ax.set_facecolor('darkgrey')
 
     def _set_margins(self):
         width_px, height_px = self._image_shape
-        left_px, right_px = 40, 20
-        bottom_px, top_px = 20, 0
+        left_px, right_px = 60, 10
+        bottom_px, top_px = 40, 10
         left_pc = left_px / width_px
         right_pc = 1.0 - (right_px / width_px)
         bottom_pc = bottom_px / height_px
@@ -53,7 +53,9 @@ class Canvas:
 
     def _set_limits(self):
         self._ax.set_xlim(left=-2, right=2)
+        self._ax.set_xlabel("real")
         self._ax.set_ylim(bottom=-2, top=2)
+        self._ax.set_ylabel("imaginary")
 
     @property
     def figure_canvas(self) -> backend_qt5agg.FigureCanvasQTAgg:
@@ -70,6 +72,8 @@ class Canvas:
         self._z_model = z_model_
 
         self._set_margins()
+        # self._ax.set_aspect(aspect='equal')
+        # self._ax.autoscale(enable=False)
         self._set_limits()  # reset limits because sometimes matplotlib gets confused
         self._draw_background()
         self._draw_legend()
