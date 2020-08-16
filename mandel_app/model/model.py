@@ -26,7 +26,7 @@ class Model:
 
     def build(self, image_space: tuples.ImageShape):
         # self.new_mandel = self._initial_mandel(image_space)
-        self.new_mandel = self._slow_mandel(image_space)
+        self.new_mandel = self._initial_mandel(image_space)
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
             on_progress_update=self._on_progress_update,

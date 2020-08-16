@@ -88,7 +88,6 @@ class StatusBar:
     # region display requests
     def display_mandel_statistics(self, mandel_: mandel.Mandel):
         message = f"center: {mandel_.centre} size: {mandel_.x_size} rotation: {mandel_.theta_degrees}"
-        # print(message)
         self.q_center_label.setText(message)
 
     def display_time_taken(self, total_time):
