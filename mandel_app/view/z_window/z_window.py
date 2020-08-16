@@ -1,3 +1,4 @@
+import copy
 from typing import Callable, Optional
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -78,12 +79,12 @@ class ZWindow:
             on_resize(resize_event)
 
         # noinspection PyUnresolvedReferences
-        self.q_main_window.resizeEventSignal.connect(slot)
+        self.q_main_window.resizeSignal.connect(slot)
 
 
 class XMainWindow(QtWidgets.QMainWindow):
     RESIZE_TIMEOUT_MS: int = 100
-    resizeEventSignal = QtCore.pyqtSignal(QtGui.QResizeEvent)
+    resizeSignal = QtCore.pyqtSignal(QtGui.QResizeEvent)
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
     closeSignal = QtCore.pyqtSignal()
@@ -94,6 +95,7 @@ class XMainWindow(QtWidgets.QMainWindow):
         self.resize_q_timer.setSingleShot(True)
         self.resize_current_event: Optional[QtGui.QResizeEvent] = None
         self.resize_enabled: bool = False   # start (has funny results regarding alpha)
+        self.new_length: int = 0
         self.resize_connect_timer()
 
     def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
@@ -113,8 +115,9 @@ class XMainWindow(QtWidgets.QMainWindow):
 
     # region delayed resize event handler
     def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
-        # if resize_event.oldSize() != QtCore.QSize(-1, -1):  # start (has funny results regarding alpha)
         if self.resize_enabled:
+            new_size = resize_event.size()
+            self.new_length = min(new_size.height(), new_size.width())
             self.resize_current_event = resize_event
             self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
         self.resize_enabled = True
@@ -123,12 +126,11 @@ class XMainWindow(QtWidgets.QMainWindow):
     def resize_connect_timer(self):
         @QtCore.pyqtSlot()
         def slot():
-            # self.resize_enabled = False
-            # new_size = self.resize_current_event.size()
-            # new_length = min(new_size.height(), new_size.width())
-
+            self.resize_enabled = False
+            print(self.new_length)
+            self.resize(self.new_length, self.new_length)
             # noinspection PyUnresolvedReferences
-            self.resizeEventSignal.emit(self.resize_current_event)
+            self.resizeSignal.emit(self.resize_current_event)
 
         self.resize_q_timer.timeout.connect(slot)
     # endregion
