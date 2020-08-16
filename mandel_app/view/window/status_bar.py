@@ -1,3 +1,5 @@
+import math
+
 from PyQt5 import QtWidgets, QtCore
 
 from mandel_app.model.mandelbrot import mandel
@@ -87,13 +89,17 @@ class StatusBar:
 
     # region display requests
     def display_mandel_statistics(self, mandel_: mandel.Mandel):
-        message = f"center: {mandel_.centre} size: {mandel_.x_size} rotation: {mandel_.theta_degrees}"
+        zoom_digits: int = max(0, round(-math.log10(mandel_.x_size)))
+        dp = zoom_digits + 2
+        message = f"center: {mandel_.centre.real:.{dp}f} + {mandel_.centre.imag:.{dp}f}i"
+        message += f"  size: {mandel_.x_size:.3g}"
+        message += f"  rotation: {mandel_.theta_degrees}" + u"\N{DEGREE SIGN}"
         self.q_center_label.setText(message)
 
     def display_time_taken(self, total_time):
         # pass
         if total_time != 0.0:
-            message = f"Completed in {total_time:.2f} seconds"
+            message = f"Completed in {total_time:.1f} seconds"
         else:
             message = "Complete..."
         self.q_right_label.setText(message)

@@ -54,7 +54,8 @@ class Controller:
         self._model.pan_and_calc(pan)
 
     def rotate_request(self, theta: int):
-        self._model.rotate_and_calc(theta)
+        modulated_theta = theta % 360
+        self._model.rotate_and_calc(modulated_theta)
 
     def stop_request(self):
         self._model.request_stop()
