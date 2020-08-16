@@ -35,8 +35,8 @@ class Canvas:
 
     def _set_margins(self):
         width_px, height_px = self._image_shape
-        left_px, right_px = 60, 10
-        bottom_px, top_px = 40, 10
+        left_px, right_px = 40, 10
+        bottom_px, top_px = 32, 10
         left_pc = left_px / width_px
         right_pc = 1.0 - (right_px / width_px)
         bottom_pc = bottom_px / height_px
@@ -49,13 +49,11 @@ class Canvas:
         # self._ax.set_axis_off()
         # self._fig.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
 
-        # self._fig.tight_layout(pad=0.0, h_pad=0.0, w_pad=0.0)
-
     def _set_limits(self):
         self._ax.set_xlim(left=-2, right=2)
-        self._ax.set_xlabel("real")
+        self._ax.set_xlabel("real", labelpad=-3.0)
         self._ax.set_ylim(bottom=-2, top=2)
-        self._ax.set_ylabel("imaginary")
+        self._ax.set_ylabel("imaginary", labelpad=-9.0)
 
     @property
     def figure_canvas(self) -> backend_qt5agg.FigureCanvasQTAgg:
