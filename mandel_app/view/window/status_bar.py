@@ -88,12 +88,13 @@ class StatusBar:
     # region display requests
     def display_mandel_statistics(self, mandel_: mandel.Mandel):
         message = f"center: {mandel_.centre} size: {mandel_.x_size} rotation: {mandel_.theta_degrees}"
+        print(message)
         self.q_center_label.setText(message)
 
     def display_time_taken(self, total_time):
         # pass
         if total_time != 0.0:
-            message = f"Completed in {total_time:.1f} seconds"
+            message = f"Completed in {total_time:.2f} seconds"
         else:
             message = "Complete..."
         self.q_right_label.setText(message)

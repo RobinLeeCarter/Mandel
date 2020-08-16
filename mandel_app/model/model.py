@@ -25,7 +25,8 @@ class Model:
         self._controller = controller_
 
     def build(self, image_space: tuples.ImageShape):
-        self.new_mandel = self._initial_mandel(image_space)
+        # self.new_mandel = self._initial_mandel(image_space)
+        self.new_mandel = self._slow_mandel(image_space)
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
             on_progress_update=self._on_progress_update,
@@ -40,23 +41,34 @@ class Model:
         self._calc_thread_manager.start_thread()
 
     def _initial_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0), size=2.4,
+        mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0),
+                                   size=2.4,
                                    shape=image_space,
                                    expected_iterations_per_pixel=1750
                                    )
         return mandel
 
     def _test_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1), size=0.2,
+        mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1),
+                                   size=0.2,
                                    shape=image_space
                                    )
         return mandel
 
     def _different_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009), size=3.0E-5,
+        mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009),
+                                   size=3.0E-5,
                                    shape=image_space
                                    )
         return mandel
+
+    def _slow_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
+                                   size=2.1609798031004707e-10,
+                                   shape=image_space
+                                   )
+        return mandel
+
     # endregion
 
     # region Controller Messages
@@ -153,8 +165,8 @@ class Model:
         self._controller.new_is_ready(job.save_history)
 
         # TODO: control generation of borders in controller rather than automatically firing?
-        if not self.new_mandel.has_border:
-            self._add_border()
+        # if not self.new_mandel.has_border:
+        #     self._add_border()
 
     def _add_border(self):
         self.new_mandel.add_border(14*4*5, 14*4*5)
