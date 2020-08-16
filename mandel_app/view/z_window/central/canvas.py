@@ -31,7 +31,7 @@ class Canvas:
         # self._ax.set_aspect(aspect='equal')
         # self._ax.autoscale(enable=False)
         self._set_limits()
-        # self._ax.set_facecolor('darkgrey')
+        # self._ax.set_facecolor('white')
 
     def _set_margins(self):
         width_px, height_px = self._image_shape
@@ -96,8 +96,8 @@ class Canvas:
         red_channel[field.s1_closer] = field.s1_attraction_intensity[field.s1_closer]
         green_channel[field.s2_closer] = field.s2_attraction_intensity[field.s2_closer]
 
-        self._ax.imshow(attraction, interpolation='none', origin='lower', extent=(-2.0, 2.0, -2.0, 2.0)
-                        , alpha=0.3, zorder=0)
+        self._ax.imshow(attraction, interpolation='none', origin='lower', extent=(-2.0, 2.0, -2.0, 2.0),
+                        alpha=0.3, zorder=0)
 
         # max_value = np.max(field.repulsion2)
         # norm = colors.Normalize(-max_value, max_value)

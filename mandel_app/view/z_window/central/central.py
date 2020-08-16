@@ -82,12 +82,38 @@ class Central:
 # plus the scrollbars are disabled
 # removing the QScrollArea altogether messed up the image rendering and it was so hard to get right the first time
 class XScrollArea(QtWidgets.QScrollArea):
+    RESIZE_TIMEOUT_MS: int = 100
     resizeEventSignal = QtCore.pyqtSignal(QtGui.QResizeEvent)
+
+    def __init__(self, parent=Optional[QtWidgets.QWidget]):
+        super().__init__(parent=parent)
+        self.resize_q_timer = QtCore.QTimer(parent=self)
+        self.resize_q_timer.setSingleShot(True)
+        self.resize_current_event: Optional[QtGui.QResizeEvent] = None
+        self.resize_enabled: bool = False   # start (has funny results regarding alpha)
+        self.resize_connect_timer()
+
+    # region delayed resize event handler
+    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
+        # if resize_event.oldSize() != QtCore.QSize(-1, -1):  # start (has funny results regarding alpha)
+        if self.resize_enabled:
+            self.resize_current_event = resize_event
+            self.resize_q_timer.start(XScrollArea.RESIZE_TIMEOUT_MS)
+        self.resize_enabled = True
+        super().resizeEvent(resize_event)
+
+    def resize_connect_timer(self):
+        @QtCore.pyqtSlot()
+        def slot():
+            # self.resize_enabled = False
+            # new_size = self.resize_current_event.size()
+            # new_length = min(new_size.height(), new_size.width())
+
+            # noinspection PyUnresolvedReferences
+            self.resizeEventSignal.emit(self.resize_current_event)
+
+        self.resize_q_timer.timeout.connect(slot)
+    # endregion
 
     def wheelEvent(self, wheel_event: QtGui.QWheelEvent) -> None:
         wheel_event.ignore()
-
-    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
-        # noinspection PyUnresolvedReferences
-        self.resizeEventSignal.emit(resize_event)
-        super().resizeEvent(resize_event)
