@@ -206,7 +206,7 @@ class View:
         # have to zoom, ready or not
         self._zoom(scaling=1.0)
 
-    def _on_z_resized(self, resize_event: QtGui.QResizeEvent):
+    def _on_z_resized(self):
         z_central = self._z_window.central
         z_central.set_image_space()
         image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)

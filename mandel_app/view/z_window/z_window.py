@@ -73,10 +73,10 @@ class ZWindow:
         # noinspection PyUnresolvedReferences
         self.q_main_window.closeSignal.connect(slot)
 
-    def set_on_resize(self, on_resize: Callable[[QtGui.QResizeEvent], None]):
+    def set_on_resize(self, on_resize: Callable[[], None]):
         @QtCore.pyqtSlot()
-        def slot(resize_event: QtGui.QResizeEvent):
-            on_resize(resize_event)
+        def slot():
+            on_resize()
 
         # noinspection PyUnresolvedReferences
         self.q_main_window.resizeSignal.connect(slot)
@@ -84,7 +84,7 @@ class ZWindow:
 
 class XMainWindow(QtWidgets.QMainWindow):
     RESIZE_TIMEOUT_MS: int = 100
-    resizeSignal = QtCore.pyqtSignal(QtGui.QResizeEvent)
+    resizeSignal = QtCore.pyqtSignal()
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
     closeSignal = QtCore.pyqtSignal()
@@ -93,9 +93,7 @@ class XMainWindow(QtWidgets.QMainWindow):
         super().__init__(parent=parent)
         self.resize_q_timer = QtCore.QTimer(parent=self)
         self.resize_q_timer.setSingleShot(True)
-        self.resize_current_event: Optional[QtGui.QResizeEvent] = None
-        self.resize_enabled: bool = False   # start (has funny results regarding alpha)
-        self.new_length: int = 0
+        self.resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
         self.resize_connect_timer()
 
     def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
@@ -116,9 +114,7 @@ class XMainWindow(QtWidgets.QMainWindow):
     # region delayed resize event handler
     def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
         if self.resize_enabled:
-            new_size = resize_event.size()
-            self.new_length = min(new_size.height(), new_size.width())
-            self.resize_current_event = resize_event
+            # NOTE: resize_event will be messed up by the resize delay code so we don't take a copy
             self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
         self.resize_enabled = True
         super().resizeEvent(resize_event)
@@ -126,11 +122,8 @@ class XMainWindow(QtWidgets.QMainWindow):
     def resize_connect_timer(self):
         @QtCore.pyqtSlot()
         def slot():
-            self.resize_enabled = False
-            print(self.new_length)
-            self.resize(self.new_length, self.new_length)
             # noinspection PyUnresolvedReferences
-            self.resizeSignal.emit(self.resize_current_event)
+            self.resizeSignal.emit()
 
         self.resize_q_timer.timeout.connect(slot)
     # endregion
