@@ -28,10 +28,7 @@ class Canvas:
 
     def build(self):
         self._set_margins()
-        # self._ax.set_aspect(aspect='equal')
-        # self._ax.autoscale(enable=False)
         self._set_limits()
-        # self._ax.set_facecolor('white')
 
     def _set_margins(self):
         width_px, height_px = self._image_shape
@@ -70,11 +67,10 @@ class Canvas:
         self._z_model = z_model_
 
         self._set_margins()
-        # self._ax.set_aspect(aspect='equal')
-        # self._ax.autoscale(enable=False)
         self._set_limits()  # reset limits because sometimes matplotlib gets confused
         self._draw_background()
-        self._draw_legend()
+        if self._image_shape.x >= 400 and self._image_shape.y >= 400:   # only draw if large enough
+            self._draw_legend()
         counter = self._draw_counter()
         self._snake.draw_snake(trace_=z_model_.trace, counter=counter)
         self._figure_canvas.draw()
