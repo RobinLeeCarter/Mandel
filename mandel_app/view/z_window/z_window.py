@@ -8,18 +8,19 @@ from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
-    def __init__(self, parent: QtWidgets.QMainWindow, geometry: tuples.Geometry):
+    def __init__(self, parent: QtWidgets.QMainWindow, z_window_settings: dict):
         self.q_main_window = XMainWindow(parent=parent)
         self.is_active = False
         self.actions = actions.Actions(self.q_main_window)
-        image_shape = tuples.image_shape_from_geometry(geometry)
+        image_shape = tuples.image_shape_from_q_size(z_window_settings["size"])
         self.central = central.Central(self.q_main_window, image_shape)
 
-        self._build(geometry)
+        self._build(z_window_settings)
 
-    def _build(self, geometry: tuples.Geometry):
+    def _build(self, z_window_settings: dict):
         self.q_main_window.setWindowTitle('Z Tracing')
-        self.q_main_window.setGeometry(*geometry)
+        self.q_main_window.resize(z_window_settings["size"])
+        self.q_main_window.move(z_window_settings["pos"])
         self.q_main_window.setMinimumSize(200, 200)
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)

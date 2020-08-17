@@ -7,11 +7,11 @@ from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
 class Window:
-    def __init__(self, application_name: str, initial_settings: dict):
+    def __init__(self, application_name: str, window_settings: dict):
         self._application_name = application_name
         self.q_main_window = XMainWindow()
         self.q_settings = QtCore.QSettings()
-        self._build(initial_settings)
+        self._build(window_settings)
 
         self.actions = actions.Actions(self.q_main_window)
         self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
@@ -27,11 +27,11 @@ class Window:
         self.q_main_window.show()
         self.central.set_image_space()
 
-    def _build(self, initial_settings: dict):
+    def _build(self, window_settings: dict):
         # Set some main window's properties
         self.q_main_window.setWindowTitle(self._application_name)
-        self.q_main_window.resize(initial_settings["window/size"])
-        self.q_main_window.move(initial_settings["window/left_top"])
+        self.q_main_window.resize(window_settings["size"])
+        self.q_main_window.move(window_settings["pos"])
         self.q_main_window.setMinimumSize(200, 200)
         # self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
 

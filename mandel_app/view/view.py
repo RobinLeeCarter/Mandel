@@ -28,11 +28,9 @@ class View:
     def build(self):
         dock_icon = icon.Icon("mandel_icon.png")
         self._application.setWindowIcon(dock_icon.q_icon)
-        # main_geometry = tuples.Geometry(left=100, top=100, width=1200, height=800)
-        self._window = window.Window(self._application_name, self._view_settings.initial)
+        self._window = window.Window(self._application_name, self._view_settings.window_settings)
         self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
-        z_geometry = tuples.Geometry(left=120, top=500, width=400, height=400)
-        self._z_window = z_window.ZWindow(self._window.q_main_window, z_geometry)
+        self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
 
         self._connect_signals()
     # endregion
@@ -95,12 +93,12 @@ class View:
         self._connect_iteration()
         self._connect_canvas()
         self._window.set_on_key_pressed(self._on_key_pressed)
-        self._window.set_on_active(self._on_main_active)
+        self._window.set_on_active(self._on_active)
         self._z_window.set_on_active(self._on_z_active)
+        self._window.set_on_close(self._on_close)
         self._z_window.set_on_close(self._on_z_close)
         self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
-        self._window.set_on_close(self._on_close)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -180,7 +178,7 @@ class View:
         self._z_window.q_main_window.setVisible(is_z_mode)
         self._update_cursor()
 
-    def _on_main_active(self):
+    def _on_active(self):
         # print("_on_main_active")
         self._window.is_active = True
         self._z_window.is_active = False
@@ -191,6 +189,7 @@ class View:
         self._window.is_active = False
 
     def _on_z_close(self):
+        self._view_settings.write_z_window_settings(self._z_window.q_main_window)
         q_action = self._window.actions.z_mode.q_action
         if q_action.isChecked():
             q_action.trigger()
@@ -211,7 +210,9 @@ class View:
         self._controller.redraw_z_trace(image_shape)
 
     def _on_close(self):
-        self._view_settings.write_settings(self._window.q_main_window)
+        if self._z_window.q_main_window.isVisible():
+            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
+        self._view_settings.write_window_settings(self._window.q_main_window)
     # endregion
 
     # region Canvas Slots
