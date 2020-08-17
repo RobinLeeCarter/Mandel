@@ -72,25 +72,12 @@ class Central:
 
         return tuples.ImageShape(x, y)
 
-    def set_on_resize(self, on_resize: Callable[[QtGui.QResizeEvent], None]):
-        @QtCore.pyqtSlot()
-        def slot(resize_event: QtGui.QResizeEvent):
-            on_resize(resize_event)
-
-        # noinspection PyUnresolvedReferences
-        self.q_scroll_area.resizeEventSignal.connect(slot)
-
 
 # This disables the scroll-wheel since we are using it for zooming
 # plus the scrollbars are disabled
 # removing the QScrollArea altogether messed up the image rendering and it was so hard to get right the first time
 class XScrollArea(QtWidgets.QScrollArea):
-    resizeEventSignal = QtCore.pyqtSignal(QtGui.QResizeEvent)
 
     def wheelEvent(self, wheel_event: QtGui.QWheelEvent) -> None:
         wheel_event.ignore()
 
-    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
-        # noinspection PyUnresolvedReferences
-        self.resizeEventSignal.emit(resize_event)
-        super().resizeEvent(resize_event)

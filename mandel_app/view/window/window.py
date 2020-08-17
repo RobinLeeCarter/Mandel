@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -68,10 +68,28 @@ class Window:
         # noinspection PyUnresolvedReferences
         self.q_main_window.activationChangeSignal.connect(slot)
 
+    def set_on_resize(self, on_resize: Callable[[], None]):
+        @QtCore.pyqtSlot()
+        def slot():
+            on_resize()
+
+        # noinspection PyUnresolvedReferences
+        self.q_main_window.resizeSignal.connect(slot)
+
 
 class XMainWindow(QtWidgets.QMainWindow):
+    RESIZE_TIMEOUT_MS: int = 100
+
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
+    resizeSignal = QtCore.pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resize_q_timer = QtCore.QTimer(parent=self)
+        self.resize_q_timer.setSingleShot(True)
+        self.resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
+        self.resize_connect_timer()
 
     def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
         # noinspection PyUnresolvedReferences
@@ -82,3 +100,20 @@ class XMainWindow(QtWidgets.QMainWindow):
         if event.type() == QtCore.QEvent.ActivationChange and self.isActiveWindow():
             self.activationChangeSignal.emit()
         super().changeEvent(event)
+
+    # region delayed resize event handler
+    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
+        if self.resize_enabled:
+            # NOTE: resize_event will be messed up by the resize delay code so we don't take a copy
+            self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
+        self.resize_enabled = True
+        super().resizeEvent(resize_event)
+
+    def resize_connect_timer(self):
+        @QtCore.pyqtSlot()
+        def slot():
+            # noinspection PyUnresolvedReferences
+            self.resizeSignal.emit()
+
+        self.resize_q_timer.timeout.connect(slot)
+    # endregion

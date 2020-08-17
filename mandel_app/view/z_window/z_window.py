@@ -83,11 +83,13 @@ class ZWindow:
 
 
 class XMainWindow(QtWidgets.QMainWindow):
+    # on my machine in Ubuntu 19.10 a shorter timeout results in artifacts as the window redraws
     RESIZE_TIMEOUT_MS: int = 100
-    resizeSignal = QtCore.pyqtSignal()
+
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
     closeSignal = QtCore.pyqtSignal()
+    resizeSignal = QtCore.pyqtSignal()
 
     def __init__(self, parent=Optional[QtWidgets.QWidget]):
         super().__init__(parent=parent)

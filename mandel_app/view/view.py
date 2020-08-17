@@ -101,7 +101,7 @@ class View:
         self._window.set_on_active(self._on_main_active)
         self._z_window.set_on_active(self._on_z_active)
         self._z_window.set_on_close(self._on_z_close)
-        self._window.central.set_on_resize(self._on_resized)
+        self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
 
     def _connect_escape(self):
@@ -198,7 +198,7 @@ class View:
             q_action.trigger()
         # self._window.actions.z_mode.q_action.setChecked(False)
 
-    def _on_resized(self, resize_event: QtGui.QResizeEvent):
+    def _on_resized(self):
         central = self._window.central
         central.set_image_space()
         central.canvas.on_resized(central.image_space)
