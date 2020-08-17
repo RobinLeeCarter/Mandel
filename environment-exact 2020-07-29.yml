@@ -1,6 +1,6 @@
 name: mandel
 channels:
-  - defaults
+  - _default
   - conda-forge
 dependencies:
   - _libgcc_mutex=0.1=main

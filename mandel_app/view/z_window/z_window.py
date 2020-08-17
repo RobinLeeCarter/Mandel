@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -8,19 +8,21 @@ from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
-    def __init__(self, parent: QtWidgets.QMainWindow, image_shape: tuples.ImageShape):
+    def __init__(self, parent: QtWidgets.QMainWindow, z_window_settings: dict):
         self.q_main_window = XMainWindow(parent=parent)
         self.is_active = False
         self.actions = actions.Actions(self.q_main_window)
+        image_shape = tuples.image_shape_from_q_size(z_window_settings["size"])
         self.central = central.Central(self.q_main_window, image_shape)
 
-        self.build(image_shape)
+        self._build(z_window_settings)
 
-    def build(self, image_shape: tuples.ImageShape):
+    def _build(self, z_window_settings: dict):
         self.q_main_window.setWindowTitle('Z Tracing')
-        self.q_main_window.setGeometry(200, 200, image_shape.x, image_shape.y)
+        self.q_main_window.resize(z_window_settings["size"])
+        self.q_main_window.move(z_window_settings["pos"])
         self.q_main_window.setMinimumSize(200, 200)
-        stylesheet = self.get_stylesheet()
+        stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
         self.q_main_window.show()
         self.central.set_image_space()
@@ -35,7 +37,7 @@ class ZWindow:
 
         # self.q_main_window.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
-    def get_stylesheet(self):
+    def _get_stylesheet(self):
         stylesheet = """
             background-color: darkGray
         """
@@ -48,6 +50,7 @@ class ZWindow:
         self.q_main_window.setVisible(False)
         self.q_main_window.setVisible(True)
 
+    # region Connect Events
     def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
         @QtCore.pyqtSlot()
         def slot(key_event: QtGui.QKeyEvent):
@@ -80,14 +83,17 @@ class ZWindow:
 
         # noinspection PyUnresolvedReferences
         self.q_main_window.resizeSignal.connect(slot)
+    # endregion
 
 
 class XMainWindow(QtWidgets.QMainWindow):
+    # on my machine in Ubuntu 19.10 a shorter timeout results in artifacts as the window redraws
     RESIZE_TIMEOUT_MS: int = 100
-    resizeSignal = QtCore.pyqtSignal()
+
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
     closeSignal = QtCore.pyqtSignal()
+    resizeSignal = QtCore.pyqtSignal()
 
     def __init__(self, parent=Optional[QtWidgets.QWidget]):
         super().__init__(parent=parent)

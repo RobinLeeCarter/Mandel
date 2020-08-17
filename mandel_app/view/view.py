@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Optional
-import sys
 
 from matplotlib import backend_bases
 
@@ -9,30 +8,29 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, enums, view_state, icon, z_window
+from mandel_app.view import window, enums, view_state, view_settings, icon, z_window
 
 
 class View:
     # region Setup
-    def __init__(self):
+    def __init__(self, application: QtWidgets.QApplication, application_name: str):
+        self._application: QtWidgets.QApplication = application
+        self._application_name: str = application_name
         self._controller: Optional[controller.Controller] = None
-        self._application: Optional[QtWidgets.QApplication] = None
-        self._dock_icon: Optional[icon.Icon] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state: view_state.ViewState = view_state.ViewState()
+        self._view_state = view_state.ViewState()
+        self._view_settings = view_settings.ViewSettings(reset=False)
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
 
     def build(self):
-        self._application = QtWidgets.QApplication(sys.argv)
-        self._dock_icon = icon.Icon("mandel_icon.png")
-        self._application.setWindowIcon(self._dock_icon.q_icon)
-        self._window = window.Window()
+        dock_icon = icon.Icon("mandel_icon.png")
+        self._application.setWindowIcon(dock_icon.q_icon)
+        self._window = window.Window(self._application_name, self._view_settings.window_settings)
         self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
-        z_window_shape = tuples.ImageShape(700, 700)
-        self._z_window = z_window.ZWindow(self._window.q_main_window, z_window_shape)
+        self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
 
         self._connect_signals()
     # endregion
@@ -53,9 +51,6 @@ class View:
 
     def hide_z0_on_mandel(self):
         self._window.central.canvas.hide_z0_marker()
-
-    def run(self):
-        sys.exit(self._application.exec_())
 
     @property
     def ready_to_display_new_mandel(self) -> bool:
@@ -89,7 +84,7 @@ class View:
         # self._set_action(enums.ImageAction.NONE)
     # endregion
 
-    # region Event Connections
+    # region Connect Events
     def _connect_signals(self):
         self._connect_escape()
         self._connect_full_screen()
@@ -98,10 +93,11 @@ class View:
         self._connect_iteration()
         self._connect_canvas()
         self._window.set_on_key_pressed(self._on_key_pressed)
-        self._window.set_on_active(self._on_main_active)
+        self._window.set_on_active(self._on_active)
         self._z_window.set_on_active(self._on_z_active)
+        self._window.set_on_close(self._on_close)
         self._z_window.set_on_close(self._on_z_close)
-        self._window.central.set_on_resize(self._on_resized)
+        self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
 
     def _connect_escape(self):
@@ -182,7 +178,7 @@ class View:
         self._z_window.q_main_window.setVisible(is_z_mode)
         self._update_cursor()
 
-    def _on_main_active(self):
+    def _on_active(self):
         # print("_on_main_active")
         self._window.is_active = True
         self._z_window.is_active = False
@@ -193,12 +189,13 @@ class View:
         self._window.is_active = False
 
     def _on_z_close(self):
+        self._view_settings.write_z_window_settings(self._z_window.q_main_window)
         q_action = self._window.actions.z_mode.q_action
         if q_action.isChecked():
             q_action.trigger()
         # self._window.actions.z_mode.q_action.setChecked(False)
 
-    def _on_resized(self, resize_event: QtGui.QResizeEvent):
+    def _on_resized(self):
         central = self._window.central
         central.set_image_space()
         central.canvas.on_resized(central.image_space)
@@ -211,6 +208,11 @@ class View:
         z_central.set_image_space()
         image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
         self._controller.redraw_z_trace(image_shape)
+
+    def _on_close(self):
+        if self._z_window.q_main_window.isVisible():
+            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
+        self._view_settings.write_window_settings(self._window.q_main_window)
     # endregion
 
     # region Canvas Slots
