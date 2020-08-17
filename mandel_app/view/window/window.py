@@ -82,6 +82,15 @@ class Window:
 
         # noinspection PyUnresolvedReferences
         self.q_main_window.resizeSignal.connect(slot)
+
+    def set_on_close(self, on_close: Callable[[], None]):
+        @QtCore.pyqtSlot()
+        def slot():
+            on_close()
+
+        # noinspection PyUnresolvedReferences
+        self.q_main_window.closeSignal.connect(slot)
+
     # endregion
 
 
@@ -91,6 +100,7 @@ class XMainWindow(QtWidgets.QMainWindow):
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
     resizeSignal = QtCore.pyqtSignal()
+    closeSignal = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -124,4 +134,8 @@ class XMainWindow(QtWidgets.QMainWindow):
             self.resizeSignal.emit()
 
         self.resize_q_timer.timeout.connect(slot)
+
+    def closeEvent(self, close_event: QtGui.QCloseEvent) -> None:
+        self.closeSignal.emit()
+        super().closeEvent(close_event)
     # endregion

@@ -100,6 +100,7 @@ class View:
         self._z_window.set_on_close(self._on_z_close)
         self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
+        self._window.set_on_close(self._on_close)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -208,6 +209,9 @@ class View:
         z_central.set_image_space()
         image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
         self._controller.redraw_z_trace(image_shape)
+
+    def _on_close(self):
+        self._view_settings.write_settings(self._window.q_main_window)
     # endregion
 
     # region Canvas Slots
