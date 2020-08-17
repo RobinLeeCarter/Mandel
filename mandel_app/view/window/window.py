@@ -9,14 +9,7 @@ class Window:
     def __init__(self):  # q_application: QtWidgets.QApplication
         # self.q_application = q_application
         self.q_main_window = XMainWindow()
-        # Set some main window's properties
-        self.q_main_window.setWindowTitle('Mandel App')
-        self.q_main_window.setGeometry(50, 50, 1500, 1000)
-        self.q_main_window.setMinimumSize(200, 200)
-        self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
-
-        stylesheet = self.get_stylesheet()
-        self.q_main_window.setStyleSheet(stylesheet)
+        self._build()
 
         self.actions = actions.Actions(self.q_main_window)
         self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
@@ -32,7 +25,17 @@ class Window:
         self.q_main_window.show()
         self.central.set_image_space()
 
-    def get_stylesheet(self):
+    def _build(self):
+        # Set some main window's properties
+        self.q_main_window.setWindowTitle('Mandel App')
+        self.q_main_window.setGeometry(50, 50, 1500, 1000)
+        self.q_main_window.setMinimumSize(200, 200)
+        # self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
+
+        stylesheet = self._get_stylesheet()
+        self.q_main_window.setStyleSheet(stylesheet)
+
+    def _get_stylesheet(self):
         stylesheet = """
             background-color: darkGray
         """
@@ -51,6 +54,7 @@ class Window:
             self.menu.full_screen_show()
             self.status_bar.q_status_bar.show()
 
+    # region Connect Events
     def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
         @QtCore.pyqtSlot()
         def slot(key_event: QtGui.QKeyEvent):
@@ -75,6 +79,7 @@ class Window:
 
         # noinspection PyUnresolvedReferences
         self.q_main_window.resizeSignal.connect(slot)
+    # endregion
 
 
 class XMainWindow(QtWidgets.QMainWindow):

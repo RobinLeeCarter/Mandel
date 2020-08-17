@@ -89,7 +89,7 @@ class View:
         # self._set_action(enums.ImageAction.NONE)
     # endregion
 
-    # region Event Connections
+    # region Connect Events
     def _connect_signals(self):
         self._connect_escape()
         self._connect_full_screen()

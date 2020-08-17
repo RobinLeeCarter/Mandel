@@ -14,13 +14,13 @@ class ZWindow:
         self.actions = actions.Actions(self.q_main_window)
         self.central = central.Central(self.q_main_window, image_shape)
 
-        self.build(image_shape)
+        self._build(image_shape)
 
-    def build(self, image_shape: tuples.ImageShape):
+    def _build(self, image_shape: tuples.ImageShape):
         self.q_main_window.setWindowTitle('Z Tracing')
-        self.q_main_window.setGeometry(200, 200, image_shape.x, image_shape.y)
+        self.q_main_window.setGeometry(100, 100, image_shape.x, image_shape.y)
         self.q_main_window.setMinimumSize(200, 200)
-        stylesheet = self.get_stylesheet()
+        stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
         self.q_main_window.show()
         self.central.set_image_space()
@@ -35,7 +35,7 @@ class ZWindow:
 
         # self.q_main_window.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
-    def get_stylesheet(self):
+    def _get_stylesheet(self):
         stylesheet = """
             background-color: darkGray
         """
@@ -48,6 +48,7 @@ class ZWindow:
         self.q_main_window.setVisible(False)
         self.q_main_window.setVisible(True)
 
+    # region Connect Events
     def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
         @QtCore.pyqtSlot()
         def slot(key_event: QtGui.QKeyEvent):
@@ -80,6 +81,7 @@ class ZWindow:
 
         # noinspection PyUnresolvedReferences
         self.q_main_window.resizeSignal.connect(slot)
+    # endregion
 
 
 class XMainWindow(QtWidgets.QMainWindow):
