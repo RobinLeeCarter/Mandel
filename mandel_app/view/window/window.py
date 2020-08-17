@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -9,6 +9,7 @@ class Window:
     def __init__(self):  # q_application: QtWidgets.QApplication
         # self.q_application = q_application
         self.q_main_window = XMainWindow()
+        self.q_settings = QtCore.QSettings()
         self._build()
 
         self.actions = actions.Actions(self.q_main_window)
@@ -27,7 +28,7 @@ class Window:
 
     def _build(self):
         # Set some main window's properties
-        self.q_main_window.setWindowTitle('Mandel App')
+        self.q_main_window.setWindowTitle('Mandelbrot Explorer')
         self.q_main_window.setGeometry(50, 50, 1500, 1000)
         self.q_main_window.setMinimumSize(200, 200)
         # self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)

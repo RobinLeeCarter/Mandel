@@ -6,23 +6,16 @@ from mandel_app import model, view, tuples
 
 class Controller:
     # region Setup
-    def __init__(self):
-        self._model: Optional[model.Model] = None
-        self._view: Optional[view.View] = None
+    def __init__(self, model_: model.Model, view_: view.View):
+        self._model: model.Model = model_
+        self._view: view.View = view_
 
-    def set_model(self, model_: model.Model):
-        self._model = model_
-
-    def set_view(self, view_: view.View):
-        self._view = view_
-
-    def build_and_run(self):
+    def build(self):
         self._view.build()
         image_space: tuples.ImageShape = self._view.get_image_space()
         self._model.build(image_space)
         # self._model.start_test_mandel()
         self._model.calc_new_mandel(save_history=True)
-        self._view.run()
     # endregion
 
     # region Model notifications

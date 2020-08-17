@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Optional
-import sys
 
 from matplotlib import backend_bases
 
@@ -14,10 +13,9 @@ from mandel_app.view import window, enums, view_state, icon, z_window
 
 class View:
     # region Setup
-    def __init__(self):
+    def __init__(self, application: QtWidgets.QApplication):
+        self._application: QtWidgets.QApplication = application
         self._controller: Optional[controller.Controller] = None
-        self._application: Optional[QtWidgets.QApplication] = None
-        self._dock_icon: Optional[icon.Icon] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
         self._view_state: view_state.ViewState = view_state.ViewState()
@@ -26,9 +24,8 @@ class View:
         self._controller = controller_
 
     def build(self):
-        self._application = QtWidgets.QApplication(sys.argv)
-        self._dock_icon = icon.Icon("mandel_icon.png")
-        self._application.setWindowIcon(self._dock_icon.q_icon)
+        dock_icon = icon.Icon("mandel_icon.png")
+        self._application.setWindowIcon(dock_icon.q_icon)
         self._window = window.Window()
         self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
         z_window_shape = tuples.ImageShape(700, 700)
@@ -53,9 +50,6 @@ class View:
 
     def hide_z0_on_mandel(self):
         self._window.central.canvas.hide_z0_marker()
-
-    def run(self):
-        sys.exit(self._application.exec_())
 
     @property
     def ready_to_display_new_mandel(self) -> bool:
