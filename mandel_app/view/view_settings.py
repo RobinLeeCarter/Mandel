@@ -4,13 +4,13 @@ from PyQt5 import QtCore, QtWidgets
 
 
 class ViewSettings:
-    def __init__(self):
+    def __init__(self, reset: bool = False):
         self._q_settings = QtCore.QSettings()
         self._group: Optional[str] = None
         self._default = {}
         self._get_defaults()
         self.initial_settings = {}
-        self._read_settings()
+        self._read_settings(reset)
 
         # filtered settings
         self.window_settings = self._filtered_settings('window')
@@ -23,13 +23,16 @@ class ViewSettings:
         self._end_group()
 
         self._begin_group("z_window")
-        self._add_default("pos", QtCore.QPoint(120, 500))
+        self._add_default("pos", QtCore.QPoint(120, 600))
         self._add_default("size", QtCore.QSize(400, 400))
         self._end_group()
 
-    def _read_settings(self):
+    def _read_settings(self, reset: bool = False):
         for setting, default in self._default.items():
-            self.initial_settings[setting] = self._q_settings.value(setting, default)
+            if reset:
+                self.initial_settings[setting] = default
+            else:
+                self.initial_settings[setting] = self._q_settings.value(setting, default)
 
     def _filtered_settings(self, filter_str: str) -> dict:
         full_filter_str = filter_str + '/'
@@ -47,7 +50,6 @@ class ViewSettings:
         self._q_settings.endGroup()
 
     def write_z_window_settings(self, q_main_window: QtWidgets.QMainWindow):
-        print("hello")
         self._q_settings.beginGroup("z_window")
         self._q_settings.setValue("pos", q_main_window.pos())
         self._q_settings.setValue("size", q_main_window.size())

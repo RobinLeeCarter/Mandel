@@ -20,7 +20,7 @@ class View:
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
         self._view_state = view_state.ViewState()
-        self._view_settings = view_settings.ViewSettings()
+        self._view_settings = view_settings.ViewSettings(reset=False)
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
