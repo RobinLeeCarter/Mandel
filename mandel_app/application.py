@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets
 from mandel_app import model, view, controller
 
 
-class MandelApp:
+class Application:
     def __init__(self):
         self._application = QtWidgets.QApplication(sys.argv)
 
@@ -20,3 +20,7 @@ class MandelApp:
         self._controller.build()
 
         sys.exit(self._application.exec_())
+
+
+def launch_application():
+    Application()
