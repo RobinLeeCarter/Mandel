@@ -1,6 +1,6 @@
 name: mandel
 channels:
-  - defaults
+  - default
   - conda-forge
 dependencies:
   - python

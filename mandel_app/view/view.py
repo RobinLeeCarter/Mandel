@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, enums, view_state, icon, z_window
+from mandel_app.view import window, enums, view_state, view_settings, icon, z_window
 
 
 class View:
@@ -19,7 +19,8 @@ class View:
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state: view_state.ViewState = view_state.ViewState()
+        self._view_state = view_state.ViewState()
+        self._view_settings = view_settings.ViewSettings()
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
@@ -27,8 +28,8 @@ class View:
     def build(self):
         dock_icon = icon.Icon("mandel_icon.png")
         self._application.setWindowIcon(dock_icon.q_icon)
-        main_geometry = tuples.Geometry(left=100, top=100, width=1200, height=800)
-        self._window = window.Window(self._application_name, main_geometry)
+        # main_geometry = tuples.Geometry(left=100, top=100, width=1200, height=800)
+        self._window = window.Window(self._application_name, self._view_settings.initial)
         self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
         z_geometry = tuples.Geometry(left=120, top=500, width=400, height=400)
         self._z_window = z_window.ZWindow(self._window.q_main_window, z_geometry)
