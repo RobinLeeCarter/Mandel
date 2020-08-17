@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -8,17 +8,18 @@ from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
-    def __init__(self, parent: QtWidgets.QMainWindow, image_shape: tuples.ImageShape):
+    def __init__(self, parent: QtWidgets.QMainWindow, geometry: tuples.Geometry):
         self.q_main_window = XMainWindow(parent=parent)
         self.is_active = False
         self.actions = actions.Actions(self.q_main_window)
+        image_shape = tuples.image_shape_from_geometry(geometry)
         self.central = central.Central(self.q_main_window, image_shape)
 
-        self._build(image_shape)
+        self._build(geometry)
 
-    def _build(self, image_shape: tuples.ImageShape):
+    def _build(self, geometry: tuples.Geometry):
         self.q_main_window.setWindowTitle('Z Tracing')
-        self.q_main_window.setGeometry(100, 100, image_shape.x, image_shape.y)
+        self.q_main_window.setGeometry(*geometry)
         self.q_main_window.setMinimumSize(200, 200)
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)

@@ -7,10 +7,15 @@ from mandel_app import model, view, controller
 
 class Application:
     def __init__(self):
+        application_name = "Mandlebrot Explorer"
+        organization_name = "Robin Carter Industries"
+
         self._application = QtWidgets.QApplication(sys.argv)
+        self._application.setOrganizationName(organization_name)
+        self._application.setApplicationName(application_name)
 
         self._model = model.Model()
-        self._view = view.View(self._application)
+        self._view = view.View(self._application, application_name)
         self._controller = controller.Controller(self._model, self._view)
 
         # enable model and view to send messages to controller

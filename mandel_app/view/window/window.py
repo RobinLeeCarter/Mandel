@@ -1,16 +1,17 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+from mandel_app import tuples
 from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
 class Window:
-    def __init__(self):  # q_application: QtWidgets.QApplication
-        # self.q_application = q_application
+    def __init__(self, application_name: str, geometry: QtCore.QRect):
+        self._application_name = application_name
         self.q_main_window = XMainWindow()
         self.q_settings = QtCore.QSettings()
-        self._build()
+        self._build(geometry)
 
         self.actions = actions.Actions(self.q_main_window)
         self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
@@ -26,10 +27,10 @@ class Window:
         self.q_main_window.show()
         self.central.set_image_space()
 
-    def _build(self):
+    def _build(self, geometry: tuples.Geometry):
         # Set some main window's properties
-        self.q_main_window.setWindowTitle('Mandelbrot Explorer')
-        self.q_main_window.setGeometry(50, 50, 1500, 1000)
+        self.q_main_window.setWindowTitle(self._application_name)
+        self.q_main_window.setGeometry(*geometry)
         self.q_main_window.setMinimumSize(200, 200)
         # self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
 

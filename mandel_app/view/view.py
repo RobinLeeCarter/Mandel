@@ -13,8 +13,9 @@ from mandel_app.view import window, enums, view_state, icon, z_window
 
 class View:
     # region Setup
-    def __init__(self, application: QtWidgets.QApplication):
+    def __init__(self, application: QtWidgets.QApplication, application_name: str):
         self._application: QtWidgets.QApplication = application
+        self._application_name: str = application_name
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
@@ -26,10 +27,11 @@ class View:
     def build(self):
         dock_icon = icon.Icon("mandel_icon.png")
         self._application.setWindowIcon(dock_icon.q_icon)
-        self._window = window.Window()
+        main_geometry = tuples.Geometry(left=100, top=100, width=1200, height=800)
+        self._window = window.Window(self._application_name, main_geometry)
         self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
-        z_window_shape = tuples.ImageShape(700, 700)
-        self._z_window = z_window.ZWindow(self._window.q_main_window, z_window_shape)
+        z_geometry = tuples.Geometry(left=120, top=500, width=400, height=400)
+        self._z_window = z_window.ZWindow(self._window.q_main_window, z_geometry)
 
         self._connect_signals()
     # endregion
