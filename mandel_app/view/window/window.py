@@ -2,8 +2,7 @@ from typing import Callable
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from mandel_app.view import central
-from mandel_app.view.window import actions, menu, toolbars, status_bar
+from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
 class Window:
@@ -13,6 +12,7 @@ class Window:
         # Set some main window's properties
         self.q_main_window.setWindowTitle('Mandel App')
         self.q_main_window.setGeometry(50, 50, 1500, 1000)
+        self.q_main_window.setMinimumSize(200, 200)
         self.q_main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         stylesheet = self.get_stylesheet()

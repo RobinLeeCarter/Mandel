@@ -1,9 +1,9 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 
 import numpy as np
 
 import matplotlib
-from matplotlib import figure, backend_bases, image, transforms
+from matplotlib import figure, backend_bases, image, transforms, lines
 from matplotlib.backends import backend_qt5agg
 
 from PyQt5 import QtWidgets, QtGui
@@ -17,7 +17,7 @@ from mandel_app.model import mandelbrot
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
 
 
-class MandelImage:
+class Canvas:
     def __init__(self):
         # was in learnpyqt tutorial and probably no harm but doesn't seem to do anything
         matplotlib.use('Qt5Agg')
@@ -27,9 +27,12 @@ class MandelImage:
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self.fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.ax: figure.Axes = self.fig.subplots()
-        self.mandel_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
+        self.figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
         self.ax_image: Optional[image.AxesImage] = None
-
+        # self._z0_marker: lines.Line2D
+        self._z0: Optional[complex] = None
+        self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
+                                       zorder=1, visible=False)
         self.connections = {}
 
     @property
@@ -49,7 +52,7 @@ class MandelImage:
         transformed_iterations = 100*np.mod(np.log10(1+self.mandel.iteration), 1)
         transformed_iterations[self.mandel.iteration == self.mandel.max_iteration] = 0
 
-        self.mandel_canvas.resize(self.mandel.shape.x, self.mandel.shape.y)
+        self.figure_canvas.resize(self.mandel.shape.x, self.mandel.shape.y)
         self.ax.clear()
         # don't appear to do anything with fig.subplots_adjust set
         self.ax.set_axis_off()
@@ -57,8 +60,12 @@ class MandelImage:
         self.ax_image: image.AxesImage = self.ax.imshow(
             transformed_iterations,
             interpolation='none', origin='lower',
-            cmap='hot', vmin=0, vmax=100)
+            cmap='hot', vmin=0, vmax=100, alpha=1.0, zorder=0)
+        self.ax.add_line(self._z0_marker)
+        if self._z0 is not None:
+            self._set_z0_marker()
 
+        # self.figure_canvas.draw()
         self._transform_and_draw()
 
     def rotate_mandel_mouse(self, total_theta_delta: int):
@@ -100,23 +107,6 @@ class MandelImage:
         transform = transforms.Affine2D().translate(-pan.x, -pan.y)
         self._transform_and_draw(transform)
 
-    # def _transform_and_draw(self, degrees: int = 0, pan: tuples.PixelPoint = None):
-    #     transform: transforms.Affine2D = transforms.Affine2D()
-    #     # perform any rotation
-    #     # if self.action_in_progress == enums.ImageAction.ROTATING and degrees != 0:
-    #     if degrees != 0:
-    #         centre_x = int(float(self.mandel.shape.x) / 2.0)
-    #         centre_y = int(float(self.mandel.shape.y) / 2.0)
-    #         transform = transform \
-    #             .translate(-centre_x, -centre_y) \
-    #             .rotate_deg(degrees) \
-    #             .translate(centre_x, centre_y)
-    #     # perform any pan
-    #     # if self.action_in_progress == enums.ImageAction.PANNING and pan != tuples.PixelPoint(0, 0):
-    #     elif pan and not None and pan != tuples.PixelPoint(0, 0):
-    #         transform = transform.translate(-pan.x, -pan.y)
-    #     # centre centre_point of image in widget.
-
     def _transform_and_draw(self, transform: Optional[transforms.Affine2D] = None):
         if transform is None:  # no transformation, just draw
             transform = transforms.Affine2D()
@@ -125,7 +115,31 @@ class MandelImage:
             transform = transform.translate(self.mandel.offset.x, -self.mandel.offset.y)
         trans_data = transform + self.ax.transData
         self.ax_image.set_transform(trans_data)
-        self.mandel_canvas.draw()
+        self._z0_marker.set_transform(trans_data)
+        # self.ax.add_line(self._z0_marker)
+        # self.ax.plot([0.1], [0.1], marker='x', markersize=10, color="blue", zorder=10)
+        self.figure_canvas.draw()
+
+    def show_z0_marker(self, z0: complex):
+        self._z0 = z0
+        self._set_z0_marker()
+        self.figure_canvas.draw()
+
+    def _set_z0_marker(self):
+        pixel_x: List[int] = []
+        pixel_y: List[int] = []
+        pixel_point: Optional[tuples.PixelPoint] = self.mandel.get_pixel_from_complex(self._z0)
+        if pixel_point is not None:
+            pixel_x.append(pixel_point.x)
+            pixel_y.append(pixel_point.y)
+            # self._z0_marker.set_data([pixel_point.x], [pixel_point.y])
+        self._z0_marker.set_data(pixel_x, pixel_y)
+        self._z0_marker.set_visible(True)
+
+    def hide_z0_marker(self):
+        self._z0 = None
+        self._z0_marker.set_visible(False)
+        self.figure_canvas.draw()
 
     def save(self, file_path: str):
         self.fig.savefig(IMAGE_PATH + file_path, format="png",
@@ -133,17 +147,17 @@ class MandelImage:
 
     #     """See: https://matplotlib.org/3.1.1/users/event_handling.html"""
     def add_connection(self, event_name: str, func: Callable[[backend_bases.Event], None]):
-        connection_id = self.mandel_canvas.mpl_connect(event_name, func)
+        connection_id = self.figure_canvas.mpl_connect(event_name, func)
         # print(connection_id, event_name)
         self.connections[event_name] = connection_id
 
     def remove_connection(self, event_name: str):
         connection_id = self.connections[event_name]
-        self.mandel_canvas.mpl_disconnect(connection_id)
+        self.figure_canvas.mpl_disconnect(connection_id)
 
     def set_cursor(self, cursor_shape: Qt.CursorShape):
         cursor = QtGui.QCursor(cursor_shape)
-        self.mandel_canvas.setCursor(cursor)
+        self.figure_canvas.setCursor(cursor)
 
     def on_resized(self, new_image_space: tuples.ImageShape):
         image_shape = self.mandel.shape

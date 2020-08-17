@@ -67,9 +67,8 @@ class Server:
         #     estimate = ((m.y_size / 1019) * 56) - (m.y_size/2.0)
         #     print("est   = ", estimate)
 
-        real = m.centre.real + x * m.x_unit.real + y * m.y_unit.real
-        imag = m.centre.imag + x * m.x_unit.imag + y * m.y_unit.imag
-        c = real + imag * 1j
+        c = m.centre + x*m.x_unit + y*m.y_unit
+
         return cp.asarray(c)
 
     def _copy_over_pan(self):

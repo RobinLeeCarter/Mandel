@@ -3,7 +3,6 @@ from collections import namedtuple
 
 ImageShape = namedtuple('ImageShape', ['x', 'y'])
 PixelPoint = namedtuple('PixelPoint', ['x', 'y'])
-ComplexPoint = namedtuple('ComplexPoint', ['real', 'imag'])
 
 
 def pixel_distance(pixel_point: PixelPoint) -> float:

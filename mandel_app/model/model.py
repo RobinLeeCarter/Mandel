@@ -5,7 +5,7 @@ from typing import Optional, List
 
 from mandel_app import controller, tuples
 import thread
-from mandel_app.model import mandelbrot
+from mandel_app.model import mandelbrot, z_model
 
 MAX_ITERATIONS = 1000000
 
@@ -19,11 +19,13 @@ class Model:
         self.new_mandel: Optional[mandelbrot.Mandel] = None
         self.displayed_mandel: Optional[mandelbrot.Mandel] = None
         self.mandel_history: List[mandelbrot.Mandel] = []
+        self.z_model: Optional[z_model.ZModel] = None
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
 
     def build(self, image_space: tuples.ImageShape):
+        # self.new_mandel = self._initial_mandel(image_space)
         self.new_mandel = self._initial_mandel(image_space)
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
@@ -31,26 +33,42 @@ class Model:
             on_stop_success=self._on_stop_success,
             on_job_complete=self._on_job_complete
         )
+        self.z_model = z_model.ZModel()
+        # self.z_model.build(z0=complex(real=0.24091, imag=0.55),
+        self.z_model.build(z0=self.new_mandel.centre,
+                           image_shape=tuples.ImageShape(x=700, y=700))
+
         self._calc_thread_manager.start_thread()
 
     def _initial_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=tuples.ComplexPoint(-0.5, 0.0), size=2.4,
+        mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0),
+                                   size=2.4,
                                    shape=image_space,
                                    expected_iterations_per_pixel=1750
                                    )
         return mandel
 
     def _test_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=tuples.ComplexPoint(0.1, 0.1), size=0.2,
+        mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1),
+                                   size=0.2,
                                    shape=image_space
                                    )
         return mandel
 
     def _different_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=tuples.ComplexPoint(-0.745428, 0.113009), size=3.0E-5,
+        mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009),
+                                   size=3.0E-5,
                                    shape=image_space
                                    )
         return mandel
+
+    def _slow_mandel(self, image_space: tuples.ImageShape) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
+                                   size=2.1609798031004707e-10,
+                                   shape=image_space
+                                   )
+        return mandel
+
     # endregion
 
     # region Controller Messages
@@ -84,7 +102,7 @@ class Model:
         if pixel_point is None:
             new_centre = self.displayed_mandel.centre
         else:
-            new_centre = self.displayed_mandel.get_complex_point(pixel_point)
+            new_centre = self.displayed_mandel.get_complex_from_pixel(pixel_point)
 
         save_history: bool = (scaling < 1)
 

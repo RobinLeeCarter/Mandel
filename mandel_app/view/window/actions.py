@@ -18,6 +18,16 @@ class Actions(actions.Actions):
         )
         self._add_action(self.full_screen)
 
+        self.z_mode = action.Action(
+            q_main_window=self._q_main_window,
+            name="z_mode",
+            icon_filename="cross-white.png",
+            text="Z Trace",
+            status_tip="Trace the z values for a point",
+            checkable=True
+        )
+        self._add_action(self.z_mode)
+
         self.max_iterations = action.Action(
             q_main_window=self._q_main_window,
             name="max_iterations",
@@ -27,16 +37,6 @@ class Actions(actions.Actions):
             checkable=True,
         )
         self._add_action(self.max_iterations)
-
-        self.z_mode = action.Action(
-            q_main_window=self._q_main_window,
-            name="z_mode",
-            icon_filename="cursor-openhand.png",
-            text="z_mode",
-            status_tip="Trace the z values for a point",
-            checkable=True
-        )
-        self._add_action(self.z_mode)
 
         self.escape = action.Action(
             q_main_window=self._q_main_window,
