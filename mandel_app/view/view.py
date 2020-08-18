@@ -219,6 +219,9 @@ class View:
     def _on_copy_press(self, mouse_event: QtGui.QMouseEvent):
         text = self._window.status_bar.verbose_mandel_statistics
         self._clipboard.copy_text(text)
+        self._window.central.canvas.figure_canvas.set_copy_visible(True)
+        # self._window.central.canvas.figure_canvas.x_draw_copy_message = True
+        # self._window.central.canvas.figure_canvas.update()
     # endregion
 
     # region Canvas Slots

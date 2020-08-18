@@ -172,32 +172,28 @@ class Canvas:
     def get_image_point(self, event: backend_bases.MouseEvent):
         image_point = tuples.PixelPoint(x=event.x - self.mandel.offset.x,
                                         y=event.y + self.mandel.offset.y)
-        # print(f"image_point = {image_point}")
         return image_point
 
     def above_center(self, y: int) -> bool:
         return y >= self.mandel.shape.y / 2
 
-    # def set_focus(self):
-    #     self.mandel_canvas.setFocus()
-
-    # fig_width_in_inches: float = float(self.shape.x) / float(self.dpi)
-    # fig_height_in_inches: float = float(self.shape.y) / float(self.dpi)
-    # print(f"fig {fig_width_in_inches}, {fig_height_in_inches}")
-    # self.fig.set_size_inches(w=fig_width_in_inches, h=fig_height_in_inches)
-    # self.ax.xaxis.set_major_locator(ticker.NullLocator())  possibly unnecesary
-    # self.ax.yaxis.set_major_locator(ticker.NullLocator())
-
 
 class XFigureCanvasQTAgg(backend_qt5agg.FigureCanvasQTAgg):
     def __init__(self, *args, **kwargs):
-        self.x_draw_copy_message: bool = True
         super().__init__(*args, **kwargs)
+        self._x_copy_message = copy_message.CopyMessage()
+
+    def set_copy_visible(self, visible: bool):
+        if self._x_copy_message.visible != visible:
+            self._x_copy_message.visible = visible
+            self.draw()
+            if visible:
+                pass
 
     def paintEvent(self, event: QtGui.QPaintEvent):
         super().paintEvent(event)
-        if self.x_draw_copy_message:
+        if self._x_copy_message.visible:
             q_painter = QtGui.QPainter()
             q_painter.begin(self)
-            copy_message.CopyMessage(q_painter, event)
+            self._x_copy_message.draw(q_painter, event)
             q_painter.end()

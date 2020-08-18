@@ -12,6 +12,9 @@ class Image:
         self.q_label = XLabel()
         self.q_label.setPixmap(self.q_pixmap)
 
+    def set_visible(self, visible: bool):
+        self.q_label.setVisible(visible)
+
     def set_on_mouse_press(self, on_mouse_press: Callable[[QtGui.QMouseEvent], None]):
         @QtCore.pyqtSlot()
         def slot(mouse_event: QtGui.QMouseEvent):

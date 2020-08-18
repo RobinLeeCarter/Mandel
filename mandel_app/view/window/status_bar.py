@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -26,28 +27,17 @@ class StatusBar:
         self.q_left_label = self._build_label()
 
         self.q_center_label = self._build_label(align=QtCore.Qt.AlignCenter)
-        # self.q_center_image = self._build_image("document-copy.png")
         self.copy_icon_image = image.Image("document-copy.png")
+        self.copy_icon_image.set_visible(False)
         self.q_center_widget = self._build_center_widget()
 
         self.q_right_label = self._build_label(visible=False)
         self.q_progress_bar = self._build_progress_bar()
         self.q_right_widget = self._build_right_widget()
 
-        # self.q_layout.addWidget(self.q_left_label)
-        # self.q_layout.addWidget(self.q_center_label)
-        # self.q_layout.addWidget(self.q_right_widget)
-        # self.q_layout.addWidget(self.q_progress_bar)
-
         self.q_layout.addWidget(self.q_left_label, stretch=1)
         self.q_layout.addWidget(self.q_center_widget, stretch=1)
         self.q_layout.addWidget(self.q_right_widget, stretch=1)
-        # self.q_layout.addWidget(self.q_progress_bar, stretch=1)
-
-        # self.q_status_bar.addWidget(self.q_left_label)
-        # self.q_status_bar.addPermanentWidget(self.q_progress_bar)
-        # self.q_status_bar.addWidget(self.q_center_label, 1)
-        # self.q_status_bar.addPermanentWidget(self.q_center_label)
 
         self._zoom_digits: int = 0
         self._dp: int = 2
@@ -61,13 +51,6 @@ class StatusBar:
         if not visible:
             q_label.setVisible(visible)
         return q_label
-
-    # def _build_image(self, filename: str) -> QtWidgets.QLabel:
-    #     q_label = QtWidgets.QLabel()
-    #     q_icon = icon.Icon("document-copy.png")
-    #     q_pixmap = q_icon.q_icon.pixmap()
-    #     q_label.setPixmap(q_pixmap)
-    #     return q_label
 
     def _build_center_widget(self) -> QtWidgets.QWidget:
         q_widget = QtWidgets.QWidget()
@@ -121,6 +104,7 @@ class StatusBar:
     def refresh_mandel_statistics(self, mandel_: mandel.Mandel):
         message = self._get_mandel_statistics(mandel_)
         self.q_center_label.setText(message)
+        self.copy_icon_image.set_visible(True)
         self.verbose_mandel_statistics = self._get_mandel_statistics(mandel_, verbose=True)
 
     def display_time_taken(self, total_time):
@@ -134,21 +118,43 @@ class StatusBar:
         self.q_right_label.setVisible(True)
 
     def display_point(self, z: complex):
-        message = f"point: {z.real:.{self._dp}f} + {z.imag:.{self._dp}f}i"
+        message = "point: " + self._complex_to_display_text(z, self._dp)
+        # message = f"point: {z.real:.{self._dp}f} + {z.imag:.{self._dp}f}i"
         self.q_left_label.setText(message)
 
     def _get_mandel_statistics(self, mandel_: mandel.Mandel, verbose: bool = False) -> str:
         if verbose:
-            message = f"center: {mandel_.centre.real} + {mandel_.centre.imag}i"
+            # message = f"center: {mandel_.centre.real} + {mandel_.centre.imag}i"
+            message = "center: " + self._complex_to_display_text(mandel_.centre)
             message += f"  size: {mandel_.x_size}"
             message += f"  rotation: {mandel_.theta_degrees}" + u"\N{DEGREE SIGN}"
         else:
             self._zoom_digits: int = max(0, round(-math.log10(mandel_.x_size)))
             self._dp = self._zoom_digits + 2
-            message = f"center: {mandel_.centre.real:.{self._dp}f} + {mandel_.centre.imag:.{self._dp}f}i"
+            # message = f"center: {mandel_.centre.real:.{self._dp}f} + {mandel_.centre.imag:.{self._dp}f}i"
+            message = "center: " + self._complex_to_display_text(mandel_.centre, self._dp)
             message += f"  size: {mandel_.x_size:.3g}"
             message += f"  rotation: {mandel_.theta_degrees}" + u"\N{DEGREE SIGN}"
         return message
+
+    @staticmethod
+    def _complex_to_display_text(z: complex, dp: Optional[int] = None) -> str:
+        if dp is None:
+            text = f"{z.real}"
+        else:
+            text = f"{z.real:.{dp}f}"
+
+        if z.imag >= 0.0:
+            text += " +"
+        else:
+            text += " -"
+
+        if dp is None:
+            text += f"{abs(z.imag)}i"
+        else:
+            text += f"{abs(z.imag):.{dp}f}i"
+
+        return text
     # endregion
 
 
