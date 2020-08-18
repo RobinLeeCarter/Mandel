@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt
 # import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
+from mandel_app.view.window.central import copy_message
 
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
@@ -27,7 +28,7 @@ class Canvas:
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self.fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.ax: figure.Axes = self.fig.subplots()
-        self.figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
+        self.figure_canvas = XFigureCanvasQTAgg(self.fig)
         self.ax_image: Optional[image.AxesImage] = None
         # self._z0_marker: lines.Line2D
         self._z0: Optional[complex] = None
@@ -188,3 +189,15 @@ class Canvas:
     # self.ax.yaxis.set_major_locator(ticker.NullLocator())
 
 
+class XFigureCanvasQTAgg(backend_qt5agg.FigureCanvasQTAgg):
+    def __init__(self, *args, **kwargs):
+        self.x_draw_copy_message: bool = True
+        super().__init__(*args, **kwargs)
+
+    def paintEvent(self, event: QtGui.QPaintEvent):
+        super().paintEvent(event)
+        if self.x_draw_copy_message:
+            q_painter = QtGui.QPainter()
+            q_painter.begin(self)
+            copy_message.CopyMessage(q_painter, event)
+            q_painter.end()
