@@ -21,7 +21,7 @@ class Actions(actions.Actions):
         self.z_mode = action.Action(
             q_main_window=self._q_main_window,
             name="z_mode",
-            icon_filename="cross-white.png",
+            icon_filename="pin.png",
             text="Z Trace",
             status_tip="Trace the z values for a point",
             checkable=True

@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt
 # import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
+from mandel_app.view.window.central import copy_message
 
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
@@ -27,7 +28,7 @@ class Canvas:
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self.fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.ax: figure.Axes = self.fig.subplots()
-        self.figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self.fig)
+        self.figure_canvas = XFigureCanvasQTAgg(self.fig)
         self.ax_image: Optional[image.AxesImage] = None
         # self._z0_marker: lines.Line2D
         self._z0: Optional[complex] = None
@@ -171,20 +172,32 @@ class Canvas:
     def get_image_point(self, event: backend_bases.MouseEvent):
         image_point = tuples.PixelPoint(x=event.x - self.mandel.offset.x,
                                         y=event.y + self.mandel.offset.y)
-        # print(f"image_point = {image_point}")
         return image_point
 
     def above_center(self, y: int) -> bool:
         return y >= self.mandel.shape.y / 2
 
-    # def set_focus(self):
-    #     self.mandel_canvas.setFocus()
 
-    # fig_width_in_inches: float = float(self.shape.x) / float(self.dpi)
-    # fig_height_in_inches: float = float(self.shape.y) / float(self.dpi)
-    # print(f"fig {fig_width_in_inches}, {fig_height_in_inches}")
-    # self.fig.set_size_inches(w=fig_width_in_inches, h=fig_height_in_inches)
-    # self.ax.xaxis.set_major_locator(ticker.NullLocator())  possibly unnecesary
-    # self.ax.yaxis.set_major_locator(ticker.NullLocator())
+class XFigureCanvasQTAgg(backend_qt5agg.FigureCanvasQTAgg):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._x_copy_message = copy_message.CopyMessage(parent=self, hide_callback=self.hide_copy_message)
 
+    def show_copy_message(self):
+        if not self._x_copy_message.visible:
+            self._x_copy_message.visible = True
+            self.draw()
+            self._x_copy_message.start_hide_timer()
 
+    def hide_copy_message(self):
+        if self._x_copy_message.visible:
+            self._x_copy_message.visible = False
+            self.draw()
+
+    def paintEvent(self, event: QtGui.QPaintEvent):
+        super().paintEvent(event)
+        if self._x_copy_message.visible:
+            q_painter = QtGui.QPainter()
+            q_painter.begin(self)
+            self._x_copy_message.draw(q_painter, event)
+            q_painter.end()

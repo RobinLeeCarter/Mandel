@@ -19,7 +19,7 @@ class ViewSettings:
     def _get_defaults(self):
         self._begin_group("window")
         self._add_default("pos", QtCore.QPoint(100, 100))
-        self._add_default("size", QtCore.QSize(1200, 800))
+        self._add_default("size", QtCore.QSize(1600, 1000))
         self._end_group()
 
         self._begin_group("z_window")

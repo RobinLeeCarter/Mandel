@@ -8,14 +8,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, enums, view_state, view_settings, icon, z_window
+from mandel_app.view import window, enums, view_state, view_settings, icon, z_window, clipboard
 
 
 class View:
     # region Setup
     def __init__(self, application: QtWidgets.QApplication, application_name: str):
-        self._application: QtWidgets.QApplication = application
+        self._application = application
         self._application_name: str = application_name
+        self._clipboard = clipboard.Clipboard(application)
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
@@ -65,7 +66,7 @@ class View:
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
             self._window.status_bar.display_time_taken(mandel.time_taken)
-            self._window.status_bar.display_mandel_statistics(mandel)
+            self._window.status_bar.refresh_mandel_statistics(mandel)
         # self._window.status_bar.q_progress_bar.setVisible(False)
         self._view_state.reset()
         # let other events fire such as mousewheel without acting on them for the new mandel
@@ -99,6 +100,9 @@ class View:
         self._z_window.set_on_close(self._on_z_close)
         self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
+        self._window.status_bar.copy_icon_image.set_on_mouse_press(self._on_copy_press)
+        self._window.status_bar.q_center_label.set_on_mouse_press(self._on_copy_press)
+        # self._window.status_bar.q_center_label.mousePressSignal.connect(self._on_copy_press)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -213,6 +217,13 @@ class View:
         if self._z_window.q_main_window.isVisible():
             self._view_settings.write_z_window_settings(self._z_window.q_main_window)
         self._view_settings.write_window_settings(self._window.q_main_window)
+
+    def _on_copy_press(self, mouse_event: QtGui.QMouseEvent):
+        text = self._window.status_bar.verbose_mandel_statistics
+        self._clipboard.copy_text(text)
+        self._window.central.canvas.figure_canvas.show_copy_message()
+        # self._window.central.canvas.figure_canvas.x_draw_copy_message = True
+        # self._window.central.canvas.figure_canvas.update()
     # endregion
 
     # region Canvas Slots
