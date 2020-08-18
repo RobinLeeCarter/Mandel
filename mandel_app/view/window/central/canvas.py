@@ -181,14 +181,18 @@ class Canvas:
 class XFigureCanvasQTAgg(backend_qt5agg.FigureCanvasQTAgg):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._x_copy_message = copy_message.CopyMessage()
+        self._x_copy_message = copy_message.CopyMessage(parent=self, hide_callback=self.hide_copy_message)
 
-    def set_copy_visible(self, visible: bool):
-        if self._x_copy_message.visible != visible:
-            self._x_copy_message.visible = visible
+    def show_copy_message(self):
+        if not self._x_copy_message.visible:
+            self._x_copy_message.visible = True
             self.draw()
-            if visible:
-                pass
+            self._x_copy_message.start_hide_timer()
+
+    def hide_copy_message(self):
+        if self._x_copy_message.visible:
+            self._x_copy_message.visible = False
+            self.draw()
 
     def paintEvent(self, event: QtGui.QPaintEvent):
         super().paintEvent(event)

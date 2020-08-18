@@ -119,19 +119,16 @@ class StatusBar:
 
     def display_point(self, z: complex):
         message = "point: " + self._complex_to_display_text(z, self._dp)
-        # message = f"point: {z.real:.{self._dp}f} + {z.imag:.{self._dp}f}i"
         self.q_left_label.setText(message)
 
     def _get_mandel_statistics(self, mandel_: mandel.Mandel, verbose: bool = False) -> str:
         if verbose:
-            # message = f"center: {mandel_.centre.real} + {mandel_.centre.imag}i"
             message = "center: " + self._complex_to_display_text(mandel_.centre)
             message += f"  size: {mandel_.x_size}"
-            message += f"  rotation: {mandel_.theta_degrees}" + u"\N{DEGREE SIGN}"
+            message += f"  rotation: {mandel_.theta_degrees} degrees"
         else:
             self._zoom_digits: int = max(0, round(-math.log10(mandel_.x_size)))
             self._dp = self._zoom_digits + 2
-            # message = f"center: {mandel_.centre.real:.{self._dp}f} + {mandel_.centre.imag:.{self._dp}f}i"
             message = "center: " + self._complex_to_display_text(mandel_.centre, self._dp)
             message += f"  size: {mandel_.x_size:.3g}"
             message += f"  rotation: {mandel_.theta_degrees}" + u"\N{DEGREE SIGN}"
