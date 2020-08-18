@@ -101,8 +101,8 @@ class View:
         self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
         self._window.status_bar.copy_icon_image.set_on_mouse_press(self._on_copy_press)
-        # self._window.status_bar.q_center_label.set_on_mouse_press(self._on_copy_press)
-        self._window.status_bar.q_center_label.mousePressSignal.connect(self._on_copy_press)
+        self._window.status_bar.q_center_label.set_on_mouse_press(self._on_copy_press)
+        # self._window.status_bar.q_center_label.mousePressSignal.connect(self._on_copy_press)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)

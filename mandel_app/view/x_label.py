@@ -12,10 +12,9 @@ class XLabel(QtWidgets.QLabel):
         super().mousePressEvent(mouse_event)
 
     def set_on_mouse_press(self, on_mouse_press: Callable[[QtGui.QMouseEvent], None]):
-        # @QtCore.pyqtSlot()
-        # def slot(mouse_event: QtGui.QMouseEvent):
-        #     on_mouse_press(mouse_event)
+        @QtCore.pyqtSlot()
+        def slot(mouse_event: QtGui.QMouseEvent):
+            on_mouse_press(mouse_event)
 
         # noinspection PyUnresolvedReferences
-
         self.mousePressSignal.connect(on_mouse_press)
