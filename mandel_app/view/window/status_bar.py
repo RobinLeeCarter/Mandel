@@ -3,7 +3,7 @@ from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore
 
-from mandel_app.view import image
+from mandel_app.view import image, x_label
 from mandel_app.model.mandelbrot import mandel
 
 
@@ -45,8 +45,9 @@ class StatusBar:
 
     def _build_label(self,
                      align: QtCore.Qt.AlignmentFlag = QtCore.Qt.AlignLeft,
-                     visible: bool = True) -> QtWidgets.QLabel:
-        q_label = QtWidgets.QLabel("")
+                     visible: bool = True) -> x_label.XLabel:
+        # q_label = QtWidgets.QLabel("")
+        q_label = x_label.XLabel("")
         q_label.setAlignment(align)
         if not visible:
             q_label.setVisible(visible)
