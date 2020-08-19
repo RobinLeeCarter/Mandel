@@ -21,8 +21,6 @@ class Worker(QtCore.QObject):
     # endregion
 
     # region Slots for Manager
-    @QtCore.pyqtSlot(job.Job,
-                     enums.QueueAs)
     def request_job(self,
                     job_: job.Job,
                     queue_as: enums.QueueAs
@@ -50,7 +48,6 @@ class Worker(QtCore.QObject):
         if not self.is_running:
             self._do_job_queue()
 
-    @QtCore.pyqtSlot()
     def request_stop(self):
         if self.is_running:
             self.job_queue.clear()
