@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
-from mandel_app.view.window.central import canvas
+from mandel_app.view.window.central import canvas, overlay
 
 
 class Central:
@@ -34,8 +34,11 @@ class Central:
         self.q_main.setLayout(self.q_main_layout)
 
         self.canvas = canvas.Canvas()
+        q_figure_canvas = self.canvas.figure_canvas
+        self.overlay = overlay.Overlay(parent=q_figure_canvas)
+        q_figure_canvas.set_overlay(self.overlay)
 
-        self.q_main_layout.addWidget(self.canvas.figure_canvas)
+        self.q_main_layout.addWidget(q_figure_canvas)
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
 
         # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)

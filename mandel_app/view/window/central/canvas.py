@@ -12,7 +12,7 @@ from PyQt5.QtCore import Qt
 # import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
-from mandel_app.view.window.central import copy_message
+from mandel_app.view.window.central import overlay
 
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
@@ -181,23 +181,11 @@ class Canvas:
 class XFigureCanvasQTAgg(backend_qt5agg.FigureCanvasQTAgg):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._x_copy_message = copy_message.CopyMessage(parent=self, hide_callback=self.hide_copy_message)
+        self._overlay: Optional[overlay.Overlay] = None
 
-    def show_copy_message(self):
-        if not self._x_copy_message.visible:
-            self._x_copy_message.visible = True
-            self.draw()
-            self._x_copy_message.start_hide_timer()
+    def set_overlay(self, overlay_: overlay.Overlay):
+        self._overlay = overlay_
 
-    def hide_copy_message(self):
-        if self._x_copy_message.visible:
-            self._x_copy_message.visible = False
-            self.draw()
-
-    def paintEvent(self, event: QtGui.QPaintEvent):
-        super().paintEvent(event)
-        if self._x_copy_message.visible:
-            q_painter = QtGui.QPainter()
-            q_painter.begin(self)
-            self._x_copy_message.draw(q_painter, event)
-            q_painter.end()
+    def paintEvent(self, q_paint_event: QtGui.QPaintEvent):
+        super().paintEvent(q_paint_event)
+        self._overlay.draw(q_paint_event)

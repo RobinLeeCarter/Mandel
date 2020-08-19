@@ -117,7 +117,7 @@ class XMainWindow(QtWidgets.QMainWindow):
             self.closeSignal.emit()
         super().closeEvent(event)
 
-    # region delayed resize event handler
+    # region delayed resize resize_event handler
     def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
         if self.resize_enabled:
             # NOTE: resize_event will be messed up by the resize delay code so we don't take a copy

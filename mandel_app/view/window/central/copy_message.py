@@ -11,6 +11,7 @@ class CopyMessage:
         self._hide_q_timer = QtCore.QTimer(parent)
         self._hide_q_timer.setSingleShot(True)
         self._connect_hide_timer()
+        # self._hide_q_timer.timeout.connect(hide_callback)
 
         self.visible = False
         self._alpha_f = 0.8
@@ -18,11 +19,11 @@ class CopyMessage:
         self._q_painter: Optional[QtGui.QPainter] = None
         self._window_rect: Optional[QtCore.QRect] = None
 
-    def draw(self, q_painter: QtGui.QPainter, event: QtGui.QPaintEvent):
+    def draw(self, q_painter: QtGui.QPainter, q_paint_event: QtGui.QPaintEvent):
         if self.visible:
             self._q_painter = q_painter
             q_painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            self._window_rect = event.rect()
+            self._window_rect = q_paint_event.rect()
             self._build()
 
     def _build(self):

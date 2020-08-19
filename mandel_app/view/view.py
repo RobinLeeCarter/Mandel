@@ -218,12 +218,10 @@ class View:
             self._view_settings.write_z_window_settings(self._z_window.q_main_window)
         self._view_settings.write_window_settings(self._window.q_main_window)
 
-    def _on_copy_press(self, mouse_event: QtGui.QMouseEvent):
+    def _on_copy_press(self, _: QtGui.QMouseEvent):
         text = self._window.status_bar.verbose_mandel_statistics
         self._clipboard.copy_text(text)
-        self._window.central.canvas.figure_canvas.show_copy_message()
-        # self._window.central.canvas.figure_canvas.x_draw_copy_message = True
-        # self._window.central.canvas.figure_canvas.update()
+        self._window.central.overlay.show_copy_message()
     # endregion
 
     # region Canvas Slots
@@ -309,7 +307,6 @@ class View:
         # print("_on_mandel_mouse_scroll")
 
         if view_state_.ready_to_zoom:
-            # print(f"event.step={event.step}")
             extra_scaling = 0.9 ** float(event.step)
             view_state_.scaling_requested *= extra_scaling
             if event.step > 0:  # zooming in
