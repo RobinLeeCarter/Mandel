@@ -225,7 +225,6 @@ class View:
     # endregion
 
     # region Canvas Slots
-    @QtCore.pyqtSlot()
     def _on_mandel_mouse_press(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
@@ -250,7 +249,6 @@ class View:
                 else:
                     self._zoom(scaling=2.0)
 
-    @QtCore.pyqtSlot()
     def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
@@ -266,7 +264,6 @@ class View:
             view_state_.rotate_end = canvas.get_image_point(event)
             canvas.rotate_mandel_mouse(view_state_.total_theta_delta)
 
-    @QtCore.pyqtSlot()
     def _on_mandel_mouse_release(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
@@ -300,7 +297,6 @@ class View:
                     view_state_.released_theta_delta = view_state_.released_theta_delta + mouse_theta_delta
                 self._set_action(enums.ImageAction.ROTATED)
 
-    @QtCore.pyqtSlot()
     def _on_mandel_mouse_scroll(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
