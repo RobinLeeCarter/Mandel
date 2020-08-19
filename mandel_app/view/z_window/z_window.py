@@ -1,5 +1,4 @@
-import copy
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -52,37 +51,16 @@ class ZWindow:
 
     # region Connect Events
     def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
-        @QtCore.pyqtSlot()
-        def slot(key_event: QtGui.QKeyEvent):
-            on_key_pressed(key_event)
-
-        # noinspection PyUnresolvedReferences
-        self.q_main_window.keyPressSignal.connect(slot)
+        self.q_main_window.keyPressSignal.connect(on_key_pressed)
 
     def set_on_active(self, on_active: Callable[[], None]):
-        @QtCore.pyqtSlot()
-        def slot():
-            if not self.is_active:
-                on_active()
-
-        # noinspection PyUnresolvedReferences
-        self.q_main_window.activationChangeSignal.connect(slot)
+        self.q_main_window.activationChangeSignal.connect(on_active)
 
     def set_on_close(self, on_close: Callable[[], None]):
-        @QtCore.pyqtSlot()
-        def slot():
-            on_close()
-
-        # noinspection PyUnresolvedReferences
-        self.q_main_window.closeSignal.connect(slot)
+        self.q_main_window.closeSignal.connect(on_close)
 
     def set_on_resize(self, on_resize: Callable[[], None]):
-        @QtCore.pyqtSlot()
-        def slot():
-            on_resize()
-
-        # noinspection PyUnresolvedReferences
-        self.q_main_window.resizeSignal.connect(slot)
+        self.q_main_window.resize_q_timer.timeout.connect(on_resize)
     # endregion
 
 
@@ -93,17 +71,14 @@ class XMainWindow(QtWidgets.QMainWindow):
     keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
     activationChangeSignal = QtCore.pyqtSignal()
     closeSignal = QtCore.pyqtSignal()
-    resizeSignal = QtCore.pyqtSignal()
 
     def __init__(self, parent=Optional[QtWidgets.QWidget]):
         super().__init__(parent=parent)
         self.resize_q_timer = QtCore.QTimer(parent=self)
         self.resize_q_timer.setSingleShot(True)
         self.resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
-        self.resize_connect_timer()
 
     def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
-        # noinspection PyUnresolvedReferences
         self.keyPressSignal.emit(key_event)
         super().keyPressEvent(key_event)
 
@@ -124,12 +99,4 @@ class XMainWindow(QtWidgets.QMainWindow):
             self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
         self.resize_enabled = True
         super().resizeEvent(resize_event)
-
-    def resize_connect_timer(self):
-        @QtCore.pyqtSlot()
-        def slot():
-            # noinspection PyUnresolvedReferences
-            self.resizeSignal.emit()
-
-        self.resize_q_timer.timeout.connect(slot)
     # endregion

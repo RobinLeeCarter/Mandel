@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
