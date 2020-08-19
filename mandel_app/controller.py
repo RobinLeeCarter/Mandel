@@ -46,8 +46,8 @@ class Controller:
     def pan_request(self, pan: tuples.PixelPoint):
         self._model.pan_and_calc(pan)
 
-    def rotate_request(self, theta: int):
-        modulated_theta = theta % 360
+    def rotate_request(self, theta_degrees: int):
+        modulated_theta = theta_degrees % 360
         self._model.rotate_and_calc(modulated_theta)
 
     def stop_request(self):

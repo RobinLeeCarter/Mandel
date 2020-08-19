@@ -1,6 +1,4 @@
-from typing import Optional, Callable
-
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 
 from mandel_app.view.window.central import copy_message
 
@@ -25,7 +23,6 @@ class Overlay:
         self.parent.draw()
         self._copy_message.start_hide_timer()
 
-    # @QtCore.pyqtSlot()
     def hide_copy_message(self):
         self._copy_message.visible = False
         self._refresh_overlay_visible()

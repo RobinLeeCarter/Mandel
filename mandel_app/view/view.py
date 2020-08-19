@@ -142,11 +142,11 @@ class View:
     def _on_z_full_screen(self, _: bool):
         self._window.actions.full_screen.q_action.trigger()
 
-    def _on_rotating(self, to_theta_degrees: int):
+    def _on_rotating(self, theta_degrees: int):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
         if view_state_.ready_to_rotate:
-            canvas.rotate_mandel_frame(to_theta_degrees)
+            canvas.rotate_mandel_frame(theta_degrees)
             self._set_action(enums.ImageAction.ROTATED)
 
     def _on_max_iteration(self, max_iterations_pressed: bool):
