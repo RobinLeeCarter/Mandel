@@ -118,6 +118,7 @@ class LabeledSlider(QtWidgets.QWidget):
         return
 
 
+# test script
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     q_widget = QtWidgets.QWidget()

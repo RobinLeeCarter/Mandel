@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from PyQt5 import QtCore, QtWidgets
 

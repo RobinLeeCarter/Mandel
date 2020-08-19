@@ -108,9 +108,3 @@ class Snake:
                 # noinspection PyProtectedMember
                 self._ani._stop()
                 self._ani = None
-
-            # from: https://stackoverflow.com/questions/48564181/how-to-stop-funcanimation-by-func-in-matplotlib
-            # https://matplotlib.org/3.3.0/api/_as_gen/matplotlib.animation.Animation.html
-            # https://gist.github.com/Seanny123/2c7efd90bebbe9c7bea6a1bd30a2133c
-            # self._ani.event_source.stop()
-            # self._ani = None

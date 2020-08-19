@@ -122,13 +122,13 @@ class Canvas:
         self._ax.add_patch(solution2)
 
     def _draw_legend(self):
-        z0 = lines.Line2D([0], [0], marker='x', color='blue', label='z$_0$', markersize=7, linestyle='')
+        z0 = lines.Line2D([], [], marker='x', color='blue', label='z$_0$', markersize=7, linestyle='')
         z_trace = lines.Line2D([0], [0], color='blue', marker='o', lw=1, markersize=4, label='z$_n$')
-        s1 = lines.Line2D([0], [0], marker='o', color='red', label='solution 1', markersize=7, linestyle='', alpha=0.5)
-        s2 = lines.Line2D([0], [0], marker='o', color='green', label='solution 2', markersize=7, linestyle='', alpha=0.5)
+        s1 = lines.Line2D([], [], marker='o', color='red', label='solution 1', markersize=7, linestyle='', alpha=0.5)
+        s2 = lines.Line2D([], [], marker='o', color='green', label='solution 2', markersize=7, linestyle='', alpha=0.5)
         p1 = patches.Patch(facecolor=(1.0, 0.3, 0.3, 0.3), label='s1 attract')
         p2 = patches.Patch(facecolor=(0.3, 1.0, 0.3, 0.3), label='s2 attract')
-        direction = lines.Line2D([0], [0], marker='>', color='grey', label='direction', markersize=5, linestyle='-')
+        direction = lines.Line2D([], [], marker='>', color='grey', label='direction', markersize=5, linestyle='-')
 
         legend_elements = [z0, z_trace, s1, p1, s2, p2, direction]
         self._ax.legend(handles=legend_elements, loc='upper right', labelspacing=0.1,

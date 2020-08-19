@@ -37,9 +37,5 @@ class Action:
         self._q_main_window.addAction(self.q_action)
 
     def set_on_triggered(self, on_triggered: Callable[[bool], None]):
-        @QtCore.pyqtSlot()
-        def slot(checked: bool):
-            on_triggered(checked)
-
         # noinspection PyUnresolvedReferences
-        self.q_action.triggered.connect(slot)
+        self.q_action.triggered.connect(on_triggered)

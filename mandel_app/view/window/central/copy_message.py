@@ -7,10 +7,9 @@ class CopyMessage:
     MESSAGE_TIMEOUT_MS: int = 2000
 
     def __init__(self, parent: QtCore.QObject, hide_callback: Callable[[], None]):
-        self._hide_callback = hide_callback
         self._hide_q_timer = QtCore.QTimer(parent)
         self._hide_q_timer.setSingleShot(True)
-        self._connect_hide_timer()
+        self._hide_q_timer.timeout.connect(hide_callback)
         # self._hide_q_timer.timeout.connect(hide_callback)
 
         self.visible = False
@@ -63,14 +62,6 @@ class CopyMessage:
         q_painter_path.addRoundedRect(q_rect_f, 10.0, 10.0)
         q_painter.fillPath(q_painter_path, q_fill_color)
         q_painter.drawPath(q_painter_path)  # seemingly unnecessary
-
-    def _connect_hide_timer(self):
-        @QtCore.pyqtSlot()
-        def slot():
-            # noinspection PyUnresolvedReferences
-            self._hide_callback()
-
-        self._hide_q_timer.timeout.connect(slot)
 
     def start_hide_timer(self):
         self._hide_q_timer.start(CopyMessage.MESSAGE_TIMEOUT_MS)

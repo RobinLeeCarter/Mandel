@@ -46,7 +46,6 @@ class StatusBar:
     def _build_label(self,
                      align: QtCore.Qt.AlignmentFlag = QtCore.Qt.AlignLeft,
                      visible: bool = True) -> x_label.XLabel:
-        # q_label = QtWidgets.QLabel("")
         q_label = x_label.XLabel("")
         q_label.setAlignment(align)
         if not visible:
@@ -154,5 +153,3 @@ class StatusBar:
 
         return text
     # endregion
-
-

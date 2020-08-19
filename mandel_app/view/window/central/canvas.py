@@ -149,7 +149,6 @@ class Canvas:
     #     """See: https://matplotlib.org/3.1.1/users/event_handling.html"""
     def add_connection(self, event_name: str, func: Callable[[backend_bases.Event], None]):
         connection_id = self.figure_canvas.mpl_connect(event_name, func)
-        # print(connection_id, event_name)
         self.connections[event_name] = connection_id
 
     def remove_connection(self, event_name: str):
