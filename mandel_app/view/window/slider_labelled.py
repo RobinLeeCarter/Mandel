@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QStyle, QStyleOptionSlider
 from PyQt5.QtCore import QRect, QPoint, Qt
 
 
-class LabeledSlider(QtWidgets.QWidget):
+class SliderLabeled(QtWidgets.QWidget):
     def __init__(self, minimum, maximum, interval=1, orientation=Qt.Horizontal, labels=None, parent=None):
         super().__init__(parent=parent)
 
@@ -55,7 +55,7 @@ class LabeledSlider(QtWidgets.QWidget):
 
     def paintEvent(self, e):
 
-        super(LabeledSlider, self).paintEvent(e)
+        super(SliderLabeled, self).paintEvent(e)
 
         style = self.q_slider.style()
         painter = QPainter(self)
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     q_layout = QtWidgets.QHBoxLayout()
     q_widget.setLayout(q_layout)
 
-    w = LabeledSlider(1, 10, 1, orientation=Qt.Horizontal)
+    w = SliderLabeled(1, 10, 1, orientation=Qt.Horizontal)
 
     q_layout.addWidget(w)
     q_widget.show()
