@@ -17,7 +17,7 @@ class Window:
         self.toolbars = toolbars.Toolbars(self.q_main_window, self.actions.action_dict)
 
         self.central = central.Central(self.q_main_window)
-        self.status_bar = status_bar.StatusBar(self.q_main_window)
+        self.status_bar: status_bar.StatusBar = status_bar.StatusBar(self.q_main_window)
 
         # modes
         self.is_full_screen = False
