@@ -14,14 +14,14 @@ from mandel_app.view import window, enums, view_state, view_settings, icon, z_wi
 class View:
     # region Setup
     def __init__(self, application: QtWidgets.QApplication, application_name: str):
-        self._application = application
+        self._application: QtWidgets.QApplication = application
         self._application_name: str = application_name
-        self._clipboard = clipboard.Clipboard(application)
+        self._clipboard: clipboard.Clipboard = clipboard.Clipboard(application)
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state = view_state.ViewState()
-        self._view_settings = view_settings.ViewSettings(reset=False)
+        self._view_state: view_state.ViewState = view_state.ViewState()
+        self._view_settings: view_settings.ViewSettings = view_settings.ViewSettings(reset=False)
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
