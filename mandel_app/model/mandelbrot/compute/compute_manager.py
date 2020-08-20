@@ -108,6 +108,7 @@ class ComputeManager:
 
             # update main values
             z[continuing] = continuing_z   # may not need this but almost instant
+            # noinspection PyTypeChecker
             still_continuing: cp.ndarray = (continuing_iteration == end_iter)
             count_still_continuing: int = cp.count_nonzero(still_continuing)
             count_stopped: int = cp.count_nonzero(cp.invert(still_continuing))
