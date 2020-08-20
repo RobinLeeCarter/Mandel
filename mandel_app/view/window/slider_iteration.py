@@ -1,12 +1,12 @@
 from PyQt5 import QtWidgets
 
-from mandel_app.view.custom_widgets import x_slider_labelled
+from mandel_app.view import widgets
 
 
 class SliderIteration:
     def __init__(self, q_main_window: QtWidgets.QMainWindow):
 
-        self.labelled_slider = x_slider_labelled.XSliderLabeled(
+        self.labelled_slider = widgets.XSliderLabeled(
             minimum=17,
             maximum=30,
             parent=q_main_window

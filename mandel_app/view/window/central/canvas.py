@@ -5,7 +5,6 @@ import numpy as np
 
 import matplotlib
 from matplotlib import figure, backend_bases, image, transforms, lines
-from matplotlib.backends import backend_qt5agg
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
@@ -13,7 +12,7 @@ from PyQt5.QtCore import Qt
 # import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
-from mandel_app.view.window.central import overlay
+from mandel_app.view import widgets
 
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
@@ -29,7 +28,8 @@ class Canvas:
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self._fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self._ax: figure.Axes = self._fig.subplots()
-        self._figure_canvas: XFigureCanvasQTAgg = XFigureCanvasQTAgg(self._fig)
+        self._figure_canvas: widgets.XFigureCanvasQTAgg =\
+            widgets.XFigureCanvasQTAgg(self._fig)
         self._ax_image: Optional[image.AxesImage] = None
         self._z0: Optional[complex] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
@@ -41,7 +41,7 @@ class Canvas:
         return self._mandel
 
     @property
-    def figure_canvas(self) -> XFigureCanvasQTAgg:
+    def figure_canvas(self) -> widgets.XFigureCanvasQTAgg:
         return self._figure_canvas
 
     @property
@@ -183,16 +183,3 @@ class Canvas:
 
     def above_center(self, y: int) -> bool:
         return y >= self._mandel.shape.y / 2
-
-
-class XFigureCanvasQTAgg(backend_qt5agg.FigureCanvasQTAgg):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._overlay: Optional[overlay.Overlay] = None
-
-    def set_overlay(self, overlay_: overlay.Overlay):
-        self._overlay = overlay_
-
-    def paintEvent(self, q_paint_event: QtGui.QPaintEvent):
-        super().paintEvent(q_paint_event)
-        self._overlay.draw(q_paint_event)

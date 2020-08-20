@@ -3,13 +3,13 @@ from typing import Callable
 from PyQt5 import QtWidgets, QtGui
 
 from mandel_app import tuples
-from mandel_app.view.custom_widgets import x_main_window
+from mandel_app.view import widgets
 from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
     def __init__(self, parent: QtWidgets.QMainWindow, z_window_settings: dict):
-        self.q_main_window: x_main_window.XMainWindow = x_main_window.XMainWindow(parent=parent)
+        self.q_main_window: widgets.XMainWindow = widgets.XMainWindow(parent=parent)
         self.is_active: bool = False
         self.actions: actions.Actions = actions.Actions(self.q_main_window)
         image_shape: tuples.ImageShape = tuples.image_shape_from_q_size(z_window_settings["size"])

@@ -2,7 +2,7 @@ from typing import Callable
 
 from PyQt5 import QtGui
 
-from mandel_app.view.custom_widgets import x_main_window
+from mandel_app.view import widgets
 from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
@@ -10,7 +10,7 @@ class Window:
     def __init__(self, application_name: str, window_settings: dict):
         self._application_name: str = application_name
 
-        self.q_main_window: x_main_window.XMainWindow = x_main_window.XMainWindow()
+        self.q_main_window: widgets.XMainWindow = widgets.XMainWindow()
         # modes
         self.is_full_screen = False
         self.is_active = True

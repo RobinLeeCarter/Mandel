@@ -3,8 +3,7 @@ from typing import Optional, Callable
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from mandel_app.view.components import image
-from mandel_app.view.custom_widgets import x_label
+from mandel_app.view import widgets, common
 from mandel_app.model.mandelbrot import mandel
 
 
@@ -24,15 +23,15 @@ class StatusBar:
         self._q_layout.setContentsMargins(0, 0, 0, 0)
         self._q_widget.setLayout(self._q_layout)
 
-        # build up components
-        self._q_left_label: x_label.XLabel = self._build_label()
+        # build up common
+        self._q_left_label: widgets.XLabel = self._build_label()
 
-        self._q_center_label: x_label.XLabel = self._build_label(align=QtCore.Qt.AlignCenter)
-        self._copy_icon_image: image.Image = image.Image("document-copy.png")
+        self._q_center_label: widgets.XLabel = self._build_label(align=QtCore.Qt.AlignCenter)
+        self._copy_icon_image: common.Image = common.Image("document-copy.png")
         self._copy_icon_image.set_visible(False)
         self._q_center_widget: QtWidgets.QWidget = self._build_center_widget()
 
-        self._q_right_label: x_label.XLabel = self._build_label(visible=False)
+        self._q_right_label: widgets.XLabel = self._build_label(visible=False)
         self._q_progress_bar: QtWidgets.QProgressBar = self._build_progress_bar()
         self._q_right_widget: QtWidgets.QWidget = self._build_right_widget()
 
@@ -46,8 +45,8 @@ class StatusBar:
 
     def _build_label(self,
                      align: QtCore.Qt.AlignmentFlag = QtCore.Qt.AlignLeft,
-                     visible: bool = True) -> x_label.XLabel:
-        q_label = x_label.XLabel("")
+                     visible: bool = True) -> widgets.XLabel:
+        q_label = widgets.XLabel("")
         q_label.setAlignment(align)
         if not visible:
             q_label.setVisible(visible)

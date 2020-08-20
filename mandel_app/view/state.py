@@ -3,7 +3,7 @@ from typing import Optional
 from PyQt5.QtCore import Qt
 
 from mandel_app import tuples
-from mandel_app.view.components import enums
+from mandel_app.view import enums
 
 
 class State:

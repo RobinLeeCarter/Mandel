@@ -8,8 +8,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, state, settings, z_window
-from mandel_app.view.components import icon, enums, clipboard
+from mandel_app.view import window, state, settings, z_window, enums
+from mandel_app.view.common import icon, clipboard
 
 
 class View:
