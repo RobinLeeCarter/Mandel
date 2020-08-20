@@ -1,8 +1,8 @@
 from typing import Optional, Union, Callable
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 
-from mandel_app.view import icon
+from mandel_app.view import common
 
 ShortcutType = Union[QtGui.QKeySequence, QtGui.QKeySequence.StandardKey, str, int]
 
@@ -23,7 +23,7 @@ class Action:
         if icon_filename is None:
             self.q_action = QtWidgets.QAction(text, self._q_main_window)
         else:
-            self.icon_: icon.Icon = icon.Icon(icon_filename)
+            self.icon_: common.Icon = common.Icon(icon_filename)
             self.q_action: QtWidgets.QAction = QtWidgets.QAction(self.icon_.q_icon, text, self._q_main_window)
 
         if shortcut is not None:

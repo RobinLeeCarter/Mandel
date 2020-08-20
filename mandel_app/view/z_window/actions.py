@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 
-from mandel_app.view import action, actions
+from mandel_app.view.common import action, actions
 
 
 class Actions(actions.Actions):

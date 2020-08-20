@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from mandel_app import tuples
@@ -9,7 +7,7 @@ from mandel_app.view.z_window.central import canvas
 
 class Central:
     def __init__(self, q_main_window: QtWidgets.QMainWindow, image_shape: tuples.ImageShape):
-        # components of central area
+        # common of central area
         self.q_scroll_area: XScrollArea = XScrollArea(q_main_window)
         self.q_main = QtWidgets.QWidget()
         self.q_main_layout = QtWidgets.QVBoxLayout(self.q_main)
@@ -18,13 +16,13 @@ class Central:
         self.build(q_main_window)
 
     def build(self, q_main_window: QtWidgets.QMainWindow):
-        # make connections between components
+        # make connections between common
         q_main_window.setCentralWidget(self.q_scroll_area)
         self.q_scroll_area.setWidget(self.q_main)
         self.q_main.setLayout(self.q_main_layout)
         self.q_main_layout.addWidget(self.canvas.figure_canvas, 1)
 
-        # set properties of components
+        # set properties of common
         self.q_scroll_area.setAlignment(QtCore.Qt.AlignCenter)
         self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)

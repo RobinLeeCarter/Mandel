@@ -1,13 +1,13 @@
 from PyQt5 import QtWidgets, QtCore
 
-from mandel_app.view import action, actions
+from mandel_app.view import common
 
 
-class Actions(actions.Actions):
+class Actions(common.Actions):
     def __init__(self, q_main_window: QtWidgets.QMainWindow):
         super().__init__(q_main_window)
 
-        self.full_screen: action.Action = action.Action(
+        self.full_screen: common.Action = common.Action(
             q_main_window=self._q_main_window,
             name="full_screen",
             icon_filename="application-resize.png",
@@ -18,7 +18,7 @@ class Actions(actions.Actions):
         )
         self._add_action(self.full_screen)
 
-        self.z_mode: action.Action = action.Action(
+        self.z_mode: common.Action = common.Action(
             q_main_window=self._q_main_window,
             name="z_mode",
             icon_filename="pin.png",
@@ -28,7 +28,7 @@ class Actions(actions.Actions):
         )
         self._add_action(self.z_mode)
 
-        self.max_iterations: action.Action = action.Action(
+        self.max_iterations: common.Action = common.Action(
             q_main_window=self._q_main_window,
             name="max_iterations",
             icon_filename="plus.png",
@@ -38,7 +38,7 @@ class Actions(actions.Actions):
         )
         self._add_action(self.max_iterations)
 
-        self.escape: action.Action = action.Action(
+        self.escape: common.Action = common.Action(
             q_main_window=self._q_main_window,
             name="escape",
             text="Escape",

@@ -8,7 +8,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, enums, view_state, view_settings, icon, z_window, clipboard
+from mandel_app.view import window, state, settings, z_window, enums
+from mandel_app.view.common import icon, clipboard
 
 
 class View:
@@ -20,8 +21,8 @@ class View:
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state: view_state.ViewState = view_state.ViewState()
-        self._view_settings: view_settings.ViewSettings = view_settings.ViewSettings(reset=False)
+        self._view_state: state.State = state.State()
+        self._view_settings: settings.Settings = settings.Settings(reset=False)
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
@@ -119,9 +120,9 @@ class View:
 
     def _connect_iteration(self):
         self._window.actions.max_iterations.set_on_triggered(on_triggered=self._on_max_iteration)
-        q_slider = self._window.toolbars.iteration_slider.q_slider
-        q_slider.sliderMoved.connect(self._on_iteration_slider_moved)
-        q_slider.valueChanged.connect(self._on_iteration_slider_value_changed)
+        iteration_slider = self._window.toolbars.iteration_slider
+        iteration_slider.set_on_slider_moved(self._on_iteration_slider_moved)
+        iteration_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
 
     def _connect_canvas(self):
         canvas = self._window.central.canvas
@@ -150,8 +151,8 @@ class View:
     def _on_max_iteration(self, max_iterations_pressed: bool):
         if max_iterations_pressed:
             self._window.toolbars.slider_visibility(True)
-            q_slider = self._window.toolbars.iteration_slider.q_slider
-            self._on_iteration_slider_value_changed(q_slider.value())
+            value = self._window.toolbars.iteration_slider.value
+            self._on_iteration_slider_value_changed(value)
         else:
             self._window.toolbars.slider_visibility(False)
             self._controller.new_compute_parameters_request()
@@ -190,12 +191,12 @@ class View:
         self._z_window.is_active = True
         self._window.is_active = False
 
-    def _on_z_close(self):
-        self._view_settings.write_z_window_settings(self._z_window.q_main_window)
-        q_action = self._window.actions.z_mode.q_action
-        if q_action.isChecked():
-            q_action.trigger()
-        # self._window.actions.z_mode.q_action.setChecked(False)
+    def _on_z_close(self, close_event: QtGui.QCloseEvent):
+        if close_event.spontaneous():
+            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
+            q_action = self._window.actions.z_mode.q_action
+            if q_action.isChecked():
+                q_action.trigger()
 
     def _on_resized(self):
         central = self._window.central
@@ -208,7 +209,7 @@ class View:
     def _on_z_resized(self):
         z_central = self._z_window.central
         z_central.refresh_image_space()
-        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
+        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_shape)
         self._controller.redraw_z_trace(image_shape)
 
     def _on_close(self):
@@ -223,6 +224,7 @@ class View:
     # endregion
 
     # region Canvas Slots
+    @QtCore.pyqtSlot()
     def _on_mandel_mouse_press(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
@@ -247,6 +249,7 @@ class View:
                 else:
                     self._zoom(scaling=2.0)
 
+    @QtCore.pyqtSlot()
     def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
@@ -262,6 +265,7 @@ class View:
             view_state_.rotate_end = canvas.get_image_point(event)
             canvas.rotate_mandel_mouse(view_state_.total_theta_delta)
 
+    @QtCore.pyqtSlot()
     def _on_mandel_mouse_release(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
@@ -295,6 +299,7 @@ class View:
                     view_state_.released_theta_delta = view_state_.released_theta_delta + mouse_theta_delta
                 self._set_action(enums.ImageAction.ROTATED)
 
+    @QtCore.pyqtSlot()
     def _on_mandel_mouse_scroll(self, event: backend_bases.MouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state

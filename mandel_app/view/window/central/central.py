@@ -1,9 +1,10 @@
 from typing import Optional
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
+from mandel_app.view import widgets
 from mandel_app.view.window.central import canvas, overlay
 
 
@@ -12,7 +13,7 @@ class Central:
         # scroll_area as central widget for main_window
         # self.q_main_window = q_main_window
 
-        self._q_scroll_area: XScrollArea = XScrollArea(q_main_window)
+        self._q_scroll_area: widgets.XScrollArea = widgets.XScrollArea(q_main_window)
         self._q_scroll_area.setAlignment(QtCore.Qt.AlignCenter)
         self._q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self._q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -34,7 +35,7 @@ class Central:
         self._q_main.setLayout(self._q_main_layout)
 
         self.canvas: canvas.Canvas = canvas.Canvas()
-        q_figure_canvas: canvas.XFigureCanvasQTAgg = self.canvas.figure_canvas
+        q_figure_canvas: widgets.XFigureCanvasQTAgg = self.canvas.figure_canvas
         self.overlay = overlay.Overlay(parent=q_figure_canvas)
         q_figure_canvas.set_overlay(self.overlay)
 
@@ -74,13 +75,3 @@ class Central:
         # self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
         return tuples.ImageShape(x, y)
-
-
-# This disables the scroll-wheel since we are using it for zooming
-# plus the scrollbars are disabled
-# removing the QScrollArea altogether messed up the image rendering and it was so hard to get right the first time
-class XScrollArea(QtWidgets.QScrollArea):
-
-    def wheelEvent(self, wheel_event: QtGui.QWheelEvent) -> None:
-        wheel_event.ignore()
-
