@@ -4,7 +4,7 @@ import utils
 class ProgressEstimator:
     def __init__(self):
         self.progress: float = 0.0
-        self.timer = utils.Timer()
+        self.timer: utils.Timer = utils.Timer()
 
     # region Requests
     def start(self):

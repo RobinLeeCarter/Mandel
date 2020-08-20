@@ -16,11 +16,11 @@ class Manager(QtCore.QObject):
                  on_job_complete: Optional[Callable[[job.Job], None]] = None
                  ):
         super().__init__()
-        self._thread = QtCore.QThread()
-        self._worker = worker.Worker()
-        self._on_progress_update = on_progress_update
-        self._on_stop_success = on_stop_success
-        self._on_job_complete = on_job_complete
+        self._thread: QtCore.QThread = QtCore.QThread()
+        self._worker: worker.Worker = worker.Worker()
+        self._on_progress_update: Optional[Callable[[float, int], None]] = on_progress_update
+        self._on_stop_success: Optional[Callable[[], None]] = on_stop_success
+        self._on_job_complete: Optional[Callable[[job.Job], None]] = on_job_complete
 
         self._singular_job: Optional[job.Job] = None
     # endregion
