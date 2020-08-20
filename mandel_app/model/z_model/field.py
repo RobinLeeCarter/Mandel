@@ -68,12 +68,3 @@ class Field:
 
         # self.repulsion1 = self.repulsion(solutions[0], z, z_next)
         # self.repulsion2 = self.repulsion(solutions[1], z, z_next)
-
-    # change in distance to solution
-    # def repulsion(self, solution: complex, z: np.ndarray, z_next: np.ndarray) -> np.ndarray:
-    #     before = np.abs(z - solution)
-    #     after = np.abs(z_next - solution)
-    #     # TODO: divide by zero error
-    #     repulsion = after / before
-    #     repulsion[repulsion > 10.0] = 10.0
-    #     return repulsion
