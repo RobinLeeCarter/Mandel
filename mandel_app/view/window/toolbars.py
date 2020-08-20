@@ -39,9 +39,9 @@ class Toolbars:
 
         self.iterations_label = QtWidgets.QLabel("")
         self.iterations_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self._iterations_label_action = self.view_tool_bar.addWidget(self.iterations_label)
+        self._iterations_label_action: QtWidgets.QAction = self.view_tool_bar.addWidget(self.iterations_label)
 
-        initial_power = 20
+        initial_power: int = 20
         self.iteration_slider.q_slider.setValue(initial_power)
         self.set_iterations_label(2**initial_power)
         self.slider_visibility(visible=False)
