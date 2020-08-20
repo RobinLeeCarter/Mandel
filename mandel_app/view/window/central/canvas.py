@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional, Callable, List
 
 import numpy as np
@@ -23,14 +24,13 @@ class Canvas:
         # was in learnpyqt tutorial and probably no harm but doesn't seem to do anything
         matplotlib.use('Qt5Agg')
         self._mandel: Optional[mandelbrot.Mandel] = None
-        self._dpi = self.get_dpi()
-        self._fig: figure.Figure = figure.Figure(frameon=False, dpi=self._dpi)
+        self._dpi: int = self.get_dpi()
+        self._fig = figure.Figure(frameon=False, dpi=self._dpi)
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self._fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self._ax: figure.Axes = self._fig.subplots()
-        self._figure_canvas = XFigureCanvasQTAgg(self._fig)
+        self._figure_canvas: XFigureCanvasQTAgg = XFigureCanvasQTAgg(self._fig)
         self._ax_image: Optional[image.AxesImage] = None
-        # self._z0_marker: lines.Line2D
         self._z0: Optional[complex] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
                                        zorder=1, visible=False)
@@ -41,14 +41,14 @@ class Canvas:
         return self._mandel
 
     @property
-    def figure_canvas(self) -> backend_qt5agg.FigureCanvasQTAgg:
+    def figure_canvas(self) -> XFigureCanvasQTAgg:
         return self._figure_canvas
 
     @property
     def center_pixel_point(self) -> tuples.PixelPoint:
         return tuples.PixelPoint(self._mandel.shape.x * 0.5, self._mandel.shape.y * 0.5)
 
-    def get_dpi(self):
+    def get_dpi(self) -> int:
         q_application = QtWidgets.QApplication.instance()   # get singleton
         screen: QtGui.QScreen = q_application.screens()[0]
         dpi = round(screen.physicalDotsPerInch())

@@ -6,9 +6,10 @@ from mandel_app.view.window.central import copy_message
 class Overlay:
     def __init__(self, parent: QtWidgets.QWidget):
         # parent is the q_object we are overlaying
-        self._parent = parent
+        self._parent: QtWidgets.QWidget = parent
         self.visible: bool = False
-        self._copy_message = copy_message.CopyMessage(parent=self._parent, hide_callback=self.hide_copy_message)
+        self._copy_message: copy_message.CopyMessage = copy_message.CopyMessage(
+            parent=self._parent, hide_callback=self.hide_copy_message)
         self._refresh_overlay_visible()
 
     def _refresh_overlay_visible(self):

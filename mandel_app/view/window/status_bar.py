@@ -24,16 +24,16 @@ class StatusBar:
         self._q_widget.setLayout(self._q_layout)
 
         # build up components
-        self._q_left_label = self._build_label()
+        self._q_left_label: x_label.XLabel = self._build_label()
 
-        self._q_center_label = self._build_label(align=QtCore.Qt.AlignCenter)
-        self._copy_icon_image = image.Image("document-copy.png")
+        self._q_center_label: x_label.XLabel = self._build_label(align=QtCore.Qt.AlignCenter)
+        self._copy_icon_image: image.Image = image.Image("document-copy.png")
         self._copy_icon_image.set_visible(False)
-        self._q_center_widget = self._build_center_widget()
+        self._q_center_widget: QtWidgets.QWidget = self._build_center_widget()
 
-        self._q_right_label = self._build_label(visible=False)
-        self._q_progress_bar = self._build_progress_bar()
-        self._q_right_widget = self._build_right_widget()
+        self._q_right_label: x_label.XLabel = self._build_label(visible=False)
+        self._q_progress_bar: QtWidgets.QProgressBar = self._build_progress_bar()
+        self._q_right_widget: QtWidgets.QWidget = self._build_right_widget()
 
         self._q_layout.addWidget(self._q_left_label, stretch=1)
         self._q_layout.addWidget(self._q_center_widget, stretch=1)
@@ -41,7 +41,7 @@ class StatusBar:
 
         self._zoom_digits: int = 0
         self._dp: int = 2
-        self.verbose_mandel_statistics = ""
+        self.verbose_mandel_statistics: str = ""
 
     def _build_label(self,
                      align: QtCore.Qt.AlignmentFlag = QtCore.Qt.AlignLeft,

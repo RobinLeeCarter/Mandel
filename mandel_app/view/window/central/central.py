@@ -12,7 +12,7 @@ class Central:
         # scroll_area as central widget for main_window
         # self.q_main_window = q_main_window
 
-        self._q_scroll_area = XScrollArea(q_main_window)
+        self._q_scroll_area: XScrollArea = XScrollArea(q_main_window)
         self._q_scroll_area.setAlignment(QtCore.Qt.AlignCenter)
         self._q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self._q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -33,8 +33,8 @@ class Central:
 
         self._q_main.setLayout(self._q_main_layout)
 
-        self.canvas = canvas.Canvas()
-        q_figure_canvas = self.canvas.figure_canvas
+        self.canvas: canvas.Canvas = canvas.Canvas()
+        q_figure_canvas: canvas.XFigureCanvasQTAgg = self.canvas.figure_canvas
         self.overlay = overlay.Overlay(parent=q_figure_canvas)
         q_figure_canvas.set_overlay(self.overlay)
 
