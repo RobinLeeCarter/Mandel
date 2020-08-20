@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 
-from mandel_app.view.window import x_slider_labelled
+from mandel_app.view.custom_widgets import x_slider_labelled
 
 
 class SliderIteration:

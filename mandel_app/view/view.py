@@ -191,12 +191,12 @@ class View:
         self._z_window.is_active = True
         self._window.is_active = False
 
-    def _on_z_close(self):
-        self._view_settings.write_z_window_settings(self._z_window.q_main_window)
-        q_action = self._window.actions.z_mode.q_action
-        if q_action.isChecked():
-            q_action.trigger()
-        # self._window.actions.z_mode.q_action.setChecked(False)
+    def _on_z_close(self, close_event: QtGui.QCloseEvent):
+        if close_event.spontaneous():
+            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
+            q_action = self._window.actions.z_mode.q_action
+            if q_action.isChecked():
+                q_action.trigger()
 
     def _on_resized(self):
         central = self._window.central
@@ -209,7 +209,7 @@ class View:
     def _on_z_resized(self):
         z_central = self._z_window.central
         z_central.refresh_image_space()
-        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
+        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_shape)
         self._controller.redraw_z_trace(image_shape)
 
     def _on_close(self):

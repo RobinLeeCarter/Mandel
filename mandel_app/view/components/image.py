@@ -3,7 +3,7 @@ from typing import Callable
 from PyQt5 import QtGui
 
 import utils
-from mandel_app.view.extensions import x_label
+from mandel_app.view.custom_widgets import x_label
 
 _ICON_PATH = r"resources/icons/"
 

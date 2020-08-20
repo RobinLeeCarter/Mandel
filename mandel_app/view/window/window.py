@@ -1,7 +1,8 @@
 from typing import Callable
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtGui
 
+from mandel_app.view.custom_widgets import x_main_window
 from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
@@ -9,7 +10,7 @@ class Window:
     def __init__(self, application_name: str, window_settings: dict):
         self._application_name: str = application_name
 
-        self.q_main_window: XMainWindow = XMainWindow()
+        self.q_main_window: x_main_window.XMainWindow = x_main_window.XMainWindow()
         # modes
         self.is_full_screen = False
         self.is_active = True
@@ -66,40 +67,4 @@ class Window:
 
     def set_on_close(self, on_close: Callable[[], None]):
         self.q_main_window.closeSignal.connect(on_close)
-    # endregion
-
-
-class XMainWindow(QtWidgets.QMainWindow):
-    RESIZE_TIMEOUT_MS: int = 100
-
-    keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
-    activationChangeSignal = QtCore.pyqtSignal()
-    closeSignal = QtCore.pyqtSignal()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.resize_q_timer = QtCore.QTimer(parent=self)
-        self.resize_q_timer.setSingleShot(True)
-        self.resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
-
-    def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
-        self.keyPressSignal.emit(key_event)
-        super().keyPressEvent(key_event)
-
-    def changeEvent(self, event: QtCore.QEvent) -> None:
-        if event.type() == QtCore.QEvent.ActivationChange and self.isActiveWindow():
-            self.activationChangeSignal.emit()
-        super().changeEvent(event)
-
-    # region delayed resize event handler
-    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
-        if self.resize_enabled:
-            # NOTE: resize_event will be messed up by the resize delay code so we don't take a copy
-            self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
-        self.resize_enabled = True
-        super().resizeEvent(resize_event)
-
-    def closeEvent(self, close_event: QtGui.QCloseEvent) -> None:
-        self.closeSignal.emit()
-        super().closeEvent(close_event)
     # endregion
