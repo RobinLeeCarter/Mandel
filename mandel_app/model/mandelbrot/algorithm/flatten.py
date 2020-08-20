@@ -54,7 +54,7 @@ class Flatten:
 
     def _calc_array(self, cpu_c_flat: np.ndarray) -> np.ndarray:
         gpu_c_flat = cp.asarray(cpu_c_flat)
-        gpu_iteration_flat = self.server._compute_flat_array(gpu_c_flat)
+        gpu_iteration_flat = self.server.compute_flat_array(gpu_c_flat)
         cpu_iteration_flat = cp.asnumpy(gpu_iteration_flat)
         # cpu_iteration_flat = compute_array.Compute.compute(cpu_c_flat)
         return cpu_iteration_flat

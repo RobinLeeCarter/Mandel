@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Iterable
+from typing import List, Optional, Iterable
 
 import math
 

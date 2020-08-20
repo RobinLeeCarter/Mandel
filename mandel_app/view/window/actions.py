@@ -18,7 +18,7 @@ class Actions(common.Actions):
         )
         self._add_action(self.full_screen)
 
-        self.z_mode: action.Action = common.Action(
+        self.z_mode: common.Action = common.Action(
             q_main_window=self._q_main_window,
             name="z_mode",
             icon_filename="pin.png",
