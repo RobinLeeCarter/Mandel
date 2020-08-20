@@ -24,7 +24,7 @@ class Window:
         self.is_active = True
 
         self.q_main_window.show()
-        self.central.set_image_space()
+        self.central.refresh_image_space()
 
     def _build(self, window_settings: dict):
         # Set some main window's properties

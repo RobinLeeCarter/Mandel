@@ -43,7 +43,7 @@ class Central:
         # q_main_window.setCentralWidget(self.q_main)
         # self.q_main.setVisible(False) #  changed
 
-        # getting _get_image_space at this point in code gives a false reading as no image yet
+        # getting _determine_image_space at this point in code gives a false reading as no image yet
 
     def show_graph(self, z_model_: z_model.ZModel):
         self.canvas.draw_graph(z_model_)
