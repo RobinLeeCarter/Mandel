@@ -120,9 +120,9 @@ class View:
 
     def _connect_iteration(self):
         self._window.actions.max_iterations.set_on_triggered(on_triggered=self._on_max_iteration)
-        q_slider = self._window.toolbars.iteration_slider.q_slider
-        q_slider.sliderMoved.connect(self._on_iteration_slider_moved)
-        q_slider.valueChanged.connect(self._on_iteration_slider_value_changed)
+        iteration_slider = self._window.toolbars.iteration_slider
+        iteration_slider.set_on_slider_moved(self._on_iteration_slider_moved)
+        iteration_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
 
     def _connect_canvas(self):
         canvas = self._window.central.canvas
@@ -151,8 +151,8 @@ class View:
     def _on_max_iteration(self, max_iterations_pressed: bool):
         if max_iterations_pressed:
             self._window.toolbars.slider_visibility(True)
-            q_slider = self._window.toolbars.iteration_slider.q_slider
-            self._on_iteration_slider_value_changed(q_slider.value())
+            value = self._window.toolbars.iteration_slider.value
+            self._on_iteration_slider_value_changed(value)
         else:
             self._window.toolbars.slider_visibility(False)
             self._controller.new_compute_parameters_request()

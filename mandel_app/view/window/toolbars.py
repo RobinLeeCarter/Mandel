@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from PyQt5 import QtWidgets, QtCore
 
-from mandel_app.view.window import actions, dial, slider_iteration
+from mandel_app.view.window import actions, dial, iteration_slider
 
 
 class Toolbars:
@@ -33,16 +33,16 @@ class Toolbars:
         self.power_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self._power_label_action: QtWidgets.QAction = self.view_tool_bar.addWidget(self.power_label)
 
-        self.iteration_slider: slider_iteration.SliderIteration = slider_iteration.SliderIteration(self._q_main_window)
+        self.iteration_slider: iteration_slider.IterationSlider = iteration_slider.IterationSlider(self._q_main_window)
         self._iteration_slider_action: QtWidgets.QAction = \
-            self.view_tool_bar.addWidget(self.iteration_slider.labelled_slider)
+            self.view_tool_bar.addWidget(self.iteration_slider.q_labelled_slider)
 
         self.iterations_label = QtWidgets.QLabel("")
         self.iterations_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self._iterations_label_action: QtWidgets.QAction = self.view_tool_bar.addWidget(self.iterations_label)
 
         initial_power: int = 20
-        self.iteration_slider.q_slider.setValue(initial_power)
+        self.iteration_slider.value = initial_power
         self.set_iterations_label(2**initial_power)
         self.slider_visibility(visible=False)
 
