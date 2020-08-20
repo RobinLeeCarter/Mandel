@@ -16,7 +16,7 @@ You can use an existing environment too of course if it meets all the requiremen
 
 Once built, open a terminal in the code directory, then:
 1) conda activate mandel (or whatever you called the environment)
-2) python mandel.py
+2) python launcher.py
 <br />
 <br />
 

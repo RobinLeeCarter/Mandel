@@ -128,5 +128,8 @@ class ViewState:
             cursor_shape = Qt.SizeHorCursor
         else:
             cursor_shape = Qt.CrossCursor
+            # if self.is_z_mode:
+            #     cursor_shape = Qt.ArrowCursor
+            # else:
 
         return cursor_shape

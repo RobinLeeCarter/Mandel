@@ -77,6 +77,7 @@ class Toolbars:
         self._iterations_label_action.setVisible(visible)
 
 
+# test script
 if __name__ == "__main__":
     q_application = QtWidgets.QApplication([])
     main_window = QtWidgets.QMainWindow()

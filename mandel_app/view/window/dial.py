@@ -1,6 +1,6 @@
 from typing import Callable
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 
 
 class Dial:
@@ -14,19 +14,21 @@ class Dial:
         self.q_dial.setTracking(False)
         self.q_dial.setFixedWidth(size)
 
+    @staticmethod
+    def _convert_to_theta(value: int) -> int:
+        return value - 180
+
     def set_on_rotating(self, on_rotating: Callable[[int], None]):
-        @QtCore.pyqtSlot()
         def slot(value: int):
-            theta_degrees = value - 180
+            theta_degrees = Dial._convert_to_theta(value)
             on_rotating(theta_degrees)
 
         # noinspection PyUnresolvedReferences
         self.q_dial.sliderMoved.connect(slot)
 
     def set_on_rotated(self, on_rotated: Callable[[int], None]):
-        @QtCore.pyqtSlot()
         def slot(value: int):
-            theta_degrees = value - 180
+            theta_degrees = Dial._convert_to_theta(value)
             on_rotated(theta_degrees)
 
         # noinspection PyUnresolvedReferences

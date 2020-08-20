@@ -6,23 +6,16 @@ from mandel_app import model, view, tuples
 
 class Controller:
     # region Setup
-    def __init__(self):
-        self._model: Optional[model.Model] = None
-        self._view: Optional[view.View] = None
+    def __init__(self, model_: model.Model, view_: view.View):
+        self._model: model.Model = model_
+        self._view: view.View = view_
 
-    def set_model(self, model_: model.Model):
-        self._model = model_
-
-    def set_view(self, view_: view.View):
-        self._view = view_
-
-    def build_and_run(self):
+    def build(self):
         self._view.build()
         image_space: tuples.ImageShape = self._view.get_image_space()
         self._model.build(image_space)
         # self._model.start_test_mandel()
         self._model.calc_new_mandel(save_history=True)
-        self._view.run()
     # endregion
 
     # region Model notifications
@@ -53,8 +46,9 @@ class Controller:
     def pan_request(self, pan: tuples.PixelPoint):
         self._model.pan_and_calc(pan)
 
-    def rotate_request(self, theta: int):
-        self._model.rotate_and_calc(theta)
+    def rotate_request(self, theta_degrees: int):
+        modulated_theta = theta_degrees % 360
+        self._model.rotate_and_calc(modulated_theta)
 
     def stop_request(self):
         self._model.request_stop()
@@ -69,4 +63,27 @@ class Controller:
             self._model.new_mandel.remove_border()
         # Save history in case press back don't want to lose the work
         self._model.calc_new_mandel(save_history=True)
+
+    def perform_default_z_trace(self):
+        z0 = self._model.displayed_mandel.centre
+        self.perform_z_trace(z0)
+
+    def update_z0_request(self, pixel_point: tuples.PixelPoint):
+        self._view.hide_z_graph()
+        z0 = self._model.displayed_mandel.get_complex_from_pixel(pixel_point)
+        self.perform_z_trace(z0)
+
+    def perform_z_trace(self, z0: complex):
+        self._view.show_z0_on_mandel(z0)
+        self._model.z_model.build(z0=z0)
+        self._view.show_z_graph(self._model.z_model)
+
+    def redraw_z_trace(self, image_shape: tuples.ImageShape):
+        self._view.hide_z_graph()
+        self._model.z_model.build(image_shape=image_shape)
+        self._view.show_z_graph(self._model.z_model)
+
+    def hide_z_trace(self):
+        self._view.hide_z0_on_mandel()
+        self._view.hide_z_graph()
     # endregion

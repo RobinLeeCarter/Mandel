@@ -28,6 +28,7 @@ class Menu:
         self._q_menu_bar.show()
 
 
+# test script
 if __name__ == "__main__":
     q_application = QtWidgets.QApplication([])
     main_window = QtWidgets.QMainWindow()

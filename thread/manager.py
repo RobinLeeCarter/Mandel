@@ -56,18 +56,15 @@ class Manager(QtCore.QObject):
     # endregion
 
     # region Slots for Worker
-    @QtCore.pyqtSlot(float, int)
     def progress_update_slot(self, progress: float, job_number: int):
         if self._on_progress_update is not None:
             self._on_progress_update(progress, job_number)
 
-    @QtCore.pyqtSlot()
     def stop_success_slot(self):
         if self._on_stop_success is not None:
             self._singular_job = None
             self._on_stop_success()
 
-    @QtCore.pyqtSlot(job.Job)
     def job_complete_slot(self, job_: job.Job):
         if self._on_job_complete is not None:
             if self._singular_job:
@@ -78,7 +75,6 @@ class Manager(QtCore.QObject):
             else:
                 self._on_job_complete(job_)
 
-    @QtCore.pyqtSlot()
     def quit_thread(self):
         self._thread.quit()
         self._thread.wait()
@@ -86,4 +82,3 @@ class Manager(QtCore.QObject):
     def debug_message(self, message: str):
         print(message)
     # endregion
-
