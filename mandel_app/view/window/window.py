@@ -8,9 +8,11 @@ from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 class Window:
     def __init__(self, application_name: str, window_settings: dict):
         self._application_name: str = application_name
+
         self.q_main_window: XMainWindow = XMainWindow()
-        self.q_settings: QtCore.QSettings = QtCore.QSettings()
-        self._build(window_settings)
+        # modes
+        self.is_full_screen = False
+        self.is_active = True
 
         self.actions: actions.Actions = actions.Actions(self.q_main_window)
         self.menu: menu.Menu = menu.Menu(self.q_main_window, self.actions.action_dict)
@@ -19,11 +21,7 @@ class Window:
         self.central: central.Central = central.Central(self.q_main_window)
         self.status_bar: status_bar.StatusBar = status_bar.StatusBar(self.q_main_window)
 
-        # modes
-        self.is_full_screen = False
-        self.is_active = True
-
-        self.q_main_window.show()
+        self._build(window_settings)
         self.central.refresh_image_space()
 
     def _build(self, window_settings: dict):
@@ -35,6 +33,7 @@ class Window:
 
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
+        self.q_main_window.show()
 
     def _get_stylesheet(self):
         stylesheet = """

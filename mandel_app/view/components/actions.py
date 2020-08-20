@@ -3,7 +3,7 @@ from typing import Dict
 
 from PyQt5 import QtWidgets
 
-from mandel_app.view import action
+from mandel_app.view.components import action
 
 
 class Actions(ABC):

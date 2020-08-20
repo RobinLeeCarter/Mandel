@@ -3,10 +3,10 @@ from typing import Optional
 from PyQt5.QtCore import Qt
 
 from mandel_app import tuples
-from mandel_app.view import enums
+from mandel_app.view.components import enums
 
 
-class ViewState:
+class State:
     def __init__(self):
         self.is_z_mode: bool = False  # Pan button on toolbar depressed
 

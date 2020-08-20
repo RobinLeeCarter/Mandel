@@ -8,7 +8,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, enums, view_state, view_settings, icon, z_window, clipboard
+from mandel_app.view import window, state, settings, z_window
+from mandel_app.view.components import icon, enums, clipboard
 
 
 class View:
@@ -20,8 +21,8 @@ class View:
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state: view_state.ViewState = view_state.ViewState()
-        self._view_settings: view_settings.ViewSettings = view_settings.ViewSettings(reset=False)
+        self._view_state: state.State = state.State()
+        self._view_settings: settings.Settings = settings.Settings(reset=False)
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_

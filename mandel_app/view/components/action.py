@@ -1,8 +1,8 @@
 from typing import Optional, Union, Callable
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 
-from mandel_app.view import icon
+from mandel_app.view.components import icon
 
 ShortcutType = Union[QtGui.QKeySequence, QtGui.QKeySequence.StandardKey, str, int]
 

@@ -156,6 +156,10 @@ class Server:
     def iteration_cpu(self) -> np.ndarray:
         return cp.asnumpy(self._iteration)
 
+    @property
+    def c_cpu(self) -> np.ndarray:
+        return cp.asnumpy(self._c)
+
     # requests are for pixels (inclusive). They know nothing of complex numbers
     def box_request(
             self,

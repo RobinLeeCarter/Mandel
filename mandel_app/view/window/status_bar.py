@@ -3,7 +3,8 @@ from typing import Optional, Callable
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from mandel_app.view import image, x_label
+from mandel_app.view.components import image
+from mandel_app.view.extensions import x_label
 from mandel_app.model.mandelbrot import mandel
 
 
