@@ -5,18 +5,19 @@ from PyQt5 import QtCore, QtWidgets
 
 class ViewSettings:
     def __init__(self, reset: bool = False):
-        self._q_settings = QtCore.QSettings()
+        self._q_settings: QtCore.QSettings = QtCore.QSettings()
         self._group: Optional[str] = None
-        self._default = {}
-        self._get_defaults()
-        self.initial_settings = {}
+        self._default: dict = {}
+        self.initial_settings: dict = {}
+
+        self._set_defaults()
         self._read_settings(reset)
 
         # filtered settings
-        self.window_settings = self._filtered_settings('window')
-        self.z_window_settings = self._filtered_settings('z_window')
+        self.window_settings: dict = self._filtered_settings('window')
+        self.z_window_settings: dict = self._filtered_settings('z_window')
 
-    def _get_defaults(self):
+    def _set_defaults(self):
         self._begin_group("window")
         self._add_default("pos", QtCore.QPoint(100, 100))
         self._add_default("size", QtCore.QSize(1600, 1000))

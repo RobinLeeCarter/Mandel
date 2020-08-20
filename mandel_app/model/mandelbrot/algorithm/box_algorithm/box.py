@@ -18,28 +18,28 @@ class Box:
     server: server.Server
 
     def __post_init__(self):
-        self._left_edge = edge.VerticalEdge(
+        self._left_edge: edge.VerticalEdge = edge.VerticalEdge(
             x_min=self.x_min,
             y_min=self.y_min,
             y_max=self.y_max
         )
-        self._right_edge = edge.VerticalEdge(
+        self._right_edge: edge.VerticalEdge = edge.VerticalEdge(
             x_min=self.x_max,
             y_min=self.y_min,
             y_max=self.y_max
         )
-        self._bottom_edge = edge.HorizontalEdge(
+        self._bottom_edge: edge.HorizontalEdge = edge.HorizontalEdge(
             x_min=self.x_min,
             y_min=self.y_min,
             x_max=self.x_max
         )
-        self._top_edge = edge.HorizontalEdge(
+        self._top_edge: edge.HorizontalEdge = edge.HorizontalEdge(
             x_min=self.x_min,
             y_min=self.y_max,
             x_max=self.x_max
         )
         self._edges: List[edge.Edge] = [self._left_edge, self._right_edge, self._bottom_edge, self._top_edge]
-        self.filled = False
+        self.filled: bool = False
         self._children: List[Box] = []
 
     @property

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-import utils
+# import utils
 from mandel_app import tuples
 from mandel_app.model.mandelbrot.server import server
 
@@ -11,9 +11,9 @@ from mandel_app.model.mandelbrot.algorithm.box_algorithm import box
 
 class BoxAlgorithm:
 
-    def __init__(self, server: server.Server, shape: tuples.ImageShape):
-        self.server = server
-        self.shape = shape
+    def __init__(self, server_: server.Server, shape: tuples.ImageShape):
+        self.server: server.Server = server_
+        self.shape: tuples.ImageShape = shape
 
     def run(self) -> np.ndarray:
         # methods
@@ -22,7 +22,7 @@ class BoxAlgorithm:
         spawn_children = box.Box.spawn_children
         request_inside_compute = box.Box.request_inside_compute
 
-        my_timer = utils.Timer()
+        # my_timer = utils.Timer()
         # starting box
         box_ = box.Box(x_min=0, y_min=0, x_max=self.shape.x-1, y_max=self.shape.y-1, depth=0, server=self.server)
 

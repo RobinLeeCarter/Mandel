@@ -21,17 +21,17 @@ class Server:
                  early_stopping_iteration: Optional[int] = None
                  ):
 
-        self._mandel = mandel_
-        self._compute_manager = compute_manager_
-        self._early_stopping_iteration = early_stopping_iteration
+        self._mandel: mandel.Mandel = mandel_
+        self._compute_manager: compute.ComputeManager = compute_manager_
+        self._early_stopping_iteration: Optional[int] = early_stopping_iteration
 
         if self._mandel.pan is not None:
             self._mandel.pan_centre()
 
-        self._c = self._generate_c()
+        self._c: cp.ndarray = self._generate_c()
 
-        self._iteration = cp.zeros(shape=self._c.shape, dtype=cp.int32)
-        self._completed = cp.zeros(shape=self._c.shape, dtype=cp.bool)
+        self._iteration: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.int32)
+        self._completed: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.bool)
         if self._mandel.pan is not None:
             self._copy_over_pan()
         self._mandel.pan = None
@@ -39,12 +39,12 @@ class Server:
         if self._mandel.has_border:
             self._copy_over_centre()
 
-        self._requested = cp.zeros(shape=self._c.shape, dtype=cp.bool)
+        self._requested: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.bool)
         self._requests: List[request.Request] = []
 
         self._box_fills: bool = False
-        self._box_iter_cpu = np.zeros(shape=self._c.shape, dtype=np.int32)
-        self._box_fill_cpu = np.zeros(shape=self._c.shape, dtype=np.bool)
+        self._box_iter_cpu: np.ndarray = np.zeros(shape=self._c.shape, dtype=np.int32)
+        self._box_fill_cpu: np.ndarray = np.zeros(shape=self._c.shape, dtype=np.bool)
 
     def _generate_c(self) -> cp.ndarray:
         m = self._mandel

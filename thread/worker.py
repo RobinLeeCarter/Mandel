@@ -16,8 +16,8 @@ class Worker(QtCore.QObject):
         super().__init__()
         self.job_queue: List[job.Job] = []
         self.job_count: int = 0
-        self.is_running = False
-        self.interrupt_requested = False
+        self.is_running: bool = False
+        self.interrupt_requested: bool = False
     # endregion
 
     # region Slots for Manager

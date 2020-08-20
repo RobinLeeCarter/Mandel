@@ -11,9 +11,9 @@ from mandel_app.model.mandelbrot.server import server
 class Flatten:
 
     def __init__(self, server_: server.Server):
-        self.server = server_
+        self.server: server.Server = server_
         self._cpu_c = cp.asnumpy(self.server._c)
-        self._timer = utils.Timer()
+        self._timer: utils.Timer = utils.Timer()
 
     # simplest algorithm: just flatten the array, move it to the gpu and process all of it
     # takes in a 2D np array and computes it all in one go

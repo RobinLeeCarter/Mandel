@@ -11,8 +11,8 @@ class ZModel:
         self._z0: Optional[complex] = None
         self.solutions: List[complex] = []
         self.image_shape: Optional[tuples.ImageShape] = None
-        self.trace = trace.Trace()
-        self.field = field.Field()
+        self.trace: trace.Trace = trace.Trace()
+        self.field: field.Field = field.Field()
 
     # self.solutions must always be recalculated when z0 is changed so make z0 a property
     @property

@@ -10,8 +10,8 @@ from mandel_app.model.mandelbrot.server import server
 class RequestAll:
 
     def __init__(self, server_: server.Server, shape: tuples.ImageShape):
-        self.server = server_
-        self.shape = shape
+        self.server: server.Server = server_
+        self.shape: tuples.ImageShape = shape
 
     def run(self) -> np.ndarray:
         bottom_left = tuples.PixelPoint(0, 0)

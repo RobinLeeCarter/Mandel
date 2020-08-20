@@ -12,8 +12,8 @@ class CopyMessage:
         self._hide_q_timer.timeout.connect(hide_callback)
         # self._hide_q_timer.timeout.connect(hide_callback)
 
-        self.visible = False
-        self._alpha_f = 0.8
+        self.visible: bool = False
+        self._alpha_f: float = 0.8
 
         self._q_painter: Optional[QtGui.QPainter] = None
         self._window_rect: Optional[QtCore.QRect] = None

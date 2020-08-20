@@ -10,7 +10,7 @@ class Lap:
     lap_name: str
 
     @property
-    def lap_time(self):
+    def lap_time(self) -> float:
         return self.lap_end - self.lap_start
 
     def print(self):

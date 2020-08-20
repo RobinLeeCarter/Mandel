@@ -21,18 +21,11 @@ class Mandel:
     has_border: bool = False
 
     def __post_init__(self):
-        self.original_shape = self.shape
+        self.original_shape: tuples.ImageShape = self.shape
         self.pan: Optional[tuples.PixelPoint] = None
         self.offset: tuples.PixelPoint = tuples.PixelPoint(x=0, y=0)
         self.iteration: Optional[np.ndarray] = None
         self.max_iteration: int = 0
-        # one less gap than shape
-        # eg. 4 pixels from [0 to size] have 3 gaps [0, 1, 2, 3]
-        if self.size_per_gap == 0.0:
-            if self.shape.y <= self.shape.x:
-                self.size_per_gap = self.size / float(self.shape.y-1)
-            else:
-                self.size_per_gap = self.size / float(self.shape.x-1)
 
         self.time_taken: float = 0.0
         self.iterations_performed: int = 0
@@ -42,6 +35,14 @@ class Mandel:
         # keep track of the contents of iteration at all times
         self.iteration_shape: tuples.ImageShape = self.shape
         self.iteration_offset: tuples.PixelPoint = tuples.PixelPoint(x=0, y=0)
+
+        # one less gap than shape
+        # eg. 4 pixels from [0 to size] have 3 gaps [0, 1, 2, 3]
+        if self.size_per_gap == 0.0:
+            if self.shape.y <= self.shape.x:
+                self.size_per_gap = self.size / float(self.shape.y-1)
+            else:
+                self.size_per_gap = self.size / float(self.shape.x-1)
 
     @property
     def x_size(self) -> float:

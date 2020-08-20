@@ -14,14 +14,14 @@ from mandel_app.view import window, enums, view_state, view_settings, icon, z_wi
 class View:
     # region Setup
     def __init__(self, application: QtWidgets.QApplication, application_name: str):
-        self._application = application
+        self._application: QtWidgets.QApplication = application
         self._application_name: str = application_name
-        self._clipboard = clipboard.Clipboard(application)
+        self._clipboard: clipboard.Clipboard = clipboard.Clipboard(application)
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state = view_state.ViewState()
-        self._view_settings = view_settings.ViewSettings(reset=False)
+        self._view_state: view_state.ViewState = view_state.ViewState()
+        self._view_settings: view_settings.ViewSettings = view_settings.ViewSettings(reset=False)
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
@@ -100,9 +100,7 @@ class View:
         self._z_window.set_on_close(self._on_z_close)
         self._window.set_on_resize(self._on_resized)
         self._z_window.set_on_resize(self._on_z_resized)
-        self._window.status_bar.copy_icon_image.set_on_mouse_press(self._on_copy_press)
-        self._window.status_bar.q_center_label.set_on_mouse_press(self._on_copy_press)
-        # self._window.status_bar.q_center_label.mousePressSignal.connect(self._on_copy_press)
+        self._window.status_bar.set_center_on_mouse_press(self._on_copy_press)
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -201,7 +199,7 @@ class View:
 
     def _on_resized(self):
         central = self._window.central
-        central.set_image_space()
+        central.refresh_image_space()
         central.canvas.on_resized(central.image_space)
 
         # have to zoom, ready or not
@@ -209,7 +207,7 @@ class View:
 
     def _on_z_resized(self):
         z_central = self._z_window.central
-        z_central.set_image_space()
+        z_central.refresh_image_space()
         image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
         self._controller.redraw_z_trace(image_shape)
 
