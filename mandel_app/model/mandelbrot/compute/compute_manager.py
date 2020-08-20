@@ -13,9 +13,9 @@ from mandel_app.model.mandelbrot.compute import compute
 # Singleton
 class ComputeManager:
     def __init__(self, max_iterations: int, early_stopping: bool = True):
-        self._compute = compute.Compute()
-        self.max_iterations = max_iterations
-        self.early_stopping = early_stopping
+        self.max_iterations: int = max_iterations
+        self.early_stopping: bool = early_stopping
+        self._compute: compute.Compute = compute.Compute()
         self.final_iteration: int = 0
 
     # input: a flat gpu array of c's to be calculated
@@ -108,9 +108,9 @@ class ComputeManager:
 
             # update main values
             z[continuing] = continuing_z   # may not need this but almost instant
-            still_continuing = (continuing_iteration == end_iter)
-            count_still_continuing = cp.count_nonzero(still_continuing)
-            count_stopped = cp.count_nonzero(cp.invert(still_continuing))
+            still_continuing: cp.ndarray = (continuing_iteration == end_iter)
+            count_still_continuing: int = cp.count_nonzero(still_continuing)
+            count_stopped: int = cp.count_nonzero(cp.invert(still_continuing))
             # print(f"still:\t{count_still_continuing}")
             # print(f"stop:\t{count_stopped}")
 
