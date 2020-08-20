@@ -7,16 +7,16 @@ from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 class Window:
     def __init__(self, application_name: str, window_settings: dict):
-        self._application_name = application_name
-        self.q_main_window = XMainWindow()
-        self.q_settings = QtCore.QSettings()
+        self._application_name: str = application_name
+        self.q_main_window: XMainWindow = XMainWindow()
+        self.q_settings: QtCore.QSettings = QtCore.QSettings()
         self._build(window_settings)
 
-        self.actions = actions.Actions(self.q_main_window)
-        self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
-        self.toolbars = toolbars.Toolbars(self.q_main_window, self.actions.action_dict)
+        self.actions: actions.Actions = actions.Actions(self.q_main_window)
+        self.menu: menu.Menu = menu.Menu(self.q_main_window, self.actions.action_dict)
+        self.toolbars: toolbars.Toolbars = toolbars.Toolbars(self.q_main_window, self.actions.action_dict)
 
-        self.central = central.Central(self.q_main_window)
+        self.central: central.Central = central.Central(self.q_main_window)
         self.status_bar: status_bar.StatusBar = status_bar.StatusBar(self.q_main_window)
 
         # modes

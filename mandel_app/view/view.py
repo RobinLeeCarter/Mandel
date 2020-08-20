@@ -207,7 +207,7 @@ class View:
 
     def _on_z_resized(self):
         z_central = self._z_window.central
-        z_central.set_image_space()
+        z_central.refresh_image_space()
         image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
         self._controller.redraw_z_trace(image_shape)
 

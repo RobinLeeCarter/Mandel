@@ -8,11 +8,11 @@ from mandel_app.view.z_window import actions, central
 
 class ZWindow:
     def __init__(self, parent: QtWidgets.QMainWindow, z_window_settings: dict):
-        self.q_main_window = XMainWindow(parent=parent)
-        self.is_active = False
-        self.actions = actions.Actions(self.q_main_window)
-        image_shape = tuples.image_shape_from_q_size(z_window_settings["size"])
-        self.central = central.Central(self.q_main_window, image_shape)
+        self.q_main_window: XMainWindow = XMainWindow(parent=parent)
+        self.is_active: bool = False
+        self.actions: actions.Actions = actions.Actions(self.q_main_window)
+        image_shape: tuples.ImageShape = tuples.image_shape_from_q_size(z_window_settings["size"])
+        self.central: central.Central = central.Central(self.q_main_window, image_shape)
 
         self._build(z_window_settings)
 
@@ -24,7 +24,7 @@ class ZWindow:
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
         self.q_main_window.show()
-        self.central.set_image_space()
+        self.central.refresh_image_space()
         self.q_main_window.setVisible(False)
 
         # self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)

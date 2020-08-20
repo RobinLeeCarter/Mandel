@@ -18,12 +18,12 @@ class Canvas:
         matplotlib.use('Qt5Agg')
 
         self._dpi: int = self._get_dpi()
-        self._fig = figure.Figure(frameon=False, dpi=self._dpi)
+        self._fig: figure.Figure = figure.Figure(frameon=False, dpi=self._dpi)
         self._ax: figure.Axes = self._fig.subplots()
-        self._figure_canvas = backend_qt5agg.FigureCanvasQTAgg(self._fig)
-        self._snake = snake.Snake(fig=self._fig, ax=self._ax)
+        self._figure_canvas: backend_qt5agg.FigureCanvasQTAgg = backend_qt5agg.FigureCanvasQTAgg(self._fig)
+        self._snake: snake.Snake = snake.Snake(fig=self._fig, ax=self._ax)
         self._z_model: Optional[z_model.ZModel] = None
-        self._image_shape = image_shape
+        self._image_shape: tuples.ImageShape = image_shape
         self.build()
 
     def build(self):
@@ -56,7 +56,7 @@ class Canvas:
     def figure_canvas(self) -> backend_qt5agg.FigureCanvasQTAgg:
         return self._figure_canvas
 
-    def _get_dpi(self):
+    def _get_dpi(self) -> int:
         q_application = QtWidgets.QApplication.instance()   # get singleton
         screen: QtGui.QScreen = q_application.screens()[0]
         dpi = round(screen.physicalDotsPerInch())

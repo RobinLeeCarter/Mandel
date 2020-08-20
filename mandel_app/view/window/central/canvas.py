@@ -25,7 +25,7 @@ class Canvas:
         matplotlib.use('Qt5Agg')
         self._mandel: Optional[mandelbrot.Mandel] = None
         self._dpi: int = self.get_dpi()
-        self._fig = figure.Figure(frameon=False, dpi=self._dpi)
+        self._fig: figure.Figure = figure.Figure(frameon=False, dpi=self._dpi)
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
         self._fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self._ax: figure.Axes = self._fig.subplots()
