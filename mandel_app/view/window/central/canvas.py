@@ -4,7 +4,7 @@ from typing import Optional, Callable, List
 import numpy as np
 
 import matplotlib
-from matplotlib import figure, backend_bases, image, transforms, lines
+from matplotlib import figure, backend_bases, image, transforms, lines, cm
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
@@ -60,16 +60,23 @@ class Canvas:
         # 7ms could potentially go faster with a lookup
         transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
         transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
+        # transformed_iterations[self._mandel.iteration == 4] = np.nan
+        # transformed_iterations[self._mandel.iteration == 6] = np.nan
+        # transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 500
 
         self.figure_canvas.resize(self._mandel.shape.x, self._mandel.shape.y)
         self._ax.clear()
         # don't appear to do anything with fig.subplots_adjust set
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
+
+        cmap = cm.get_cmap("hot")
+        # cmap.set_bad("pink", alpha=0.0)
+
         self._ax_image: image.AxesImage = self._ax.imshow(
             transformed_iterations,
             interpolation='none', origin='lower',
-            cmap='hot', vmin=0, vmax=100, alpha=1.0, zorder=0)
+            cmap=cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
         self._ax.add_line(self._z0_marker)
         if self._z0 is not None:
             self._set_z0_marker()
