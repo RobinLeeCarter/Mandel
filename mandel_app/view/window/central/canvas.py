@@ -61,7 +61,7 @@ class Canvas:
 
     def draw_mandel(self, mandel_: mandelbrot.Mandel):
         self._mandel = mandel_
-        timer_str = f"has_border: {self._mandel.has_border}"
+        timer_str = f"initial\tborder: {self._mandel.has_border}"
         self._timer.start()
         # 7ms could potentially go faster with a lookup
         transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
@@ -125,8 +125,11 @@ class Canvas:
         self._transform_and_draw(transform)
 
     def pan_mandel(self, pan: tuples.PixelPoint):
+        timer_str = f"pan\tborder: {self._mandel.has_border}"
+        self._timer.start()
         transform = transforms.Affine2D().translate(-pan.x, -pan.y)
         self._transform_and_draw(transform)
+        self._timer.stop(name=timer_str, show=True)
 
     def _transform_and_draw(self, transform: Optional[transforms.Affine2D] = None):
         if transform is None:  # no transformation, just draw
