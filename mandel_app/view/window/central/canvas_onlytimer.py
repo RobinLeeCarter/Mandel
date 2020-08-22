@@ -31,7 +31,7 @@ class Canvas:
         self._figure_canvas: widgets.XFigureCanvasQTAgg =\
             widgets.XFigureCanvasQTAgg(self._fig)
         self._cmap = cm.get_cmap("hot")
-        self._cmap.set_bad("pink", alpha=0.0)
+        # cmap.set_bad("pink", alpha=0.0)
         self._ax_image: Optional[image.AxesImage] = None
         self._z0: Optional[complex] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
@@ -39,7 +39,6 @@ class Canvas:
         self._connections = {}
 
         self._timer = utils.Timer()
-        self._transformed_iterations: np.ndarray
 
     @property
     def mandel(self) -> Optional[mandelbrot.Mandel]:
@@ -62,26 +61,11 @@ class Canvas:
 
     def draw_mandel(self, mandel_: mandelbrot.Mandel):
         self._mandel = mandel_
-
-        self.x_shape = self._mandel.shape.x
-        self.y_shape = self._mandel.shape.y
-
-        self.canvas = np.zeros(shape=(self.x_shape, self.y_shape, 2), dtype=np.float32)
-
-        x_pixels = np.arange(start=0, stop=self.x_shape, step=1, dtype=np.float32)
-        y_pixels = np.arange(start=0, stop=self.y_shape, step=1, dtype=np.float32)
-
-        # xx, yy = np.meshgrid(x, y, indexing='ij')
-        #
-        # f[:, :, 0], f[:, :, 1] = xx, yy
-
-        self.canvas[:, :, 0], self.canvas[:, :, 1] = np.meshgrid(x_pixels, y_pixels, indexing='ij')
-
         timer_str = f"initial\tborder: {self._mandel.has_border}"
         self._timer.start()
         # 7ms could potentially go faster with a lookup
-        self.transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
-        self.transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
+        transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
+        transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
         # transformed_iterations[self._mandel.iteration == 4] = np.nan
         # transformed_iterations[self._mandel.iteration == 6] = np.nan
         # transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 500
@@ -93,7 +77,7 @@ class Canvas:
         self._ax.margins(0, 0)
 
         self._ax_image: image.AxesImage = self._ax.imshow(
-            self.transformed_iterations,
+            transformed_iterations,
             interpolation='none', origin='lower',
             cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
         self._ax.add_line(self._z0_marker)
@@ -140,61 +124,11 @@ class Canvas:
             .translate(centre.x, centre.y)
         self._transform_and_draw(transform)
 
-    def pan_mandel1(self, pan: tuples.PixelPoint):
+    def pan_mandel(self, pan: tuples.PixelPoint):
         timer_str = f"pan\tborder: {self._mandel.has_border}"
         self._timer.start()
         transform = transforms.Affine2D().translate(-pan.x, -pan.y)
         self._transform_and_draw(transform)
-        self._timer.stop(name=timer_str, show=True)
-
-    def pan_mandel(self, pan: tuples.PixelPoint):
-        transform_array = [[2, 1],
-                           [0, 2]]
-
-        a = np.array(transform_array, dtype=np.float32)
-
-        # a_transposed = np.zeros(shape=(2, 2), dtype=np.float32)
-
-        a_transposed = a.T
-
-        # frame gives source pixel of each canvas pixel
-        frame_float32 = np.matmul(self.canvas, a_transposed)
-
-        # print(frame_float32[1, 2, :])
-
-        frame = np.rint(frame_float32).astype(int)
-
-        # print(frame[1, 2, :])
-
-        source_x_shape = self._mandel.shape.x
-        source_y_shape = self._mandel.shape.y
-
-        # number of iterations in source mandelbrot array
-        source = 100 + np.random.randint(10, size=(source_x_shape, source_y_shape))
-
-        frame_x = frame[:, :, 0]
-        frame_y = frame[:, :, 1]
-
-        # boolean 1-D array
-        mapped = (frame_x >= 0.0) & (frame_x < source_x_shape) & (frame_y >= 0.0) & (frame_y < source_x_shape)
-
-        # the target: frame array with source iteration values. Zero currently for invisible
-        result = np.zeros(shape=(self.x_shape, self.y_shape), dtype=int)
-
-        # result = np.zeros(shape=frame_x.shape, dtype=int)
-
-        # if frame is mapped
-        # result[:, :] = source[frame_x[:,:], frame_y[:,:]]
-
-        result[mapped] = source[frame_x[mapped], frame_y[mapped]]
-
-        timer_str = f"pan2\tborder: {self._mandel.has_border}"
-        self._timer.start()
-        self._ax_image: image.AxesImage = self._ax.imshow(
-            result,
-            interpolation='none', origin='lower',
-            cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
-        self.figure_canvas.draw()
         self._timer.stop(name=timer_str, show=True)
 
     def _transform_and_draw(self, transform: Optional[transforms.Affine2D] = None):
