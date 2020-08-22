@@ -9,7 +9,7 @@ from matplotlib import figure, backend_bases, image, transforms, lines, cm
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 
-# import utils
+import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets
@@ -30,11 +30,15 @@ class Canvas:
         self._ax: figure.Axes = self._fig.subplots()
         self._figure_canvas: widgets.XFigureCanvasQTAgg =\
             widgets.XFigureCanvasQTAgg(self._fig)
+        self._cmap = cm.get_cmap("hot")
+        # cmap.set_bad("pink", alpha=0.0)
         self._ax_image: Optional[image.AxesImage] = None
         self._z0: Optional[complex] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
                                        zorder=1, visible=False)
         self._connections = {}
+
+        self._timer = utils.Timer()
 
     @property
     def mandel(self) -> Optional[mandelbrot.Mandel]:
@@ -57,6 +61,8 @@ class Canvas:
 
     def draw_mandel(self, mandel_: mandelbrot.Mandel):
         self._mandel = mandel_
+        timer_str = f"has_border: {self._mandel.has_border}"
+        self._timer.start()
         # 7ms could potentially go faster with a lookup
         transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
         transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
@@ -70,19 +76,18 @@ class Canvas:
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
 
-        cmap = cm.get_cmap("hot")
-        # cmap.set_bad("pink", alpha=0.0)
-
         self._ax_image: image.AxesImage = self._ax.imshow(
             transformed_iterations,
             interpolation='none', origin='lower',
-            cmap=cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
+            cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
         self._ax.add_line(self._z0_marker)
         if self._z0 is not None:
             self._set_z0_marker()
 
         # self.figure_canvas.draw()
         self._transform_and_draw()
+
+        self._timer.stop(name=timer_str, show=True)
 
     def rotate_mandel_mouse(self, total_theta_delta: int):
         self._rotate_mandel(-total_theta_delta)
