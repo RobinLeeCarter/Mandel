@@ -32,7 +32,7 @@ class Canvas:
             widgets.XFigureCanvasQTAgg(self._fig)
         self._cmap = cm.get_cmap("hot")
         self._cmap.set_bad("pink", alpha=0.0)
-        self._norm = colors.Normalize(vmin=0, vmax=1)
+        self._norm = colors.Normalize(vmin=0, vmax=100)
 
         self._ax_image: Optional[image.AxesImage] = None
         self._z0: Optional[complex] = None
@@ -85,13 +85,11 @@ class Canvas:
         # self.transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
         # self.transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
 
-        self.mod_log_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
+        self.mod_log_iterations = np.mod(np.log10(1 + self._mandel.iteration), 1)
         self.mod_log_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
 
-        self._norm.autoscale(self.mod_log_iterations)
-        self.normalised = self._norm(self.mod_log_iterations)
-        self.rgba = self._cmap(self.normalised, bytes=True)
-        # self.rgba = self._cmap(self.mod_log_iterations, bytes=True)
+        # self.normalised = self._norm(self.transformed_iterations)
+        self.rgba = self._cmap(self.mod_log_iterations, bytes=True)
 
         print(f"self._mandel.iteration.shape {self._mandel.iteration.shape}")
         # print(f"self.transformed_iterations.shape {self.transformed_iterations.shape}")
@@ -206,23 +204,18 @@ class Canvas:
 
         # print(frame[1, 2, :])
 
-        # source_x_shape = self._mandel.shape.x
-        # source_y_shape = self._mandel.shape.y
+        source_x_shape = self._mandel.shape.x
+        source_y_shape = self._mandel.shape.y
 
         # number of iterations in source mandelbrot array
-        source = self.rgba
-        print(f"source.dtype: {source.dtype}")
-        source_y_shape = self.rgba.shape[0]
-        source_x_shape = self.rgba.shape[1]
-        # source_y_shape = self._mandel.shape.y
+        source = self.transformed_iterations
         # source = 100 + np.random.randint(10, size=(source_x_shape, source_y_shape))
 
-        # boolean 2-D array
+        # boolean 1-D array
         mapped = (frame_x >= 0.0) & (frame_x < source_x_shape) & (frame_y >= 0.0) & (frame_y < source_y_shape)
 
         # the target: frame array with source iteration values. Zero currently for invisible
-        # result = np.zeros(shape=(self.y_shape, self.x_shape), dtype=np.float32)
-        result = np.zeros(shape=(self.y_shape, self.x_shape, 4), dtype=np.uint8)
+        result = np.zeros(shape=(self.y_shape, self.x_shape), dtype=np.float32)
 
         # result = np.zeros(shape=frame_x.shape, dtype=int)
 
@@ -232,19 +225,16 @@ class Canvas:
         print(f"source.shape {source.shape}")
         print(f"mapped.shape {mapped.shape}")
 
-        result[mapped, :] = source[frame_y[mapped], frame_x[mapped], :]
-        # result[~mapped] = np.nan
+        result[mapped] = source[frame_y[mapped], frame_x[mapped]]
+        result[~mapped] = np.nan
 
-        timer_str = f"pan3\tborder: {self._mandel.has_border}"
+        timer_str = f"pan2\tborder: {self._mandel.has_border}"
         self._timer.start()
-        self._ax_image2.remove()
-        self._ax_image2: image.AxesImage = self._ax.imshow(
+        self._ax_image.remove()
+        self._ax_image: image.AxesImage = self._ax.imshow(
             result,
-            interpolation='none', origin='lower', resample=False)
-        # self._ax_image: image.AxesImage = self._ax.imshow(
-        #     result,
-        #     interpolation='none', origin='lower',
-        #     cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
+            interpolation='none', origin='lower',
+            cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
         self.figure_canvas.draw()
         self._timer.stop(name=timer_str, show=True)
 
