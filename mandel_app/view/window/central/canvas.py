@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, Callable, List
 
 import numpy as np
+import cupy as cp
 
 import matplotlib
 from matplotlib import figure, backend_bases, image, transforms, lines, cm, colors
@@ -13,6 +14,7 @@ import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets
+from mandel_app.view.window.central import transform
 
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
@@ -30,6 +32,8 @@ class Canvas:
         self._ax: figure.Axes = self._fig.subplots()
         self._figure_canvas: widgets.XFigureCanvasQTAgg =\
             widgets.XFigureCanvasQTAgg(self._fig)
+
+        # TODO: possibly remove
         self._cmap = cm.get_cmap("hot")
         self._cmap.set_bad("pink", alpha=0.0)
         self._norm = colors.Normalize(vmin=0, vmax=1)
@@ -42,6 +46,11 @@ class Canvas:
 
         self._timer = utils.Timer()
         self._transformed_iterations: np.ndarray
+        self._transform: transform.Transform = transform.Transform()
+        cmap: colors.Colormap = cm.get_cmap("hot")
+        # cmap = colors.Colormap("hot")
+        self._transform.set_cmap(cmap)
+        self._frame_rgba: Optional[np.ndarray] = None
 
     @property
     def mandel(self) -> Optional[mandelbrot.Mandel]:
@@ -79,29 +88,8 @@ class Canvas:
         #
         # self.canvas[:, :, 0], self.canvas[:, :, 1] = np.meshgrid(x_pixels, y_pixels, indexing='ij')
 
-        timer_str = f"initial\tborder: {self._mandel.has_border}"
-        self._timer.start()
-        # 7ms could potentially go faster with a lookup
-        # self.transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
-        # self.transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
-
-        self.mod_log_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
-        self.mod_log_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
-
-        self._norm.autoscale(self.mod_log_iterations)
-        self.normalised = self._norm(self.mod_log_iterations)
-        self.rgba = self._cmap(self.normalised, bytes=True)
-        # self.rgba = self._cmap(self.mod_log_iterations, bytes=True)
-
-        print(f"self._mandel.iteration.shape {self._mandel.iteration.shape}")
-        # print(f"self.transformed_iterations.shape {self.transformed_iterations.shape}")
-        print(f"self.mod_log_iterations.shape {self.mod_log_iterations.shape}")
-        # print(f"self.normalised.shape {self.normalised.shape}")
-        print(f"self.rgba.shape {self.rgba.shape}")
-
-        # transformed_iterations[self._mandel.iteration == 4] = np.nan
-        # transformed_iterations[self._mandel.iteration == 6] = np.nan
-        # transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 500
+        # TODO: set this separately on resize and to the central shape not to the mandel shape
+        self._transform.set_frame_shape(self._mandel.shape)
 
         self.figure_canvas.resize(self._mandel.shape.x, self._mandel.shape.y)
         self._ax.clear()
@@ -109,20 +97,49 @@ class Canvas:
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
 
+        timer_str = f"initial\tborder: {self._mandel.has_border}"
+        self._timer.start()
+
+        self._transform.set_mandel(self._mandel)
+        self._frame_rgba = self._transform.get_frame()
+
+        # 7ms could potentially go faster with a lookup
+        # self.transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
+        # self.transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
+
+        # self.mod_log_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
+        # self.mod_log_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
+        #
+        # self._norm.autoscale(self.mod_log_iterations)
+        # self.normalised = self._norm(self.mod_log_iterations)
+        # self.rgba = self._cmap(self.normalised, bytes=True)
+        # # self.rgba = self._cmap(self.mod_log_iterations, bytes=True)
+        #
+        # print(f"self._mandel.iteration.shape {self._mandel.iteration.shape}")
+        # # print(f"self.transformed_iterations.shape {self.transformed_iterations.shape}")
+        # print(f"self.mod_log_iterations.shape {self.mod_log_iterations.shape}")
+        # # print(f"self.normalised.shape {self.normalised.shape}")
+        # print(f"self.rgba.shape {self.rgba.shape}")
+
+        # transformed_iterations[self._mandel.iteration == 4] = np.nan
+        # transformed_iterations[self._mandel.iteration == 6] = np.nan
+        # transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 500
+
         # self._ax_image: image.AxesImage = self._ax.imshow(
         #     self.transformed_iterations,
         #     interpolation='none', origin='lower',
         #     cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
         self._ax_image2: image.AxesImage = self._ax.imshow(
-            self.rgba,
+            self._frame_rgba,
             interpolation='none', origin='lower', resample=False)
 
-        self._ax.add_line(self._z0_marker)
-        if self._z0 is not None:
-            self._set_z0_marker()
+        # TODO: re-include z0 marker
+        # self._ax.add_line(self._z0_marker)
+        # if self._z0 is not None:
+        #     self._set_z0_marker()
 
-        # self.figure_canvas.draw()
-        self._transform_and_draw()
+        self.figure_canvas.draw()
+        # self._transform_and_draw()
 
         self._timer.stop(name=timer_str, show=True)
 
@@ -169,6 +186,20 @@ class Canvas:
         self._timer.stop(name=timer_str, show=True)
 
     def pan_mandel(self, pan: tuples.PixelPoint):
+        timer_str = f"pan new\tborder: {self._mandel.has_border}"
+        self._timer.start()
+        self._frame_rgba = self._transform.pan(pan)
+        # self._timer.lap("generate")
+        self._ax_image2.set_data(self._frame_rgba)
+        # self._ax_image2.remove()
+        # self._ax_image2: image.AxesImage = self._ax.imshow(
+        #     self._frame_rgba,
+        #     interpolation='none', origin='lower', resample=False)
+        self.figure_canvas.draw()
+        # self._timer.lap("display")
+        self._timer.stop(name=timer_str)
+
+    def pan_mandel2(self, pan: tuples.PixelPoint):
         self.x_shape = self._mandel.shape.x
         self.y_shape = self._mandel.shape.y
 
