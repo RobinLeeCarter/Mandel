@@ -189,14 +189,14 @@ class Canvas:
         timer_str = f"pan new\tborder: {self._mandel.has_border}"
         self._timer.start()
         self._frame_rgba = self._transform.pan(pan)
-        # self._timer.lap("generate")
+        self._timer.lap("generate")
         self._ax_image2.set_data(self._frame_rgba)
         # self._ax_image2.remove()
         # self._ax_image2: image.AxesImage = self._ax.imshow(
         #     self._frame_rgba,
         #     interpolation='none', origin='lower', resample=False)
         self.figure_canvas.draw()
-        # self._timer.lap("display")
+        self._timer.lap("display")
         self._timer.stop(name=timer_str)
 
     def pan_mandel2(self, pan: tuples.PixelPoint):

@@ -81,6 +81,11 @@ class Transform:
         # print(f"self._source_rgba.shape: {self._source_rgba.shape}")
         # print(self._source_rgba)
 
+        self._transform_matrix: cp.ndarray = cp.copy(self._identity_matrix)
+        self._transform_vector: cp.ndarray = cp.copy(self._null_vector)
+        self._do_matrix: bool = False
+        self._do_vector: bool = False
+
         self.updated = False
 
     def pan(self, pan: tuples.PixelPoint) -> np.ndarray:

@@ -14,7 +14,7 @@ class Lap:
         return self.lap_end - self.lap_start
 
     def print(self):
-        print(f"{self.lap_name}:\t{self.lap_time:.4f}")
+        print(f"{self.lap_name}:\t{self.lap_time:.3f}")
 
 
 class Timer:
@@ -65,6 +65,6 @@ class Timer:
 
     def print(self, name: str):
         if name:
-            print(f"{name} :\t{self.total:.4f}")
+            print(f"{name} :\t{self.total:.3f}")
         else:
-            print(f"Total time:\t{self.total:.4f}")
+            print(f"Total time:\t{self.total:.3f}")
