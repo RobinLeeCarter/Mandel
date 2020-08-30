@@ -11,6 +11,8 @@ from mandel_app.model import mandelbrot, z_model
 from mandel_app.view import window, state, settings, z_window, enums
 from mandel_app.view.common import icon, clipboard
 
+# import utils
+
 
 class View:
     # region Setup
@@ -23,6 +25,8 @@ class View:
         self._z_window: Optional[z_window.ZWindow] = None
         self._view_state: state.State = state.State()
         self._view_settings: settings.Settings = settings.Settings(reset=False)
+        # self._timer = utils.Timer()
+        # self._timer.start()
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
@@ -76,9 +80,12 @@ class View:
         # QtWidgets.QApplication.processEvents()
         self._set_action(enums.ImageAction.NONE)
         # self._window.central.canvas.save("mandel_icon.png")
+        # self._timer.stop()
+        # self._timer.start()
 
     def display_progress(self, progress: float):
         self._window.status_bar.display_progress(progress)
+        # self._timer.lap(f"{progress:.4f}", show=True)
 
     def stop_success(self):
         self.show_mandel(self._window.central.canvas.mandel)

@@ -104,8 +104,8 @@ class Canvas:
         self._frame_rgba = self._transform.get_frame()
 
         # 7ms could potentially go faster with a lookup
-        # self.transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
-        # self.transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
+        self.transformed_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
+        self.transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
 
         # self.mod_log_iterations = 100*np.mod(np.log10(1 + self._mandel.iteration), 1)
         # self.mod_log_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
@@ -125,13 +125,17 @@ class Canvas:
         # transformed_iterations[self._mandel.iteration == 6] = np.nan
         # transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 500
 
-        # self._ax_image: image.AxesImage = self._ax.imshow(
-        #     self.transformed_iterations,
-        #     interpolation='none', origin='lower',
-        #     cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
-        self._ax_image2: image.AxesImage = self._ax.imshow(
-            self._frame_rgba,
-            interpolation='none', origin='lower', resample=False)
+        self._ax_image: image.AxesImage = self._ax.imshow(
+            self.transformed_iterations,
+            interpolation='none', origin='lower',
+            cmap=self._cmap, vmin=0, vmax=100, alpha=1.0, zorder=0)
+
+        # self._ax_image2: image.AxesImage = self._ax.imshow(
+        #     self._frame_rgba,
+        #     interpolation='none', origin='lower', resample=False)
+        # self._ax_image2: image.AxesImage = self._ax.imshow(
+        #     self._frame_rgba,
+        #     interpolation='none', origin='lower', resample=False, filternorm=False)
 
         # TODO: re-include z0 marker
         # self._ax.add_line(self._z0_marker)
@@ -178,26 +182,27 @@ class Canvas:
             .translate(centre.x, centre.y)
         self._transform_and_draw(transform)
 
-    def pan_mandel1(self, pan: tuples.PixelPoint):
+    def pan_mandel(self, pan: tuples.PixelPoint):
         timer_str = f"pan\tborder: {self._mandel.has_border}"
         self._timer.start()
         transform = transforms.Affine2D().translate(-pan.x, -pan.y)
         self._transform_and_draw(transform)
         self._timer.stop(name=timer_str, show=True)
 
-    def pan_mandel(self, pan: tuples.PixelPoint):
-        timer_str = f"pan new\tborder: {self._mandel.has_border}"
+    def pan_mandel_new(self, pan: tuples.PixelPoint):
+        # timer_str = f"pan new\tborder: {self._mandel.has_border}"
         self._timer.start()
         self._frame_rgba = self._transform.pan(pan)
         self._timer.lap("generate")
         self._ax_image2.set_data(self._frame_rgba)
+        self._timer.lap("set_data")
         # self._ax_image2.remove()
         # self._ax_image2: image.AxesImage = self._ax.imshow(
         #     self._frame_rgba,
         #     interpolation='none', origin='lower', resample=False)
         self.figure_canvas.draw()
         self._timer.lap("display")
-        self._timer.stop(name=timer_str)
+        self._timer.stop()
 
     def pan_mandel2(self, pan: tuples.PixelPoint):
         self.x_shape = self._mandel.shape.x
@@ -286,11 +291,14 @@ class Canvas:
         if self._mandel.offset != tuples.PixelPoint(0, 0):
             transform = transform.translate(self._mandel.offset.x, -self._mandel.offset.y)
         trans_data = transform + self._ax.transData
-        # self._ax_image.set_transform(trans_data)
+        self._ax_image.set_transform(trans_data)
         self._z0_marker.set_transform(trans_data)
         # self.ax.add_line(self._z0_marker)
         # self.ax.plot([0.1], [0.1], marker='x', markersize=10, color="blue", zorder=10)
         self.figure_canvas.draw()
+        s, (width, height) = self._figure_canvas.print_to_buffer()
+        graph_rgba: np.ndarray = np.frombuffer(s, np.uint8).reshape((height, width, 4))
+        print(f"border: {self._mandel.has_border}\t, shape: {graph_rgba.shape}")
 
     def show_z0_marker(self, z0: complex):
         self._z0 = z0
