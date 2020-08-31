@@ -8,6 +8,7 @@ from matplotlib import figure
 from matplotlib.backends import backend_qt5agg
 
 import utils
+from mandel_app import tuples
 from mandel_app.view.portal import drawable
 
 
@@ -18,9 +19,6 @@ class Canvas:
     0.1s slower than direct input array to rgba array but thought to be worth it for consistency.
     """
     def __init__(self):
-        self._width: int = 0
-        self._height: int = 0
-
         self._fig: figure.Figure = figure.Figure(frameon=False, dpi=100.0)
         self._figure_canvas: backend_qt5agg.FigureCanvasQTAgg = backend_qt5agg.FigureCanvasQTAgg(self._fig)
         # Space around axes. Documentation not helpful. Taken from stack-overflow.
@@ -31,6 +29,14 @@ class Canvas:
 
         # self._figure_canvas.draw()
         self._timer = utils.Timer()
+
+    @property
+    def shape(self) -> tuples.ImageShape:
+        return self._drawable.shape
+
+    @property
+    def offset(self) -> tuples.PixelPoint:
+        return self._drawable.offset
 
     @property
     def rgba(self) -> np.ndarray:
@@ -46,12 +52,10 @@ class Canvas:
             self.set_drawable(drawable_)
         assert self._drawable is not None, "Canvas: No drawable set"
 
-        self._width = self._drawable.width
-        self._height = self._drawable.height
-
         # Get fig ready
-        width_inches: float = float(self._width) / 100.0
-        height_inches: float = float(self._height) / 100.0
+        width, height = self.shape
+        width_inches: float = float(width) / 100.0
+        height_inches: float = float(height) / 100.0
         self._fig.set_size_inches(width_inches, height_inches)
         # self._figure_canvas.resize(self._width, self._height)
 

@@ -25,6 +25,7 @@ class Frame:
         self._pan: tuples.PixelPoint = tuples.PixelPoint(0, 0)
         self._rotation_degrees: float = 0.0
         self._scale: float = 1.0
+        self._scale_point: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
         self._transform_matrix: Optional[cp.ndarray] = None
         self._transform_vector: Optional[cp.ndarray] = None
@@ -33,7 +34,7 @@ class Frame:
     def result_rgba(self) -> np.ndarray:
         return self._np_frame_rgba
 
-    def set_shape(self, image_shape: tuples.ImageShape):
+    def set_frame_shape(self, image_shape: tuples.ImageShape):
         """call when resize window"""
         self._frame_shape = image_shape
         frame_y = self._frame_shape.y
@@ -61,6 +62,11 @@ class Frame:
             self._offset = offset
         self._reset_transform()
 
+    def set_offset(self, offset: Optional[tuples.PixelPoint]):
+        """call when change the source"""
+        self._offset = offset
+        self._reset_transform()
+
     def plain(self):
         self.get_frame()
 
@@ -73,8 +79,9 @@ class Frame:
         self.get_frame()
 
     # TODO: scale a point for actual zooming, possibly pan (from center) + scale
-    def scale(self, scale: float):
+    def scale(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
         self._scale = scale
+        self._scale_point = scale_point
         self.get_frame()
 
     def get_frame(self):
@@ -144,28 +151,38 @@ class Frame:
 
         frame_transform = identity()
 
-        if self._rotation_degrees != 0.0 or self._scale != 1.0:
-            center_x, centre_y = frame_x*0.5, frame_y*0.5
-            # move center to origin
-            frame_transform = translate(-center_x, -centre_y) @ frame_transform
-            # do any scaling
-            if self._scale != 1.0:
-                frame_transform = scale(self._scale) @ frame_transform
-            # do any rotating
-            if self._rotation_degrees != 0.0:
-                frame_transform = rotate_degrees(self._rotation_degrees) @ frame_transform
-            # move origin back to center
-            frame_transform = translate(center_x, centre_y) @ frame_transform
+        if self._rotation_degrees != 0.0:
+            center_x, centre_y = frame_x * 0.5, frame_y * 0.5
+            # 1) move center to origin
+            # 2) rotate
+            # 3) move origin back to center
+            # so in reserve order:
+            frame_transform = translate(center_x, centre_y) @ \
+                rotate_degrees(self._rotation_degrees) @ \
+                translate(-center_x, -centre_y)
 
-        if self._pan != tuples.PixelPoint(0, 0):
+        elif self._scale != 1.0:
+            center_x, centre_y = frame_x * 0.5, frame_y * 0.5
+            # 1) move scale_point to origin
+            # 2) scale
+            # 3) move origin back to center
+            # so in reserve order:
+            frame_transform = translate(self._scale_point.x, self._scale_point.y) @ \
+                scale(self._scale) @ \
+                translate(-center_x, -centre_y)
+
+        elif self._pan != tuples.PixelPoint(0, 0):
             frame_transform = translate(self._pan.x, self._pan.y) @ frame_transform
+
+        else:
+            frame_transform = identity()
 
         frame_cartesian_to_source_cartesian = translate(-offset_x, -offset_y)
 
         # x unchanged, flip y (inverse of itself)
         source_cartesian_to_source_image = flip_y(source_y)
 
-        # combine matrices using multiplication, applied from bottom to top
+        # combine matrices using multiplication, so in reserve order:
         frame_image_to_source_image = source_cartesian_to_source_image @ \
             frame_cartesian_to_source_cartesian @ \
             frame_transform @ \
@@ -186,6 +203,7 @@ class Frame:
         self._pan = tuples.PixelPoint(0, 0)
         self._rotation_degrees = 0
         self._scale = 1.0
+        self._scale_point = tuples.PixelPoint(0, 0)
 
     def _apply_transform(self):
         self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._transform_matrix.T) \

@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Optional, Callable, List
 
 import numpy as np
-import cupy as cp
 
 import matplotlib
 from matplotlib import figure, backend_bases, image, transforms, lines, cm, colors
@@ -14,8 +13,7 @@ import utils
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets
-from mandel_app.view.window.central import transform
-
+from mandel_app.view.window.central.old import transform
 
 IMAGE_PATH = "mandel_app/mandelbrot_images/"
 

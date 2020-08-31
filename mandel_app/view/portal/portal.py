@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from PyQt5 import QtWidgets, QtGui
 
@@ -11,15 +13,26 @@ class Portal:
         self._frame = frame.Frame()
         self._canvas = canvas.Canvas()
 
-    def set_shape(self, image_shape: tuples.ImageShape):
-        self._frame.set_shape(image_shape)
+    def set_portal_shape(self, image_shape: tuples.ImageShape):
+        self._frame.set_frame_shape(image_shape)
 
     def set_drawable(self, drawable_: drawable.Drawable):
         self._canvas.set_drawable(drawable_)
 
+    @property
+    def drawable_shape(self) -> tuples.ImageShape:
+        return self._canvas.shape
+
     def draw_drawable(self):
         self._canvas.draw()
-        self._frame.set_source(self._canvas.rgba)
+        self._frame.set_source(source=self._canvas.rgba, offset=self._canvas.offset)
+
+    def update_offset(self):
+        self._frame.set_offset(self._canvas.offset)
+
+    def display(self):
+        self._frame.plain()
+        self._update_label()
 
     def pan_display(self, pan: tuples.PixelPoint):
         self._frame.pan(pan)
@@ -29,12 +42,8 @@ class Portal:
         self._frame.rotate(degrees)
         self._update_label()
 
-    def scale_display(self, scale: float):
-        self._frame.scale(scale)
-        self._update_label()
-
-    def display(self):
-        self._frame.plain()
+    def scale_display(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
+        self._frame.scale(scale, scale_point)
         self._update_label()
 
     def _update_label(self):
@@ -46,3 +55,8 @@ class Portal:
         q_image: QtGui.QImage = QtGui.QImage(rgba.data, w, h, c * w, QtGui.QImage.Format_RGBA8888)
         q_pixmap: QtGui.QPixmap = QtGui.QPixmap(q_image)
         return q_pixmap
+
+    def on_resize(self, new_image_shape: tuples.ImageShape):
+        self._frame.set_offset(self._canvas.offset)
+        self.set_portal_shape(new_image_shape)
+        self.display()

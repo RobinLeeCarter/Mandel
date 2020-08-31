@@ -132,11 +132,11 @@ class View:
         iteration_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
 
     def _connect_canvas(self):
-        canvas = self._window.central.canvas
-        canvas.add_connection("button_press_event", self._on_mandel_mouse_press)
-        canvas.add_connection("motion_notify_event", self._on_mandel_mouse_move)
-        canvas.add_connection("button_release_event", self._on_mandel_mouse_release)
-        canvas.add_connection("scroll_event", self._on_mandel_mouse_scroll)
+        x_label = self._window.central.x_label
+        x_label.set_on_mouse_press(self._on_central_mouse_press)
+        x_label.set_on_mouse_move(self._on_central_mouse_move)
+        x_label.set_on_mouse_release(self._on_central_mouse_release)
+        x_label.set_on_wheel(self._on_central_mouse_wheel)
     # endregion
 
     # region General Slots
@@ -231,13 +231,15 @@ class View:
     # endregion
 
     # region Canvas Slots
-    @QtCore.pyqtSlot(backend_bases.MouseEvent)
-    def _on_mandel_mouse_press(self, event: backend_bases.MouseEvent):
-        canvas = self._window.central.canvas
+    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
+    def _on_central_mouse_press(self, event: QtGui.QMouseEvent):
+        # canvas = self._window.central.canvas
         view_state_ = self._view_state
+        flags: QtCore.Qt.MouseEventFlags = event.flags()
+        double_click: bool = flags.testFlag(QtCore.Qt.MouseEventCreatedDoubleClick)
 
         if event.button == backend_bases.MouseButton.LEFT:
-            if event.dblclick and not view_state_.is_z_mode:
+            if double_click and not view_state_.is_z_mode:
                 if view_state_.ready_to_zoom:
                     self._zoom(view_state_.pan_start, scaling=0.1)
             elif view_state_.ready_to_pan:
@@ -256,8 +258,8 @@ class View:
                 else:
                     self._zoom(scaling=2.0)
 
-    @QtCore.pyqtSlot(backend_bases.MouseEvent)
-    def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
+    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
+    def _on_central_mouse_move(self, event: QtGui.QMouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
         if view_state_.is_waiting:
@@ -272,8 +274,8 @@ class View:
             view_state_.rotate_end = canvas.get_image_point(event)
             canvas.rotate_mandel_mouse(view_state_.total_theta_delta)
 
-    @QtCore.pyqtSlot(backend_bases.MouseEvent)
-    def _on_mandel_mouse_release(self, event: backend_bases.MouseEvent):
+    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
+    def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
 
@@ -306,11 +308,11 @@ class View:
                     view_state_.released_theta_delta = view_state_.released_theta_delta + mouse_theta_delta
                 self._set_action(enums.ImageAction.ROTATED)
 
-    @QtCore.pyqtSlot(backend_bases.MouseEvent)
-    def _on_mandel_mouse_scroll(self, event: backend_bases.MouseEvent):
+    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
+    def _on_central_mouse_wheel(self, event: QtGui.QWheelEvent):
         canvas = self._window.central.canvas
         view_state_ = self._view_state
-        # print("_on_mandel_mouse_scroll")
+        # print("_on_central_mouse_wheel")
 
         if view_state_.ready_to_zoom:
             extra_scaling = 0.9 ** float(event.step)

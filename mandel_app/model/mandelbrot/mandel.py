@@ -119,4 +119,10 @@ class Mandel:
             return pixel_point
         else:
             return None
+
+    # TODO: should offset be in view and not in model?
+    def set_offset(self, offset: tuples.PixelPoint):
+        """happens when window is resized"""
+        # noinspection PyAttributeOutsideInit
+        self.offset = offset
     # endregion

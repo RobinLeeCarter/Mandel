@@ -1,6 +1,6 @@
 from typing import Callable
 
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtWidgets
 
 from mandel_app.view import widgets
 from mandel_app.view.window import actions, menu, toolbars, status_bar, central
@@ -41,6 +41,13 @@ class Window:
             background-color: darkGray
         """
         return stylesheet
+
+    def get_dpi(self) -> int:
+        q_application = QtWidgets.QApplication.instance()   # get singleton
+        screen: QtGui.QScreen = q_application.screens()[0]
+        dpi = round(screen.physicalDotsPerInch())
+        # print(f"dpi = {dpi}")
+        return dpi
 
     def set_full_screen(self, full_screen: bool):
         self.is_full_screen = full_screen

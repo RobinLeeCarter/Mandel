@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 import numpy as np
-from matplotlib import figure, backend_bases, image, transforms, lines, cm, colors
+from matplotlib import lines, cm, colors
 
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
@@ -15,9 +15,24 @@ class MandelDraw(portal.Drawable):
         self._cmap = cm.get_cmap("hot")
         self._norm = colors.Normalize(vmin=0, vmax=1)
         self._transformed_iterations: Optional[np.ndarray] = None
-        self._z0: Optional[complex] = None  # TODO: Remove and use mandel directly
+
+        self._z0_pixel: Optional[tuples.PixelPoint] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
                                        zorder=1, visible=False)
+
+    @property
+    def shape(self) -> Optional[tuples.ImageShape]:
+        if self._transformed_iterations is None:
+            return None
+        else:
+            return self._get_shape(self._transformed_iterations)
+
+    @property
+    def offset(self) -> Optional[tuples.PixelPoint]:
+        if self._mandel is None:
+            return None
+        else:
+            return self._mandel.offset
 
     @property
     def mandel(self) -> Optional[mandelbrot.Mandel]:
@@ -27,7 +42,11 @@ class MandelDraw(portal.Drawable):
         self._mandel = mandel_
         self._transformed_iterations = np.mod(np.log10(1 + self._mandel.iteration), 1)
         self._transformed_iterations[self._mandel.iteration == self._mandel.max_iteration] = 0
-        self._adopt_shape(self._transformed_iterations)
+        # self._adopt_shape(self._transformed_iterations)
+        # self.offset = self._mandel.offset
+
+    def set_cmap(self, cmap: colors.Colormap):
+        self._cmap = cmap
 
     def draw(self):
         assert self._mandel is not None, "MandelDraw: mandel is None"
@@ -37,27 +56,29 @@ class MandelDraw(portal.Drawable):
             self._transformed_iterations,
             interpolation='none', origin='lower',
             cmap=self._cmap, norm=self._norm, resample=False, filternorm=False)  # , zorder=0
-        self._ax.add_line(self._z0_marker)
-        if self._z0 is not None:
-            self._set_z0_marker()
+        if self._z0_pixel is not None:
+            self._ax.add_line(self._z0_marker)
 
-    def show_z0_marker(self, z0: complex):
-        self._z0 = z0
-        self._set_z0_marker()
-        self.figure_canvas.draw()
+    def update(self):
+        """Maybe extend to use animation in future"""
+        self.draw()
 
-    def _set_z0_marker(self):
+    # def show_z0_marker(self, z0: complex):
+    #     self._set_z0_marker(z0)
+    #     # self.figure_canvas.draw()
+
+    def set_z0_marker(self, z0: complex):
         pixel_x: List[int] = []
         pixel_y: List[int] = []
-        pixel_point: Optional[tuples.PixelPoint] = self._mandel.get_pixel_from_complex(self._z0)
-        if pixel_point is not None:
-            pixel_x.append(pixel_point.x)
-            pixel_y.append(pixel_point.y)
+        self._z0_pixel = self._mandel.get_pixel_from_complex(z0)
+        if self._z0_pixel is not None:
+            pixel_x.append(self._z0_pixel.x)
+            pixel_y.append(self._z0_pixel.y)
             # self._z0_marker.set_data([pixel_point.x], [pixel_point.y])
         self._z0_marker.set_data(pixel_x, pixel_y)
-        self._z0_marker.set_visible(True)
+        # self._z0_marker.set_visible(True)
 
     def hide_z0_marker(self):
-        self._z0 = None
-        self._z0_marker.set_visible(False)
-        self.figure_canvas.draw()
+        self._z0_pixel = None
+        # self._z0_marker.set_visible(False)
+        # self.figure_canvas.draw()
