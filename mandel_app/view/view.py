@@ -122,9 +122,9 @@ class View:
 
     def _connect_iteration_slider(self):
         self._window.actions.max_iterations.set_on_triggered(on_triggered=self._on_max_iteration)
-        iteration_slider = self._window.toolbars.iteration_slider
-        iteration_slider.set_on_slider_moved(self._on_iteration_slider_moved)
-        iteration_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
+        x_labelled_slider = self._window.toolbars.iteration_slider.x_labelled_slider
+        x_labelled_slider.set_on_slider_moved(self._on_iteration_slider_moved)
+        x_labelled_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
 
     def _connect_window(self):
         q_main_window = self._window.q_main_window

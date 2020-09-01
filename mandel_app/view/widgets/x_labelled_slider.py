@@ -2,6 +2,8 @@
 # https://stackoverflow.com/questions/47494305/python-pyqt4-slider-with-tick-labels
 
 import sys
+from typing import Callable
+
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import QStyle, QStyleOptionSlider
@@ -115,6 +117,14 @@ class XLabeledSlider(QtWidgets.QWidget):
             painter.drawText(pos, v_str)
 
         return
+
+    def set_on_slider_moved(self, on_slider_moved: Callable[[int], None]):
+        # noinspection PyUnresolvedReferences
+        self.q_slider.sliderMoved.connect(on_slider_moved)
+
+    def set_on_value_changed(self, on_value_changed: Callable[[int], None]):
+        # noinspection PyUnresolvedReferences
+        self.q_slider.valueChanged.connect(on_value_changed)
 
 
 # test script
