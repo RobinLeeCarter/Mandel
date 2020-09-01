@@ -12,10 +12,10 @@ class Frame:
         # arrays are all cupy arrays unless prefixed np_
 
         self._source: Optional[cp.ndarray] = None
-        self._offset: tuples.PixelPoint = tuples.PixelPoint(0, 0)
+        self.offset: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
         # portal arrays that only change when window is resized
-        self._frame_shape: Optional[tuples.ImageShape] = None
+        self.shape: Optional[tuples.ImageShape] = None
         self._frame_pixels: Optional[cp.ndarray] = None
         self._frame_to_source_fp32: Optional[cp.ndarray] = None
         self._frame_to_source_int32: Optional[cp.ndarray] = None
@@ -36,9 +36,9 @@ class Frame:
 
     def set_frame_shape(self, image_shape: tuples.ImageShape):
         """call when resize window"""
-        self._frame_shape = image_shape
-        frame_y = self._frame_shape.y
-        frame_x = self._frame_shape.x
+        self.shape = image_shape
+        frame_y = self.shape.y
+        frame_x = self.shape.x
 
         self._frame_pixels = cp.zeros(shape=(frame_y, frame_x, 2), dtype=cp.float32)
 
@@ -59,12 +59,12 @@ class Frame:
         """call when change the source"""
         self._source = cp.asarray(source)
         if offset is not None:
-            self._offset = offset
+            self.offset = offset
         self._reset_transform()
 
     def set_offset(self, offset: Optional[tuples.PixelPoint]):
         """call when change the source"""
-        self._offset = offset
+        self.offset = offset
         self._reset_transform()
 
     def plain(self):
@@ -105,8 +105,8 @@ class Frame:
         # print(f"mapped.shape: {mapped.shape}")
         # print(f"mapped count_nonzero: {cp.count_nonzero(mapped)}")
 
-        frame_y_size: int = self._frame_shape.y
-        frame_x_size: int = self._frame_shape.x
+        frame_y_size: int = self.shape.y
+        frame_x_size: int = self.shape.x
         self._frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
         self._frame_rgba[mapped, :] = self._source[frame_y[mapped], frame_x[mapped], :]
         # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
@@ -133,11 +133,11 @@ class Frame:
         # values
         # source_x = float(self._source.shape[1])
         source_y = float(self._source.shape[0])
-        frame_x = float(self._frame_shape.x)
-        frame_y = float(self._frame_shape.y)
+        frame_x = float(self.shape.x)
+        frame_y = float(self.shape.y)
         # cartesian offset when source and portal were first generated, x and y are both positive
-        offset_x = float(self._offset.x)
-        offset_y = float(self._offset.y)
+        offset_x = float(self.offset.x)
+        offset_y = float(self.offset.y)
 
         # goal is to get from frame_image co-ordinates to transformed source_image co-ordinates
         # want to do all the transforms in portal cartesian co-ordinates

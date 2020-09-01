@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from mandel_app import tuples
 from mandel_app.view.portal import canvas, frame, drawable
@@ -13,22 +13,41 @@ class Portal:
         self._frame = frame.Frame()
         self._canvas = canvas.Canvas()
 
-    def set_portal_shape(self, image_shape: tuples.ImageShape):
-        self._frame.set_frame_shape(image_shape)
-
     def set_drawable(self, drawable_: drawable.Drawable):
         self._canvas.set_drawable(drawable_)
+        self._update_offset()
 
-    @property
-    def drawable_shape(self) -> tuples.ImageShape:
-        return self._canvas.shape
+    def on_resize(self):
+        self.set_frame_shape()
+        self.display()
+
+    def set_frame_shape(self):
+        q_size: QtCore.QSize = self._q_label.size()
+        image_shape = tuples.ImageShape(x=q_size.width(), y=q_size.height())
+        current_frame_shape = self._frame.shape
+        if current_frame_shape is None or image_shape != current_frame_shape:
+            self._frame.set_frame_shape(image_shape)
+            self._update_offset()
 
     def draw_drawable(self):
         self._canvas.draw()
-        self._frame.set_source(source=self._canvas.rgba, offset=self._canvas.offset)
+        self._frame.set_source(source=self._canvas.rgba)
+        self._update_offset()
 
-    def update_offset(self):
-        self._frame.set_offset(self._canvas.offset)
+    # this could be pushed down to the drawable if we want it to be calculated differently for different drawables
+    def _update_offset(self):
+        """Called once canvas or frame is updated"""
+        canvas_shape = self._canvas.shape
+        frame_shape = self._frame.shape
+        if canvas_shape is not None and frame_shape is not None:
+            current_frame_offset = self._frame.offset
+            # offset when frame centered in drawable
+            offset = tuples.PixelPoint(
+                x=min(int((canvas_shape.x - frame_shape.x) / 2.0), 0),
+                y=min(int((canvas_shape.y - frame_shape.y) / 2.0), 0)
+            )
+            if current_frame_offset is None or offset != current_frame_offset:
+                self._frame.set_offset(offset)
 
     def display(self):
         self._frame.plain()
@@ -56,7 +75,3 @@ class Portal:
         q_pixmap: QtGui.QPixmap = QtGui.QPixmap(q_image)
         return q_pixmap
 
-    def on_resize(self, new_image_shape: tuples.ImageShape):
-        self._frame.set_offset(self._canvas.offset)
-        self.set_portal_shape(new_image_shape)
-        self.display()

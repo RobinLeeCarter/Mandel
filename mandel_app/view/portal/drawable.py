@@ -19,10 +19,10 @@ class Drawable(ABC):
     def shape(self) -> Optional[tuples.ImageShape]:
         pass
 
-    @property
-    @abstractmethod
-    def offset(self) -> Optional[tuples.PixelPoint]:
-        pass
+    # @property
+    # @abstractmethod
+    # def offset(self) -> Optional[tuples.PixelPoint]:
+    #     pass
 
     def set_ax(self, ax: figure.Axes):
         self._ax = ax

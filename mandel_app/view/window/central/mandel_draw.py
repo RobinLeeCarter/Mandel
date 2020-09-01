@@ -27,12 +27,12 @@ class MandelDraw(portal.Drawable):
         else:
             return self._get_shape(self._transformed_iterations)
 
-    @property
-    def offset(self) -> Optional[tuples.PixelPoint]:
-        if self._mandel is None:
-            return None
-        else:
-            return self._mandel.offset
+    # @property
+    # def offset(self) -> Optional[tuples.PixelPoint]:
+    #     if self._mandel is None:
+    #         return None
+    #     else:
+    #         return self._mandel.offset
 
     @property
     def mandel(self) -> Optional[mandelbrot.Mandel]:

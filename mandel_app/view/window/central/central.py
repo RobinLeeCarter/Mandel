@@ -88,11 +88,11 @@ class Central:
         self.x_label.setCursor(cursor)
 
     def on_resized(self, new_image_shape: tuples.ImageShape):
-        image_shape = self._portal.drawable_shape
-        x_offset = min(int((new_image_shape.x - image_shape.x) / 2.0), 0)
-        y_offset = min(int((new_image_shape.y - image_shape.y) / 2.0), 0)
-        self._mandel_draw.mandel.set_offset(tuples.PixelPoint(x=x_offset, y=y_offset))
-        self._portal.on_resize(new_image_shape)
+        # image_shape = self._portal.drawable_shape
+        # x_offset = min(int((new_image_shape.x - image_shape.x) / 2.0), 0)
+        # y_offset = min(int((new_image_shape.y - image_shape.y) / 2.0), 0)
+        # self._mandel_draw.mandel.set_offset(tuples.PixelPoint(x=x_offset, y=y_offset))
+        self._portal.on_resize()
 
     # def above_center(self, y: int) -> bool:
     #     return y >= self._mandel_draw.mandel.shape.y / 2
