@@ -100,16 +100,10 @@ class View:
         self._connect_full_screen()
         self._connect_z_mode()
         self._connect_dial_rotate()
-        self._connect_iteration()
+        self._connect_iteration_slider()
         self._connect_central_label()
-        self._window.set_on_key_pressed(self._on_key_pressed)
-        self._window.set_on_active(self._on_active)
-        self._z_window.set_on_active(self._on_z_active)
-        self._window.set_on_close(self._on_close)
-        self._z_window.set_on_close(self._on_z_close)
-        self._window.set_on_resize(self._on_resized)
-        self._z_window.set_on_resize(self._on_z_resized)
-        self._window.status_bar.set_center_on_mouse_press(self._on_copy_press)
+        self._connect_window()
+        self._connect_z_window()
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -126,11 +120,25 @@ class View:
         self._window.toolbars.dial.set_on_rotating(on_rotating=self._on_rotating)
         self._window.toolbars.dial.set_on_rotated(on_rotated=self._controller.rotate_request)
 
-    def _connect_iteration(self):
+    def _connect_iteration_slider(self):
         self._window.actions.max_iterations.set_on_triggered(on_triggered=self._on_max_iteration)
         iteration_slider = self._window.toolbars.iteration_slider
         iteration_slider.set_on_slider_moved(self._on_iteration_slider_moved)
         iteration_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
+
+    def _connect_window(self):
+        q_main_window = self._window.q_main_window
+        q_main_window.set_on_key_pressed(self._on_key_pressed)
+        q_main_window.set_on_active(self._on_active)
+        q_main_window.set_on_resize(self._on_resized)
+        q_main_window.set_on_close(self._on_close)
+        self._window.status_bar.set_center_on_mouse_press(self._on_copy_press)
+
+    def _connect_z_window(self):
+        q_main_window = self._z_window.q_main_window
+        q_main_window.set_on_active(self._on_z_active)
+        q_main_window.set_on_resize(self._on_z_resized)
+        q_main_window.set_on_close(self._on_z_close)
 
     def _connect_central_label(self):
         x_label = self._window.central.x_label
@@ -232,14 +240,11 @@ class View:
         self._window.central.overlay.show_copy_message()
     # endregion
 
-    # region Canvas Slots
-    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
+    # region Central Mouse Slots
     def _on_central_mouse_press(self, event: QtGui.QMouseEvent):
-        # canvas = self._window.central.canvas
+        # add to always request a stop any current GPU work to free it up for scrolling
+        self._controller.stop_request()
         view_state_ = self._view_state
-        # flags: QtCore.Qt.MouseEventFlags = event.flags()
-        # double_click: bool = flags.testFlag(QtCore.Qt.MouseEventCreatedDoubleClick)
-
         if event.button == backend_bases.MouseButton.LEFT:
             if view_state_.ready_to_pan:
                 view_state_.pan_start = self._get_image_point(event)
@@ -254,7 +259,6 @@ class View:
             if view_state_.ready_to_zoom:
                 self._zoom(scaling=2.0)
 
-    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
     def _on_central_mouse_move(self, event: QtGui.QMouseEvent):
         view_state_ = self._view_state
         central = self._window.central
@@ -270,7 +274,6 @@ class View:
             view_state_.rotate_end = self._get_image_point(event)
             central.rotate_mandel_mouse(view_state_.total_theta_delta)
 
-    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
     def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
         view_state_ = self._view_state
         central = self._window.central
@@ -313,14 +316,12 @@ class View:
         """
         view_state_ = self._view_state
         if event.button == backend_bases.MouseButton.LEFT:
-            if not view_state_.is_z_mode:
-                if view_state_.ready_to_zoom:
-                    self._zoom(view_state_.pan_start, scaling=0.1)
+            if view_state_.ready_to_zoom and not view_state_.is_z_mode:
+                self._zoom(view_state_.pan_start, scaling=0.1)
         elif event.button == backend_bases.MouseButton.RIGHT:
             if view_state_.ready_to_zoom:
                 self._zoom(scaling=10.0)
 
-    # @QtCore.pyqtSlot(backend_bases.MouseEvent)
     def _on_central_mouse_wheel(self, event: QtGui.QWheelEvent):
         view_state_ = self._view_state
         steps: float = self._get_scroll_steps(event)

@@ -61,17 +61,3 @@ class Window:
             self.toolbars.full_screen_show()
             self.menu.full_screen_show()
             self.status_bar.q_status_bar.show()
-
-    # region Connect Events
-    def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
-        self.q_main_window.keyPressSignal.connect(on_key_pressed)
-
-    def set_on_active(self, on_active: Callable[[], None]):
-        self.q_main_window.activationChangeSignal.connect(on_active)
-
-    def set_on_resize(self, on_resize: Callable[[], None]):
-        self.q_main_window.resize_q_timer.timeout.connect(on_resize)
-
-    def set_on_close(self, on_close: Callable[[], None]):
-        self.q_main_window.closeSignal.connect(on_close)
-    # endregion

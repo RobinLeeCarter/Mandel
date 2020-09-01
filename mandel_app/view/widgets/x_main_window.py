@@ -1,3 +1,5 @@
+from typing import Callable
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 
@@ -34,3 +36,17 @@ class XMainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, close_event: QtGui.QCloseEvent) -> None:
         self.closeSignal.emit(close_event)
         super().closeEvent(close_event)
+
+    # region Connect Events
+    def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
+        self.keyPressSignal.connect(on_key_pressed)
+
+    def set_on_active(self, on_active: Callable[[], None]):
+        self.activationChangeSignal.connect(on_active)
+
+    def set_on_resize(self, on_resize: Callable[[], None]):
+        self.resize_q_timer.timeout.connect(on_resize)
+
+    def set_on_close(self, on_close: Callable[[], None]):
+        self.closeSignal.connect(on_close)
+    # endregion

@@ -6,6 +6,7 @@ from mandel_app.view.common import base_overlay
 
 
 class XLabel(QtWidgets.QLabel):
+    # region Setup
     mousePressSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     mouseReleaseSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     mouseDoubleClickSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
@@ -16,50 +17,55 @@ class XLabel(QtWidgets.QLabel):
         super().__init__(*args, **kwargs)
         self._overlay: Optional[base_overlay.BaseOverlay] = None
 
+    def set_overlay(self, overlay_: base_overlay.BaseOverlay):
+        self._overlay = overlay_
+    # endregion
+
+    # region Overridden Events
     def paintEvent(self, q_paint_event: QtGui.QPaintEvent):
         super().paintEvent(q_paint_event)
         if self._overlay is not None:
             self._overlay.draw(q_paint_event)
-
-    def set_overlay(self, overlay_: base_overlay.BaseOverlay):
-        self._overlay = overlay_
 
     def mousePressEvent(self, mouse_event: QtGui.QMouseEvent):
         mouse_event.accept()
         self.mousePressSignal.emit(mouse_event)
         # super().mousePressEvent(mouse_event)
 
-    def set_on_mouse_press(self, on_mouse_press: Callable[[QtGui.QMouseEvent], None]):
-        self.mousePressSignal.connect(on_mouse_press)
-
     def mouseMoveEvent(self, mouse_event: QtGui.QMouseEvent):
         mouse_event.accept()
         self.mouseMoveSignal.emit(mouse_event)
         # super().mouseMoveEvent(mouse_event)
-
-    def set_on_mouse_move(self, on_mouse_move: Callable[[QtGui.QMouseEvent], None]):
-        self.mousePressSignal.connect(on_mouse_move)
 
     def mouseReleaseEvent(self, mouse_event: QtGui.QMouseEvent):
         mouse_event.accept()
         self.mouseReleaseSignal.emit(mouse_event)
         # super().mouseReleaseEvent(mouse_event)
 
-    def set_on_mouse_release(self, on_mouse_release: Callable[[QtGui.QMouseEvent], None]):
-        self.mousePressSignal.connect(on_mouse_release)
-
     def mouseDoubleClickEvent(self, mouse_event: QtGui.QMouseEvent):
         mouse_event.accept()
         self.mouseDoubleClickSignal.emit(mouse_event)
         # super().mouseDoubleClickEvent(mouse_event)
 
-    def set_on_mouse_double_click(self, on_mouse_double_click: Callable[[QtGui.QMouseEvent], None]):
-        self.mouseDoubleClickSignal.connect(on_mouse_double_click)
-
     def wheelEvent(self, wheel_event: QtGui.QWheelEvent):
         wheel_event.accept()
         self.wheelSignal.emit(wheel_event)
         # super().wheelEvent(mouse_event)
+    # endregion
+
+    # region Connect Events
+    def set_on_mouse_press(self, on_mouse_press: Callable[[QtGui.QMouseEvent], None]):
+        self.mousePressSignal.connect(on_mouse_press)
+
+    def set_on_mouse_move(self, on_mouse_move: Callable[[QtGui.QMouseEvent], None]):
+        self.mousePressSignal.connect(on_mouse_move)
+
+    def set_on_mouse_release(self, on_mouse_release: Callable[[QtGui.QMouseEvent], None]):
+        self.mousePressSignal.connect(on_mouse_release)
+
+    def set_on_mouse_double_click(self, on_mouse_double_click: Callable[[QtGui.QMouseEvent], None]):
+        self.mouseDoubleClickSignal.connect(on_mouse_double_click)
 
     def set_on_wheel(self, on_wheel: Callable[[QtGui.QWheelEvent], None]):
         self.mousePressSignal.connect(on_wheel)
+    # endregion
