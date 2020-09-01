@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore
@@ -31,7 +33,7 @@ class Area:
         # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
 
         # TODO: Move to top
-        self._q_scroll_area.setWidget(self._q_main)
+        # self._q_scroll_area.setWidget(self._q_main)
 
         # self.q_scroll_area.setAlignment(Qt.AlignBottom)
         # self.q_scroll_area.setWidget(self.canvas.mandel_canvas)

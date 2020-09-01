@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 
-from mandel_app.view import common
+from mandel_app.view.common import base_overlay
 
 
 class XLabel(QtWidgets.QLabel):
@@ -14,13 +14,14 @@ class XLabel(QtWidgets.QLabel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._overlay: Optional[common.BaseOverlay] = None
+        self._overlay: Optional[base_overlay.BaseOverlay] = None
 
     def paintEvent(self, q_paint_event: QtGui.QPaintEvent):
         super().paintEvent(q_paint_event)
-        self._overlay.draw(q_paint_event)
+        if self._overlay is not None:
+            self._overlay.draw(q_paint_event)
 
-    def set_overlay(self, overlay_: common.BaseOverlay):
+    def set_overlay(self, overlay_: base_overlay.BaseOverlay):
         self._overlay = overlay_
 
     def mousePressEvent(self, mouse_event: QtGui.QMouseEvent):
