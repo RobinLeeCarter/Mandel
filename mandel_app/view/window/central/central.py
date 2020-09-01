@@ -72,11 +72,14 @@ class Central:
         if zoom_point is None:
             zoom_point = center
 
+        # if scaling is None:
+        #     magnification = 1.0
+        # else:
+        #     magnification = 1.0 / scaling
+        # self._portal.scale_display(magnification, zoom_point)
         if scaling is None:
-            magnification = 1.0
-        else:
-            magnification = 1.0 / scaling
-        self._portal.scale_display(magnification, zoom_point)
+            scaling = 1.0
+        self._portal.scale_display(scaling, zoom_point)
         self._area.update()
 
     def pan_mandel(self, pan: tuples.PixelPoint):

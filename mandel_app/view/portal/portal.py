@@ -51,7 +51,7 @@ class Portal:
                 x=min(int((canvas_shape.x - frame_shape.x) / 2.0), 0),
                 y=min(int((canvas_shape.y - frame_shape.y) / 2.0), 0)
             )
-            print(f"offset: {offset}")
+            # print(f"offset: {offset}")
             if current_frame_offset is None or offset != current_frame_offset:
                 self._frame.set_offset(offset)
 
