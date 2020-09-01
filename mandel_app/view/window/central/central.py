@@ -5,12 +5,13 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets, portal
-from mandel_app.view.window.central import mandel_draw, area, overlay
+from mandel_app.view.window.central import mandel_draw, overlay, area
 
 
 class Central:
     def __init__(self, q_main_window: QtWidgets.QMainWindow):
         self._area = area.Area(q_main_window)
+        self._area.build()
         self.x_label: widgets.XLabel = self._area.portal_label
         self._portal = portal.Portal(self.x_label)
         self._mandel_draw = mandel_draw.MandelDraw()
@@ -19,23 +20,30 @@ class Central:
         self.overlay = overlay.Overlay(parent=self.x_label)
         self.x_label.set_overlay(self.overlay)
 
+    def build(self, cursor_shape: QtCore.Qt.CursorShape):
+        self._area.refresh_shape()
+        # # print(f"self._area.shape: {self._area.shape}")
+        self._portal.set_frame_shape(self._area.shape)
+        self.set_cursor(cursor_shape)
+
+    def on_resized(self):
+        self._area.refresh_shape()
+        self._portal.on_resized(self._area.shape)
+
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""
         self._mandel_draw.set_mandel(mandel)
         self._portal.draw_drawable()
         self._portal.display()
-        self._area.refresh()
-
-    def refresh_image_space(self):
-        self._area.refresh_image_space()
+        self._area.update()
 
     @property
     def mandel(self) -> mandelbrot.Mandel:
         return self._mandel_draw.mandel
 
     @property
-    def image_shape(self) -> tuples.ImageShape:
-        return self._area.image_shape
+    def frame_shape(self) -> Optional[tuples.ImageShape]:
+        return self._portal.frame_shape
 
     @property
     def center_pixel_point(self) -> tuples.PixelPoint:
@@ -55,7 +63,7 @@ class Central:
 
     def _rotate_mandel(self, degrees: int):
         self._portal.rotate_display(degrees)
-        self._area.refresh()
+        self._area.update()
 
     def zoom_mandel_frame(self,
                           zoom_point: Optional[tuples.PixelPoint] = None,
@@ -69,11 +77,11 @@ class Central:
         else:
             magnification = 1.0 / scaling
         self._portal.scale_display(magnification, zoom_point)
-        self._area.refresh()
+        self._area.update()
 
     def pan_mandel(self, pan: tuples.PixelPoint):
         self._portal.pan_display(pan)
-        self._area.refresh()
+        self._area.update()
 
     def show_z0_marker(self, z0: complex):
         self._mandel_draw.set_z0_marker(z0)
@@ -87,12 +95,10 @@ class Central:
         cursor = QtGui.QCursor(cursor_shape)
         self.x_label.setCursor(cursor)
 
-    def on_resized(self, new_image_shape: tuples.ImageShape):
         # image_shape = self._portal.drawable_shape
         # x_offset = min(int((new_image_shape.x - image_shape.x) / 2.0), 0)
         # y_offset = min(int((new_image_shape.y - image_shape.y) / 2.0), 0)
         # self._mandel_draw.mandel.set_offset(tuples.PixelPoint(x=x_offset, y=y_offset))
-        self._portal.on_resize()
 
     # def above_center(self, y: int) -> bool:
     #     return y >= self._mandel_draw.mandel.shape.y / 2

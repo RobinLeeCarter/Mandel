@@ -42,8 +42,8 @@ class State:
     #     return self._central.mandel
 
     @property
-    def image_shape(self) -> tuples.ImageShape:
-        return self._central.image_shape
+    def frame_shape(self) -> tuples.ImageShape:
+        return self._central.frame_shape
 
     @property
     def is_waiting(self) -> bool:
@@ -115,7 +115,7 @@ class State:
     @property
     def mouse_theta_delta(self) -> Optional[int]:
         if self.rotate_start is not None and self.rotate_end is not None:
-            x_size, y_size = self.image_shape
+            x_size, y_size = self.frame_shape
             x_diff = self.rotate_end.x - self.rotate_start.x
             # y_diff = self.rotate_end.y - self.rotate_start.y
             theta_delta = int(360.0 * float(x_diff) / float(x_size))

@@ -35,6 +35,7 @@ class View:
         dock_icon = icon.Icon("mandel_icon.png")
         self._application.setWindowIcon(dock_icon.q_icon)
         self._window = window.Window(self._application_name, self._view_settings.window_settings)
+        self._window.build(self._view_settings.window_settings, self._view_state.cursor_shape)
         self._view_state.set_central(self._window.central)
         self._window.central.set_cursor(self._view_state.cursor_shape)
         self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
@@ -43,8 +44,9 @@ class View:
     # endregion
 
     # region Controller Messages
-    def get_image_space(self) -> tuples.ImageShape:
-        return self._window.central.image_shape
+    @property
+    def frame_shape(self) -> Optional[tuples.ImageShape]:
+        return self._window.central.frame_shape
 
     def show_z_graph(self, z_model_: z_model.ZModel):
         self._z_window.central.show_graph(z_model_)
@@ -216,10 +218,7 @@ class View:
                 q_action.trigger()
 
     def _on_resized(self):
-        central = self._window.central
-        central.refresh_image_space()
-        central.on_resized(central.image_shape)
-
+        self._window.central.on_resized()
         # have to zoom, ready or not
         self._zoom(scaling=1.0)
 
@@ -242,17 +241,18 @@ class View:
 
     # region Central Mouse Slots
     def _on_central_mouse_press(self, event: QtGui.QMouseEvent):
+        print("_on_central_mouse_press")
         # add to always request a stop any current GPU work to free it up for scrolling
         self._controller.stop_request()
         view_state_ = self._view_state
         if event.button == backend_bases.MouseButton.LEFT:
             if view_state_.ready_to_pan:
-                view_state_.pan_start = self._get_image_point(event)
+                view_state_.pan_start = self._get_mouse_point(event)
                 view_state_.pan_end = view_state_.pan_start
                 self._set_action(enums.ImageAction.PANNING)
         elif event.button == backend_bases.MouseButton.MIDDLE:
             if view_state_.ready_to_rotate:
-                view_state_.rotate_start = self._get_image_point(event)
+                view_state_.rotate_start = self._get_mouse_point(event)
                 # view_state_.mandel_shape = self._window.central.mandel.shape
                 self._set_action(enums.ImageAction.ROTATING)
         elif event.button == backend_bases.MouseButton.RIGHT:
@@ -260,27 +260,29 @@ class View:
                 self._zoom(scaling=2.0)
 
     def _on_central_mouse_move(self, event: QtGui.QMouseEvent):
+        print("_on_central_mouse_move")
         view_state_ = self._view_state
         central = self._window.central
         if view_state_.is_waiting:
-            image_point: tuples.PixelPoint = self._get_image_point(event)
-            z: complex = central.mandel.get_complex_from_pixel(image_point)
+            mouse_point: tuples.PixelPoint = self._get_mouse_point(event)
+            z: complex = central.mandel.get_complex_from_pixel(mouse_point)
             self._window.status_bar.display_point(z)
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
-            view_state_.pan_end = self._get_image_point(event)
+            view_state_.pan_end = self._get_mouse_point(event)
             central.pan_mandel(pan=view_state_.total_pan)
             self._set_action(enums.ImageAction.PANNING)
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
-            view_state_.rotate_end = self._get_image_point(event)
+            view_state_.rotate_end = self._get_mouse_point(event)
             central.rotate_mandel_mouse(view_state_.total_theta_delta)
 
     def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
+        print("_on_central_mouse_release")
         view_state_ = self._view_state
         central = self._window.central
 
         if event.button == backend_bases.MouseButton.LEFT:
             if view_state_.action_in_progress == enums.ImageAction.PANNING:
-                view_state_.pan_end = self._get_image_point(event)
+                view_state_.pan_end = self._get_mouse_point(event)
                 if view_state_.tiny_pan:
                     if view_state_.is_z_mode:
                         # change z0 for z-tracing
@@ -297,7 +299,7 @@ class View:
 
         elif event.button == backend_bases.MouseButton.MIDDLE:
             if view_state_.action_in_progress == enums.ImageAction.ROTATING:
-                view_state_.rotate_end = self._get_image_point(event)
+                view_state_.rotate_end = self._get_mouse_point(event)
                 mouse_theta_delta = view_state_.mouse_theta_delta
                 if mouse_theta_delta is not None and mouse_theta_delta != 0:
                     new_theta = central.mandel.theta_degrees + \
@@ -314,6 +316,7 @@ class View:
         The first click request will have been sent to the controller and model requesting a new mandel
         This new request will interrupt that job. Waiting would slow down the single click noticeable.
         """
+        print("_on_central_mouse_double_click")
         view_state_ = self._view_state
         if event.button == backend_bases.MouseButton.LEFT:
             if view_state_.ready_to_zoom and not view_state_.is_z_mode:
@@ -323,6 +326,7 @@ class View:
                 self._zoom(scaling=10.0)
 
     def _on_central_mouse_wheel(self, event: QtGui.QWheelEvent):
+        print("_on_central_mouse_wheel")
         view_state_ = self._view_state
         steps: float = self._get_scroll_steps(event)
         # print("_on_central_mouse_wheel")
@@ -392,9 +396,9 @@ class View:
     def _update_cursor(self):
         self._window.central.set_cursor(self._view_state.cursor_shape)
 
-    def _get_image_point(self, event: QtGui.QMouseEvent):
-        return tuples.PixelPoint(x=event.x,
-                                 y=event.y)
+    def _get_mouse_point(self, event: QtGui.QMouseEvent):
+        return tuples.PixelPoint(x=event.x(),
+                                 y=event.y())
 
     def _get_scroll_steps(self, event: QtGui.QWheelEvent) -> float:
         # see: https://doc.qt.io/qt-5/qwheelevent.html#globalPosition

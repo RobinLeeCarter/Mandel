@@ -1,6 +1,6 @@
 from typing import Callable
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 
 from mandel_app.view import widgets
 from mandel_app.view.window import actions, menu, toolbars, status_bar, central
@@ -22,10 +22,10 @@ class Window:
         self.central: central.Central = central.Central(self.q_main_window)
         self.status_bar: status_bar.StatusBar = status_bar.StatusBar(self.q_main_window)
 
-        self._build(window_settings)
-        self.central.refresh_image_space()
+        # self._build(window_settings)
+        # self.central.refresh_image_space()
 
-    def _build(self, window_settings: dict):
+    def build(self, window_settings: dict, cursor_shape: QtCore.Qt.CursorShape):
         # Set some main window's properties
         self.q_main_window.setWindowTitle(self._application_name)
         self.q_main_window.resize(window_settings["size"])
@@ -35,6 +35,9 @@ class Window:
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
         self.q_main_window.show()
+        # print(self.central._area._q_main.size())
+        # print(self.central.x_label.size())
+        self.central.build(cursor_shape)
 
     def _get_stylesheet(self):
         stylesheet = """

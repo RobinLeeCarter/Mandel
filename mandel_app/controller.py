@@ -12,8 +12,7 @@ class Controller:
 
     def build(self):
         self._view.build()
-        image_space: tuples.ImageShape = self._view.get_image_space()
-        self._model.build(image_space)
+        self._model.build(self._view.frame_shape)
         # self._model.start_test_mandel()
         self._model.calc_new_mandel(save_history=True)
     # endregion
@@ -37,8 +36,7 @@ class Controller:
     def point_zoom_request(self,
                            pixel_point: Optional[tuples.PixelPoint] = None,
                            scaling: float = 1.0):
-        image_space: tuples.ImageShape = self._view.get_image_space()
-        self._model.zoom_and_calc(image_space, pixel_point, scaling)
+        self._model.zoom_and_calc(self._view.frame_shape, pixel_point, scaling)
 
     def back_request(self):
         self._model.restore_previous_as_new()

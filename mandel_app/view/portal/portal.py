@@ -13,20 +13,25 @@ class Portal:
         self._frame = frame.Frame()
         self._canvas = canvas.Canvas()
 
+    @property
+    def frame_shape(self) -> Optional[tuples.ImageShape]:
+        return self._frame.shape
+
     def set_drawable(self, drawable_: drawable.Drawable):
         self._canvas.set_drawable(drawable_)
         self._update_offset()
 
-    def on_resize(self):
-        self.set_frame_shape()
+    def on_resized(self, frame_shape: tuples.ImageShape):
+        self.set_frame_shape(frame_shape)
         self.display()
 
-    def set_frame_shape(self):
-        q_size: QtCore.QSize = self._q_label.size()
-        image_shape = tuples.ImageShape(x=q_size.width(), y=q_size.height())
+    def set_frame_shape(self, frame_shape: tuples.ImageShape):
+        # q_size: QtCore.QSize = self._q_label.size()
+        # print(q_size)
+        # image_shape = tuples.ImageShape(x=q_size.width(), y=q_size.height())
         current_frame_shape = self._frame.shape
-        if current_frame_shape is None or image_shape != current_frame_shape:
-            self._frame.set_frame_shape(image_shape)
+        if current_frame_shape is None or frame_shape != current_frame_shape:
+            self._frame.set_frame_shape(frame_shape)
             self._update_offset()
 
     def draw_drawable(self):
@@ -46,6 +51,7 @@ class Portal:
                 x=min(int((canvas_shape.x - frame_shape.x) / 2.0), 0),
                 y=min(int((canvas_shape.y - frame_shape.y) / 2.0), 0)
             )
+            print(f"offset: {offset}")
             if current_frame_offset is None or offset != current_frame_offset:
                 self._frame.set_offset(offset)
 

@@ -8,9 +8,9 @@ from mandel_app.view.common import base_overlay
 class XLabel(QtWidgets.QLabel):
     # region Setup
     mousePressSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
+    mouseMoveSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     mouseReleaseSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     mouseDoubleClickSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
-    mouseMoveSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     wheelSignal = QtCore.pyqtSignal(QtGui.QWheelEvent)
 
     def __init__(self, *args, **kwargs):
@@ -58,14 +58,14 @@ class XLabel(QtWidgets.QLabel):
         self.mousePressSignal.connect(on_mouse_press)
 
     def set_on_mouse_move(self, on_mouse_move: Callable[[QtGui.QMouseEvent], None]):
-        self.mousePressSignal.connect(on_mouse_move)
+        self.mouseMoveSignal.connect(on_mouse_move)
 
     def set_on_mouse_release(self, on_mouse_release: Callable[[QtGui.QMouseEvent], None]):
-        self.mousePressSignal.connect(on_mouse_release)
+        self.mouseReleaseSignal.connect(on_mouse_release)
 
     def set_on_mouse_double_click(self, on_mouse_double_click: Callable[[QtGui.QMouseEvent], None]):
         self.mouseDoubleClickSignal.connect(on_mouse_double_click)
 
     def set_on_wheel(self, on_wheel: Callable[[QtGui.QWheelEvent], None]):
-        self.mousePressSignal.connect(on_wheel)
+        self.wheelSignal.connect(on_wheel)
     # endregion
