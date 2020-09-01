@@ -30,8 +30,12 @@ class Central:
         self._area.refresh_image_space()
 
     @property
-    def image_space(self) -> tuples.ImageShape:
-        return self._area.image_space
+    def mandel(self) -> mandelbrot.Mandel:
+        return self._mandel_draw.mandel
+
+    @property
+    def image_shape(self) -> tuples.ImageShape:
+        return self._area.image_shape
 
     @property
     def center_pixel_point(self) -> tuples.PixelPoint:
@@ -90,13 +94,5 @@ class Central:
         self._mandel_draw.mandel.set_offset(tuples.PixelPoint(x=x_offset, y=y_offset))
         self._portal.on_resize(new_image_shape)
 
-    # SHOULDN'T NEED NOW
-    # with the image offset, event gives an odd x, y position.
-    # this function converts it back to a sensible one
-    def get_image_point(self, event: backend_bases.MouseEvent):
-        image_point = tuples.PixelPoint(x=event.x - self._mandel.offset.x,
-                                        y=event.y + self._mandel.offset.y)
-        return image_point
-
-    def above_center(self, y: int) -> bool:
-        return y >= self._mandel_draw.mandel.shape.y / 2
+    # def above_center(self, y: int) -> bool:
+    #     return y >= self._mandel_draw.mandel.shape.y / 2

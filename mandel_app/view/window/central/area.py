@@ -13,10 +13,11 @@ class Area:
 
         self._q_scroll_area: widgets.XScrollArea = widgets.XScrollArea(q_main_window)
         q_main_window.setCentralWidget(self._q_scroll_area)
-        self.image_space: Optional[tuples.ImageShape] = None
+        self.image_shape: Optional[tuples.ImageShape] = None
         self._q_main = QtWidgets.QWidget()
         self._q_main_layout = QtWidgets.QVBoxLayout(self._q_main)
         self._portal_label = widgets.XLabel(self._q_main)
+        self._portal_label.setMouseTracking(True)
         # self.canvas: canvas.Canvas = canvas.Canvas()
         # q_figure_canvas: widgets.XFigureCanvasQTAgg = self.canvas.figure_canvas
 
@@ -66,7 +67,7 @@ class Area:
         self._q_main_layout.update()
 
     def refresh_image_space(self):
-        self.image_space = self._determine_image_space()
+        self.image_shape = self._determine_image_space()
 
     def _determine_image_space(self) -> tuples.ImageShape:
         # self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)

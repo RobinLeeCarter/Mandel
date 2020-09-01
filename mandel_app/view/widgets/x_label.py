@@ -8,6 +8,7 @@ from mandel_app.view import common
 class XLabel(QtWidgets.QLabel):
     mousePressSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     mouseReleaseSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
+    mouseDoubleClickSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     mouseMoveSignal = QtCore.pyqtSignal(QtGui.QMouseEvent)
     wheelSignal = QtCore.pyqtSignal(QtGui.QWheelEvent)
 
@@ -30,14 +31,6 @@ class XLabel(QtWidgets.QLabel):
     def set_on_mouse_press(self, on_mouse_press: Callable[[QtGui.QMouseEvent], None]):
         self.mousePressSignal.connect(on_mouse_press)
 
-    def mouseReleaseEvent(self, mouse_event: QtGui.QMouseEvent):
-        mouse_event.accept()
-        self.mouseReleaseSignal.emit(mouse_event)
-        # super().mouseReleaseEvent(mouse_event)
-
-    def set_on_mouse_release(self, on_mouse_release: Callable[[QtGui.QMouseEvent], None]):
-        self.mousePressSignal.connect(on_mouse_release)
-
     def mouseMoveEvent(self, mouse_event: QtGui.QMouseEvent):
         mouse_event.accept()
         self.mouseMoveSignal.emit(mouse_event)
@@ -46,10 +39,26 @@ class XLabel(QtWidgets.QLabel):
     def set_on_mouse_move(self, on_mouse_move: Callable[[QtGui.QMouseEvent], None]):
         self.mousePressSignal.connect(on_mouse_move)
 
+    def mouseReleaseEvent(self, mouse_event: QtGui.QMouseEvent):
+        mouse_event.accept()
+        self.mouseReleaseSignal.emit(mouse_event)
+        # super().mouseReleaseEvent(mouse_event)
+
+    def set_on_mouse_release(self, on_mouse_release: Callable[[QtGui.QMouseEvent], None]):
+        self.mousePressSignal.connect(on_mouse_release)
+
+    def mouseDoubleClickEvent(self, mouse_event: QtGui.QMouseEvent):
+        mouse_event.accept()
+        self.mouseDoubleClickSignal.emit(mouse_event)
+        # super().mouseDoubleClickEvent(mouse_event)
+
+    def set_on_mouse_double_click(self, on_mouse_double_click: Callable[[QtGui.QMouseEvent], None]):
+        self.mouseDoubleClickSignal.connect(on_mouse_double_click)
+
     def wheelEvent(self, wheel_event: QtGui.QWheelEvent):
         wheel_event.accept()
         self.wheelSignal.emit(wheel_event)
-        # super().mouseMoveEvent(mouse_event)
+        # super().wheelEvent(mouse_event)
 
     def set_on_wheel(self, on_wheel: Callable[[QtGui.QWheelEvent], None]):
         self.mousePressSignal.connect(on_wheel)

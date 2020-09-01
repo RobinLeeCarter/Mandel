@@ -91,9 +91,17 @@ class Mandel:
         self.offset = tuples.PixelPoint(x=0, y=0)
         self.has_border = False
 
+    # def old_get_complex_from_pixel(self, pixel_point: tuples.PixelPoint) -> complex:
+    #     x_scale = (float(pixel_point.x) / float(self.shape.x)) - 0.5
+    #     y_scale = (float(pixel_point.y) / float(self.shape.y)) - 0.5
+    #     x_dist = x_scale * self.x_size
+    #     y_dist = y_scale * self.y_size
+    #
+    #     return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
+
     def get_complex_from_pixel(self, pixel_point: tuples.PixelPoint) -> complex:
-        x_scale = (float(pixel_point.x) / float(self.shape.x)) - 0.5
-        y_scale = (float(pixel_point.y) / float(self.shape.y)) - 0.5
+        x_scale = (float(self.offset.x + pixel_point.x) / float(self.shape.x)) - 0.5
+        y_scale = (float(self.offset.y + pixel_point.y) / float(self.shape.y)) - 0.5
         x_dist = x_scale * self.x_size
         y_dist = y_scale * self.y_size
 

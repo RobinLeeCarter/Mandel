@@ -3,11 +3,14 @@ from typing import Optional
 from PyQt5.QtCore import Qt
 
 from mandel_app import tuples
+# from mandel_app.model import mandelbrot
 from mandel_app.view import enums
+from mandel_app.view.window import central
 
 
 class State:
     def __init__(self):
+        self._central: Optional[central.Central] = None
         self.is_z_mode: bool = False  # Pan button on toolbar depressed
 
         self.action_in_progress: enums.ImageAction = enums.ImageAction.NONE
@@ -16,7 +19,8 @@ class State:
 
         self.rotate_start: Optional[tuples.PixelPoint] = None
         self.rotate_end: Optional[tuples.PixelPoint] = None
-        self.mandel_shape: Optional[tuples.ImageShape] = None
+        # TODO: should mandel_shape be here? Should it be mandel?
+        # self.mandel_shape: Optional[tuples.ImageShape] = None
 
         self.released_pan_delta: Optional[tuples.PixelPoint] = None
         self.released_theta_delta: int = 0
@@ -24,11 +28,22 @@ class State:
         self.scaling_pixel_point: Optional[tuples.PixelPoint] = None
         self.scaling_requested: float = 1.0
 
+    def set_central(self, central_: central.Central):
+        self._central = central_
+
     def reset(self):
         self.released_pan_delta = None
         self.released_theta_delta = 0
         self.scaling_pixel_point = None
         self.scaling_requested = 1.0
+
+    # @property
+    # def mandel(self) -> mandelbrot.Mandel:
+    #     return self._central.mandel
+
+    @property
+    def image_shape(self) -> tuples.ImageShape:
+        return self._central.image_shape
 
     @property
     def is_waiting(self) -> bool:
@@ -100,11 +115,11 @@ class State:
     @property
     def mouse_theta_delta(self) -> Optional[int]:
         if self.rotate_start is not None and self.rotate_end is not None:
-            x_size = self.mandel_shape.x
+            x_size, y_size = self.image_shape
             x_diff = self.rotate_end.x - self.rotate_start.x
             # y_diff = self.rotate_end.y - self.rotate_start.y
             theta_delta = int(360.0 * float(x_diff) / float(x_size))
-            if self.rotate_start.y < self.mandel_shape.y / 2:
+            if self.rotate_start.y < y_size / 2:
                 theta_delta = -theta_delta
             return theta_delta
         else:
