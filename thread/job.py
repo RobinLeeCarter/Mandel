@@ -1,35 +1,17 @@
 from __future__ import annotations
-import copy
-from typing import Callable, Union, Optional, Generator
-import abc
+from typing import Callable, Optional, Generator
+from abc import ABC, abstractmethod
 
 from thread.progress_estimator import ProgressEstimator
 
 
-class Job:
+class Job(ABC):
     # region Setup
-    def __init__(self,
-                 data: Union[tuple, object, None] = None,
-                 **kwargs):
+    def __init__(self):
         self.job_number: int = 0
         self.interrupt_requested: bool = False
-
         self.progress_estimator: Optional[ProgressEstimator] = None
-
         self._job_checkpoint: Optional[Callable[[Job, float], None]] = None
-
-        # if any data,
-        # make and keep hold of a copy of it until the Job is worked
-        # and then pass it in to the call
-        self._data: tuple
-        if data is None:
-            self._data = tuple()
-        elif isinstance(data, tuple):
-            self._data = copy.deepcopy(data)
-        else:   # therefore object
-            self._data = (copy.deepcopy(data), )
-
-        self._kwargs: dict = kwargs
 
     def set_job_checkpoint(self, job_checkpoint: Callable[[Job, float], None]):
         self._job_checkpoint = job_checkpoint
@@ -51,19 +33,9 @@ class Job:
                 if self.interrupt_requested:
                     return
 
-    @abc.abstractmethod
+    @abstractmethod
     def _exec(self) -> Generator[float, None, None]:
         pass
-    # endregion
-
-    # region Results
-    def get_data(self) -> Union[tuple, object, None]:
-        if len(self._data) == 0:
-            return None
-        elif len(self._data) == 1:
-            return self._data[0]
-        else:
-            return self._data
     # endregion
 
     # @abc.abstractmethod

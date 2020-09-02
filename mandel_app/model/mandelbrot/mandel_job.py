@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from typing import Generator
 
 # import utils
@@ -12,17 +13,17 @@ class MandelJob(thread.Job):
                  compute_manager: compute.ComputeManager,
                  mandel_: mandel.Mandel,
                  display_progress: bool = True,
-                 save_history: bool = False,
-                 **kwargs):
-        super().__init__(data=mandel_, **kwargs)
+                 save_history: bool = False):
+        super().__init__()
         self._compute_manager: compute.ComputeManager = compute_manager
-        assert isinstance(self._data[0], mandel.Mandel)
-        self._mandel: mandel.Mandel = self._data[0]
-        # used after the job has finished and passed to controller
+        self._mandel: mandel.Mandel = copy.deepcopy(mandel_)
         self.save_history: bool = save_history
-
         if display_progress:
             self.progress_estimator = mandel_progress_estimator.MandelProgressEstimator()
+
+    @property
+    def mandel_(self) -> mandel.Mandel:
+        return self._mandel
 
     # calculates a mandel using whatever algorithm is implemented
     def _exec(self) -> Generator[float, None, None]:

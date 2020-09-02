@@ -155,14 +155,13 @@ class Model:
         self._controller.stop_success()
 
     def _on_job_complete(self, job: thread.Job):
-        mandel = job.get_data()
-        assert isinstance(mandel, mandelbrot.Mandel)
-        assert isinstance(job, mandelbrot.MandelJob)
-        self.new_mandel = mandel
         # print(f"completed job id = {id(job)}")
-        if job.progress_estimator:  # only show time for borderless calculation
+        assert isinstance(job, mandelbrot.MandelJob)
+        mandel_job: mandelbrot.MandelJob = job
+        self.new_mandel = mandel_job.mandel_
+        if mandel_job.progress_estimator:  # only show time for borderless calculation
             self.new_mandel.time_taken = job.progress_estimator.timer.total
-        self._controller.new_is_ready(job.save_history)
+        self._controller.new_is_ready(mandel_job.save_history)
 
         # TODO: control generation of borders in controller rather than automatically firing?
         # if not self.new_mandel.has_border:
