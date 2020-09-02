@@ -99,10 +99,10 @@ class Mandel:
             return val
         return var
 
-    # def pan_centre(self):
+    # def pan_centre(self, pan: tuples.PixelPoint):
     #     new_centre_pixel = tuples.PixelPoint(
-    #         x=float(self.shape.x)/2.0 + self.pan.x,
-    #         y=float(self.shape.y)/2.0 + self.pan.y
+    #         x=float(self.shape.x)/2.0 + pan.x,
+    #         y=float(self.shape.y)/2.0 + pan.y
     #     )
     #     self.centre = self.get_complex_from_frame_point(new_centre_pixel)
 

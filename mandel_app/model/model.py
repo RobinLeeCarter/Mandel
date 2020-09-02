@@ -111,20 +111,37 @@ class Model:
         self.calc_new_mandel()
 
     def pan_and_calc(self, pan: Optional[tuples.PixelPoint] = None):
+
         self.new_mandel = self.displayed_mandel.lite_copy(
             shape=self._frame_shape,
             has_border=False
         )
-        # self.new_mandel.has_border = False
-        # self.new_mandel.shape = self._frame_shape
+
+        if pan is not None:
+            new_centre_frame_point = tuples.PixelPoint(
+                x=float(self._frame_shape.x) / 2.0 + pan.x,
+                y=float(self._frame_shape.y) / 2.0 + pan.y
+            )
+            self.new_mandel.centre = self.displayed_mandel.get_complex_from_frame_point(new_centre_frame_point)
+
+        # if pan is not None:
+        #     new_centre_frame_point = tuples.PixelPoint(
+        #         x=float(self._frame_shape.x) / 2.0 + pan.x,
+        #         y=float(self._frame_shape.y) / 2.0 + pan.y
+        #     )
+        #     self.new_mandel.centre = self.new_mandel.get_complex_from_frame_point(new_centre_frame_point)
+
         offset = self._calc_offset(previous_shape=self.displayed_mandel.shape,
                                    new_shape=self.new_mandel.shape,
                                    pan=pan)
+        self.calc_new_mandel(offset=offset)
 
+        # self.new_mandel.has_border = False
+        # self.new_mandel.shape = self._frame_shape
         # self.new_mandel.pan = pan
         # if self.new_mandel.has_border:
         #     self.new_mandel.remove_border()
-        self.calc_new_mandel(offset=offset)
+
 
     def _calc_offset(self,
                      previous_shape: tuples.ImageShape,
