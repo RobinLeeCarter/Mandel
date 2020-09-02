@@ -44,6 +44,8 @@ class Portal:
         """Called once canvas or frame is updated"""
         canvas_shape = self._canvas.shape
         frame_shape = self._frame.shape
+        # print(f"canvas_shape: {canvas_shape}")
+        # print(f"frame_shape: {frame_shape}")
         if canvas_shape is not None and frame_shape is not None:
             current_frame_offset = self._frame.offset
             # offset when frame centered in drawable
@@ -56,6 +58,7 @@ class Portal:
                 self._frame.set_offset(offset)
 
     def display(self):
+        # print("display")
         self._frame.plain()
         self._update_label()
 
@@ -72,6 +75,7 @@ class Portal:
         self._update_label()
 
     def _update_label(self):
+        # print("_update_label")
         q_pixmap: QtGui.QPixmap = self._pixmap_from_numpy_rgba(self._frame.result_rgba)
         self._q_label.setPixmap(q_pixmap)
 

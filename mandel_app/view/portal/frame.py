@@ -37,6 +37,7 @@ class Frame:
     def set_frame_shape(self, image_shape: tuples.ImageShape):
         """call when resize window"""
         self.shape = image_shape
+        # self.shape = tuples.ImageShape(800, 800)
         frame_y = self.shape.y
         frame_x = self.shape.x
 
@@ -90,12 +91,14 @@ class Frame:
         self.get_frame()
 
     def get_frame(self):
+        # print("get_frame")
         self._calculate_transform()
         self._apply_transform()
         # TODO: double conversion?
         self._frame_to_source_int32 = cp.rint(self._frame_to_source_fp32).astype(cp.int32)
-        # print(f"self._frame_to_source_int32.shape: {self._frame_to_source_int32.shape}")
-        # print(self._frame_to_source_int32)
+        # if self.offset.x < 0:
+        #     print(f"self._frame_to_source_int32.shape: {self._frame_to_source_int32.shape}")
+        #     print(self._frame_to_source_int32)
 
         # for 3D array: 0 is x, 1 is y
         frame_x = self._frame_to_source_int32[:, :, 0]  # 2D array of x pixel in source
@@ -107,7 +110,9 @@ class Frame:
         # will be false if the pixel on source would fall outside of source
         mapped = (frame_y >= 0) & (frame_y < source_y_shape) & \
                  (frame_x >= 0) & (frame_x < source_x_shape)
-        # print(f"mapped.shape: {mapped.shape}")
+        # if self.offset.x < 0:
+        #     print(f"mapped.shape: {mapped.shape}")
+        #     print(mapped)
         # print(f"mapped count_nonzero: {cp.count_nonzero(mapped)}")
 
         frame_y_size: int = self.shape.y
@@ -154,8 +159,6 @@ class Frame:
 
         frame_image_to_frame_cartesian = flip_y(frame_y)
 
-        frame_transform = identity()
-
         if self._rotation_degrees != 0.0:
             center_x, centre_y = frame_x * 0.5, frame_y * 0.5
             # 1) move center to origin
@@ -177,12 +180,12 @@ class Frame:
                 translate(-center_x, -centre_y)
 
         elif self._pan != tuples.PixelPoint(0, 0):
-            frame_transform = translate(self._pan.x, self._pan.y) @ frame_transform
+            frame_transform = translate(self._pan.x, self._pan.y)
 
         else:
             frame_transform = identity()
 
-        frame_cartesian_to_source_cartesian = translate(-offset_x, -offset_y)
+        frame_cartesian_to_source_cartesian = translate(offset_x, offset_y)
 
         # x unchanged, flip y (inverse of itself)
         source_cartesian_to_source_image = flip_y(source_y)
@@ -192,6 +195,13 @@ class Frame:
             frame_cartesian_to_source_cartesian @ \
             frame_transform @ \
             frame_image_to_frame_cartesian
+
+        # if offset_x < 0:
+        #     self.print_transform("frame_image_to_frame_cartesian", frame_image_to_frame_cartesian)
+        #     self.print_transform("frame_transform", frame_transform)
+        #     self.print_transform("frame_cartesian_to_source_cartesian", frame_cartesian_to_source_cartesian)
+        #     self.print_transform("source_cartesian_to_source_image", source_cartesian_to_source_image)
+        #     self.print_transform("frame_image_to_source_image", frame_image_to_source_image)
 
         np_matrix = frame_image_to_source_image[0:2, 0:2]
         np_vector = frame_image_to_source_image[0:2, 2]
@@ -204,6 +214,9 @@ class Frame:
         # self._transform_matrix = cp.asarray(I, dtype=cp.float32)
         # self._transform_vector = cp.asarray(Frame.zero_vector, dtype=cp.float32)
 
+    def print_transform(self, desc: str, array: np.ndarray):
+        print(desc + "\n", np.rint(array).astype(cp.int32))
+
     def _reset_transform(self):
         self._pan = tuples.PixelPoint(0, 0)
         self._rotation_degrees = 0
@@ -211,5 +224,7 @@ class Frame:
         self._scale_point = tuples.PixelPoint(0, 0)
 
     def _apply_transform(self):
+        # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
+        # print(f"self._transform_vector: {self._transform_vector}")
         self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._transform_matrix.T) \
                                      + self._transform_vector

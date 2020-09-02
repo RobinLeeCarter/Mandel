@@ -18,7 +18,7 @@ class Area:
 
         q_main_window.setCentralWidget(self._q_scroll_area)
         self._q_scroll_area.setLayout(self._q_area_layout)
-        self._q_area_layout.addWidget(self._portal_label)
+        self._q_area_layout.addWidget(self._portal_label, stretch=1)
 
         # self.canvas: canvas.Canvas = canvas.Canvas()
         # q_figure_canvas: widgets.XFigureCanvasQTAgg = self.canvas.figure_canvas
@@ -47,6 +47,8 @@ class Area:
         # self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         # self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
+        self._portal_label.setAlignment(QtCore.Qt.AlignCenter)
+        # layout.setAlignment(QtCore.Qt.AlignTop)
         self._portal_label.setVisible(False)
 
         self._q_area_layout.setSpacing(0)
