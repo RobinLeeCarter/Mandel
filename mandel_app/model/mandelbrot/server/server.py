@@ -37,7 +37,7 @@ class Server:
         self._mandel.pan = None
 
         if self._mandel.has_border:
-            self._copy_over_centre()
+            self._copy_over_center()
 
         self._requested: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.bool)
         self._requests: List[request.Request] = []
@@ -118,7 +118,7 @@ class Server:
         self._iteration[y_new_slice, x_new_slice] = old_iteration[y_old_slice, x_old_slice]
         self._completed[y_new_slice, x_new_slice] = True
 
-    def _copy_over_centre(self):
+    def _copy_over_center(self):
         old = self._mandel.iteration_shape
         offset = self._mandel.offset
 

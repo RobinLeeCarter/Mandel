@@ -18,6 +18,7 @@ class MandelJob(thread.Job):
         self._compute_manager: compute.ComputeManager = compute_manager
         assert isinstance(self._data[0], mandel.Mandel)
         self._mandel: mandel.Mandel = self._data[0]
+        # used after the job has finished and passed to controller
         self.save_history: bool = save_history
 
         if display_progress:
