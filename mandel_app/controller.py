@@ -33,10 +33,13 @@ class Controller:
     # endregion
 
     # region View requests
+    def on_resized(self):
+        self._model.on_resized(self._view.frame_shape)
+
     def point_zoom_request(self,
                            pixel_point: Optional[tuples.PixelPoint] = None,
                            scaling: float = 1.0):
-        self._model.zoom_and_calc(self._view.frame_shape, pixel_point, scaling)
+        self._model.zoom_and_calc(pixel_point, scaling)
 
     def back_request(self):
         self._model.restore_previous_as_new()

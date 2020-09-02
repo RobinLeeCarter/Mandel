@@ -16,6 +16,8 @@ class Model:
         self._controller: Optional[controller.Controller] = None
         self._compute_manager: Optional[mandelbrot.ComputeManager] = None
         self._calc_thread_manager: Optional[thread.Manager] = None
+        # needed for creating new mandels to the correct size
+        self._frame_shape: Optional[tuples.ImageShape] = None
         self.new_mandel: Optional[mandelbrot.Mandel] = None
         self.displayed_mandel: Optional[mandelbrot.Mandel] = None
         self.mandel_history: List[mandelbrot.Mandel] = []
@@ -24,8 +26,9 @@ class Model:
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
 
-    def build(self, image_shape: tuples.ImageShape):
-        self.new_mandel = self._initial_mandel(image_shape)
+    def build(self, frame_shape: tuples.ImageShape):
+        self._frame_shape = frame_shape
+        self.new_mandel = self._initial_mandel(frame_shape)
         # self.new_mandel = self._slow_mandel(image_shape)
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
@@ -39,52 +42,23 @@ class Model:
                            image_shape=tuples.ImageShape(x=700, y=700))
 
         self._calc_thread_manager.start_thread()
-
-    def _initial_mandel(self, image_shape: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0),
-                                   size=2.4,
-                                   shape=image_shape,
-                                   expected_iterations_per_pixel=1750
-                                   )
-        return mandel
-
-    def _test_mandel(self, image_shape: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1),
-                                   size=0.2,
-                                   shape=image_shape
-                                   )
-        return mandel
-
-    def _different_mandel(self, image_shape: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009),
-                                   size=3.0E-5,
-                                   shape=image_shape
-                                   )
-        return mandel
-
-    def _slow_mandel(self, image_shape: tuples.ImageShape) -> mandelbrot.Mandel:
-        mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
-                                   size=2.1609798031004707e-10,
-                                   shape=image_shape
-                                   )
-        return mandel
-
     # endregion
 
     # region Controller Messages
-    def start_test_mandel(self, image_shape: tuples.ImageShape):
-        self.new_mandel = self._test_mandel(image_shape)
+    def on_resized(self, frame_shape: tuples.ImageShape):
+        self._frame_shape = frame_shape
+        self.pan_and_calc(pan=None)
 
-    def start_different_mandel(self, image_shape: tuples.ImageShape):
-        self.new_mandel = self._different_mandel(image_shape)
-
-    def calc_new_mandel(self, save_history: bool = False):
-        job = mandelbrot.MandelJob(
-            self._compute_manager,
-            self.new_mandel,
+    def calc_new_mandel(self, offset: Optional[tuples.PixelPoint] = None, save_history: bool = False):
+        mandel_job = mandelbrot.MandelJob(
+            compute_manager=self._compute_manager,
+            new_mandel=self.new_mandel,
             save_history=save_history
         )
-        self._calc_thread_manager.request_job(job, queue_as=thread.QueueAs.SINGULAR)
+        if offset is not None:
+            mandel_job.set_previous_mandel(prev_mandel=self.displayed_mandel, prev_offset=offset)
+
+        self._calc_thread_manager.request_job(mandel_job, queue_as=thread.QueueAs.SINGULAR)
 
     def new_is_displayed(self, save_history: bool = True):
         if save_history and self.displayed_mandel is not None:
@@ -96,7 +70,6 @@ class Model:
         self.new_mandel = copy.deepcopy(self.displayed_mandel)
 
     def zoom_and_calc(self,
-                      image_shape: tuples.ImageShape,
                       pixel_point: Optional[tuples.PixelPoint],
                       scaling: float):
         if pixel_point is None:
@@ -106,27 +79,64 @@ class Model:
 
         save_history: bool = (scaling < 1)
 
-        self.new_mandel = mandelbrot.Mandel(
+        self.new_mandel = self.displayed_mandel.lite_copy(
             centre=new_centre,
             size_per_gap=self.displayed_mandel.size_per_gap * scaling,
-            shape=image_shape,
-            theta_degrees=self.displayed_mandel.theta_degrees,
-            expected_iterations_per_pixel=self.displayed_mandel.iterations_per_pixel
+            shape=self._frame_shape,
+            expected_iterations_per_pixel=self.displayed_mandel.iterations_per_pixel,
+            has_border=False
         )
+
+        # self.new_mandel = mandelbrot.Mandel(
+        #     centre=new_centre,
+        #     size_per_gap=self.displayed_mandel.size_per_gap * scaling,
+        #     shape=self._frame_shape,
+        #     theta_degrees=self.displayed_mandel.theta_degrees,
+        #     expected_iterations_per_pixel=self.displayed_mandel.iterations_per_pixel
+        # )
 
         self.calc_new_mandel(save_history=save_history)
 
     def rotate_and_calc(self, theta: int):
-        self.new_mandel.theta_degrees = theta
-        if self.new_mandel.has_border:
-            self.new_mandel.remove_border()
+        self.new_mandel = self.displayed_mandel.lite_copy(
+            theta_degrees=theta,
+            shape=self._frame_shape,
+            has_border=False
+        )
+        # self.new_mandel.theta_degrees = theta
+        # self.new_mandel.has_border = False
+        # self.new_mandel.shape = self._frame_shape
+        # if self.new_mandel.has_border:
+        #     self.new_mandel.remove_border()
         self.calc_new_mandel()
 
-    def pan_and_calc(self, pan: tuples.PixelPoint):
-        self.new_mandel.pan = pan
-        if self.new_mandel.has_border:
-            self.new_mandel.remove_border()
-        self.calc_new_mandel()
+    def pan_and_calc(self, pan: Optional[tuples.PixelPoint] = None):
+        self.new_mandel = self.displayed_mandel.lite_copy(
+            shape=self._frame_shape,
+            has_border=False
+        )
+        # self.new_mandel.has_border = False
+        # self.new_mandel.shape = self._frame_shape
+        offset = self._calc_offset(previous_shape=self.displayed_mandel.shape,
+                                   new_shape=self.new_mandel.shape,
+                                   pan=pan)
+
+        # self.new_mandel.pan = pan
+        # if self.new_mandel.has_border:
+        #     self.new_mandel.remove_border()
+        self.calc_new_mandel(offset=offset)
+
+    def _calc_offset(self,
+                     previous_shape: tuples.ImageShape,
+                     new_shape: tuples.ImageShape,
+                     pan: Optional[tuples.PixelPoint] = None) -> tuples.PixelPoint:
+        # possibly should be floats, especially if pan is None
+        x = int((previous_shape.x - new_shape.x) / 2.0)
+        y = int((previous_shape.y - new_shape.y) / 2.0)
+        if pan is not None:
+            x += pan.x
+            y += pan.y
+        return tuples.PixelPoint(x, y)
 
     def restore_previous_as_new(self):
         if self.mandel_history:
@@ -170,10 +180,41 @@ class Model:
     def _add_border(self):
         self.new_mandel.add_border(14*4*5, 14*4*5)
         job = mandelbrot.MandelJob(
-            self._compute_manager,
-            self.new_mandel,
+            compute_manager=self._compute_manager,
+            new_mandel=self.new_mandel,
             display_progress=False,  # background job
             save_history=False
         )
         self._calc_thread_manager.request_job(job, queue_as=thread.QueueAs.ENQUEUE)
+    # endregion
+
+    # region Initial Mandel Options
+    def _initial_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0),
+                                   size=2.4,
+                                   shape=shape,
+                                   expected_iterations_per_pixel=1750
+                                   )
+        return mandel
+
+    def _test_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1),
+                                   size=0.2,
+                                   shape=shape
+                                   )
+        return mandel
+
+    def _different_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009),
+                                   size=3.0E-5,
+                                   shape=shape
+                                   )
+        return mandel
+
+    def _slow_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
+                                   size=2.1609798031004707e-10,
+                                   shape=shape
+                                   )
+        return mandel
     # endregion

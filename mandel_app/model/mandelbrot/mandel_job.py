@@ -1,25 +1,37 @@
 from __future__ import annotations
 
 import copy
-from typing import Generator
+from typing import Generator, Optional
 
 # import utils
 import thread
+from mandel_app import tuples
 from mandel_app.model.mandelbrot import mandel, algorithm, server, compute, mandel_progress_estimator
 
 
 class MandelJob(thread.Job):
     def __init__(self,
                  compute_manager: compute.ComputeManager,
-                 mandel_: mandel.Mandel,
+                 new_mandel: mandel.Mandel,
+                 prev_mandel: Optional[mandel.Mandel] = None,
+                 prev_offset: Optional[tuples.PixelPoint] = None,
                  display_progress: bool = True,
                  save_history: bool = False):
         super().__init__()
         self._compute_manager: compute.ComputeManager = compute_manager
-        self._mandel: mandel.Mandel = copy.deepcopy(mandel_)
-        self.save_history: bool = save_history
+        self._mandel: mandel.Mandel = copy.deepcopy(new_mandel)
+        self._prev_mandel: Optional[mandel.Mandel] = prev_mandel
+        self._prev_offset: Optional[tuples.PixelPoint] = prev_offset
         if display_progress:
             self.progress_estimator = mandel_progress_estimator.MandelProgressEstimator()
+        self.save_history: bool = save_history
+
+    def set_previous_mandel(self,
+                            prev_mandel: mandel.Mandel,
+                            prev_offset: tuples.PixelPoint
+                            ):
+        self._prev_mandel = prev_mandel
+        self._prev_offset = prev_offset
 
     @property
     def mandel_(self) -> mandel.Mandel:

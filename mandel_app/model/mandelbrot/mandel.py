@@ -65,6 +65,39 @@ class Mandel:
         return complex(-math.sin(self.theta_radians), math.cos(self.theta_radians))
     # endregion
 
+    def lite_copy(self,
+                  centre: Optional[complex] = None,
+                  shape: Optional[tuples.ImageShape] = None,
+                  size: Optional[float] = None,
+                  size_per_gap: Optional[float] = None,
+                  theta_degrees: Optional[int] = None,
+                  expected_iterations_per_pixel: Optional[float] = None,
+                  has_border: Optional[bool] = None
+                  ) -> Mandel:
+        centre = self._ifnull(centre, self.centre)
+        shape = self._ifnull(shape, self.shape)
+        size = self._ifnull(size, self.size)
+        size_per_gap = self._ifnull(size_per_gap, self.size_per_gap)
+        theta_degrees = self._ifnull(theta_degrees, self.theta_degrees)
+        expected_iterations_per_pixel = self._ifnull(expected_iterations_per_pixel, self.expected_iterations_per_pixel)
+        has_border = self._ifnull(has_border, self.has_border)
+
+        return Mandel(
+            centre=centre,
+            shape=shape,
+            size=size,
+            size_per_gap=size_per_gap,
+            theta_degrees=theta_degrees,
+            expected_iterations_per_pixel=expected_iterations_per_pixel,
+            has_border=has_border
+        )
+
+    @staticmethod
+    def _ifnull(var, val):
+        if var is None:
+            return val
+        return var
+
     # region Methods
     def pan_centre(self):
         new_centre_pixel = tuples.PixelPoint(

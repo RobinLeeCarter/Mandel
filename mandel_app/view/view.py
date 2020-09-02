@@ -219,8 +219,10 @@ class View:
 
     def _on_resized(self):
         self._window.central.on_resized()
-        # have to zoom, ready or not
-        self._zoom(scaling=1.0)
+        # resize, ready or not
+        self._controller.on_resized()
+        self._set_action(enums.ImageAction.RESIZED)
+        # self._zoom(scaling=1.0)
 
     def _on_z_resized(self):
         z_central = self._z_window.central

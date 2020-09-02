@@ -3,7 +3,6 @@ from typing import Optional
 from PyQt5.QtCore import Qt
 
 from mandel_app import tuples
-# from mandel_app.model import mandelbrot
 from mandel_app.view import enums
 from mandel_app.view.window import central
 
@@ -68,6 +67,7 @@ class State:
         return self.action_in_progress in (enums.ImageAction.NONE,
                                            enums.ImageAction.ROTATED,
                                            enums.ImageAction.PANNED,
+                                           enums.ImageAction.RESIZED,
                                            enums.ImageAction.ZOOMED,
                                            enums.ImageAction.DRAWING)
 
