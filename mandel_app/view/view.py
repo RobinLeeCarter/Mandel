@@ -91,9 +91,8 @@ class View:
         # self._timer.lap(f"{progress:.4f}", show=True)
 
     def stop_success(self):
-        self.show_mandel(self._window.central.mandel)
-        # self._window.status_bar.q_progress_bar.setVisible(False)
-        # self._set_action(enums.ImageAction.NONE)
+        if self._view_state.revert_on_stop:
+            self.show_mandel(self._window.central.mandel)
     # endregion
 
     # region Connect Events
@@ -184,6 +183,7 @@ class View:
         self._controller.new_compute_parameters_request(max_iterations, early_stopping=False)
 
     def _on_escape(self, _: bool):
+        self._view_state.revert_on_stop = True
         self._controller.stop_request()
 
     def _on_key_pressed(self, key_event: QtGui.QKeyEvent):
