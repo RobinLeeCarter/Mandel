@@ -28,8 +28,8 @@ class Controller:
         if self._view.ready_to_display_new_mandel:
             self._view.show_mandel(self._model.new_mandel)
             self._model.new_is_displayed(save_history=save_history)
-        else:
-            self._model.revert_to_displayed_as_new()
+        # else:
+        #     self._model.revert_to_displayed_as_new()
     # endregion
 
     # region View requests
@@ -53,11 +53,11 @@ class Controller:
 
     def stop_request(self):
         self._model.request_stop()
-        self._model.revert_to_displayed_as_new()
+        # self._model.revert_to_displayed_as_new()
 
     def new_compute_parameters_request(self, max_iterations: Optional[int] = None, early_stopping: bool = True):
         self._model.request_stop()
-        self._model.revert_to_displayed_as_new()
+        # self._model.revert_to_displayed_as_new()
         # could be mid-way but should just stop at next yield
         self._model.set_compute_parameters(max_iterations, early_stopping)
         self._model.no_border_and_calc()

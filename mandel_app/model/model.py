@@ -18,8 +18,8 @@ class Model:
         self._calc_thread_manager: Optional[thread.Manager] = None
         # needed for creating new mandels to the correct size
         self._frame_shape: Optional[tuples.ImageShape] = None
-        self.new_mandel: Optional[mandelbrot.Mandel] = None
         self.displayed_mandel: Optional[mandelbrot.Mandel] = None
+        self.new_mandel: Optional[mandelbrot.Mandel] = None
         self.mandel_history: List[mandelbrot.Mandel] = []
         self.z_model: Optional[z_model.ZModel] = None
 
@@ -28,8 +28,8 @@ class Model:
 
     def build(self, frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
-        self.new_mandel = self._initial_mandel()
-        # self.new_mandel = self._slow_mandel(image_shape)
+        self.displayed_mandel = self._initial_mandel()
+        self.new_mandel = self.displayed_mandel.lite_copy()
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
             on_progress_update=self._on_progress_update,
@@ -38,7 +38,7 @@ class Model:
         )
         self.z_model = z_model.ZModel()
         # self.z_model.build(z0=complex(real=0.24091, imag=0.55),
-        self.z_model.build(z0=self.new_mandel.centre,
+        self.z_model.build(z0=self.displayed_mandel.centre,
                            image_shape=tuples.ImageShape(x=700, y=700))
 
         self._calc_thread_manager.start_thread()
@@ -64,10 +64,10 @@ class Model:
         if save_history and self.displayed_mandel is not None:
             self.mandel_history.append(self.displayed_mandel)
         self.displayed_mandel = self.new_mandel
-        self.new_mandel = copy.deepcopy(self.new_mandel)
+        # self.new_mandel = copy.deepcopy(self.new_mandel)
 
-    def revert_to_displayed_as_new(self):
-        self.new_mandel = copy.deepcopy(self.displayed_mandel)
+    # def revert_to_displayed_as_new(self):
+    #     self.new_mandel = copy.deepcopy(self.displayed_mandel)
 
     def zoom_and_calc(self,
                       frame_point: Optional[tuples.PixelPoint],
