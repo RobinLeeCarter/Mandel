@@ -36,8 +36,8 @@ class Frame:
 
     def set_frame_shape(self, image_shape: tuples.ImageShape):
         """call when resize window"""
+        # print("set_frame_shape", image_shape)
         self.shape = image_shape
-        # self.shape = tuples.ImageShape(800, 800)
         frame_y = self.shape.y
         frame_x = self.shape.x
 

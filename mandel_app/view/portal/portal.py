@@ -48,11 +48,12 @@ class Portal:
         # print(f"frame_shape: {frame_shape}")
         if canvas_shape is not None and frame_shape is not None:
             current_frame_offset = self._frame.offset
-            # offset when frame centered in drawable
+            # offset when frame centered in canvas
             offset = tuples.PixelPoint(
-                x=min(int((canvas_shape.x - frame_shape.x) / 2.0), 0),
-                y=min(int((canvas_shape.y - frame_shape.y) / 2.0), 0)
+                x=int((canvas_shape.x - frame_shape.x) / 2.0),
+                y=int((canvas_shape.y - frame_shape.y) / 2.0)
             )
+
             # print(f"offset: {offset}")
             if current_frame_offset is None or offset != current_frame_offset:
                 self._frame.set_offset(offset)
