@@ -60,18 +60,19 @@ class Controller:
         self._model.revert_to_displayed_as_new()
         # could be mid-way but should just stop at next yield
         self._model.set_compute_parameters(max_iterations, early_stopping)
-        if self._model.new_mandel.has_border:
-            self._model.new_mandel.remove_border()
-        # Save history in case press back don't want to lose the work
-        self._model.calc_new_mandel(save_history=True)
+        self._model.no_border_and_calc()
+        # if self._model.new_mandel.has_border:
+        #     self._model.new_mandel.remove_border()
+        # # Save history in case press back don't want to lose the work
+        # self._model.calc_new_mandel(save_history=True)
 
     def perform_default_z_trace(self):
         z0 = self._model.displayed_mandel.centre
         self.perform_z_trace(z0)
 
-    def update_z0_request(self, pixel_point: tuples.PixelPoint):
+    def update_z0_request(self, frame_point: tuples.PixelPoint):
         self._view.hide_z_graph()
-        z0 = self._model.displayed_mandel.get_complex_from_pixel(pixel_point)
+        z0 = self._model.displayed_mandel.get_complex_from_frame_point(frame_point)
         self.perform_z_trace(z0)
 
     def perform_z_trace(self, z0: complex):

@@ -28,7 +28,7 @@ class Model:
 
     def build(self, frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
-        self.new_mandel = self._initial_mandel(frame_shape)
+        self.new_mandel = self._initial_mandel()
         # self.new_mandel = self._slow_mandel(image_shape)
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
@@ -70,12 +70,12 @@ class Model:
         self.new_mandel = copy.deepcopy(self.displayed_mandel)
 
     def zoom_and_calc(self,
-                      pixel_point: Optional[tuples.PixelPoint],
+                      frame_point: Optional[tuples.PixelPoint],
                       scaling: float):
-        if pixel_point is None:
+        if frame_point is None:
             new_centre = self.displayed_mandel.centre
         else:
-            new_centre = self.displayed_mandel.get_complex_from_pixel(pixel_point)
+            new_centre = self.displayed_mandel.get_complex_from_frame_point(frame_point)
 
         save_history: bool = (scaling < 1)
 
@@ -155,6 +155,13 @@ class Model:
         else:
             self._compute_manager.max_iterations = max_iterations
         self._compute_manager.early_stopping = early_stopping
+
+    def no_border_and_calc(self):
+        self.new_mandel = self.displayed_mandel.lite_copy(
+            shape=self._frame_shape,
+            has_border=False
+        )
+        self.calc_new_mandel(save_history=True)
     # endregion
 
     # region Events from Thread
@@ -178,10 +185,22 @@ class Model:
         #     self._add_border()
 
     def _add_border(self):
-        self.new_mandel.add_border(14*4*5, 14*4*5)
+        border_size = 14*4*5    # add 5 large boxes in all directions
+        displayed_shape = self.displayed_mandel.shape
+        new_shape = tuples.ImageShape(displayed_shape.x + border_size*2,
+                                      displayed_shape.y + border_size*2)
+        self.new_mandel = self.displayed_mandel.lite_copy(
+            shape=new_shape,
+            has_border=True
+        )
+
+        offset = tuples.PixelPoint(x=border_size, y=border_size)
+
         job = mandelbrot.MandelJob(
             compute_manager=self._compute_manager,
             new_mandel=self.new_mandel,
+            prev_mandel=self.displayed_mandel,
+            prev_offset=offset,
             display_progress=False,  # background job
             save_history=False
         )
@@ -189,10 +208,10 @@ class Model:
     # endregion
 
     # region Initial Mandel Options
-    def _initial_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+    def _initial_mandel(self) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0),
                                    size=2.4,
-                                   shape=shape,
+                                   shape=self._frame_shape,
                                    expected_iterations_per_pixel=1750
                                    )
         return mandel
@@ -200,21 +219,21 @@ class Model:
     def _test_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1),
                                    size=0.2,
-                                   shape=shape
+                                   shape=self._frame_shape
                                    )
         return mandel
 
     def _different_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009),
                                    size=3.0E-5,
-                                   shape=shape
+                                   shape=self._frame_shape
                                    )
         return mandel
 
     def _slow_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
                                    size=2.1609798031004707e-10,
-                                   shape=shape
+                                   shape=self._frame_shape
                                    )
         return mandel
     # endregion

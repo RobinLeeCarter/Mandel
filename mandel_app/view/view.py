@@ -268,7 +268,7 @@ class View:
         central = self._window.central
         if view_state_.is_waiting:
             frame_point: tuples.PixelPoint = self._mouse_frame_point(event)
-            z: complex = central.mandel.get_complex_from_pixel(frame_point)
+            z: complex = central.mandel.get_complex_from_frame_point(frame_point)
             self._window.status_bar.display_point(z)
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = self._mouse_frame_point(event)
@@ -290,7 +290,7 @@ class View:
                 if view_state_.is_z_mode:
                     # change z0 for z-tracing
                     # print(f"clicked at: {view_state_.pan_start}")
-                    self._update_z0(pixel_point=view_state_.pan_start)
+                    self._update_z0(frame_point=view_state_.pan_start)
                 else:
                     # point zoom
                     self._zoom(frame_point=view_state_.pan_start, scaling=0.5)
@@ -389,8 +389,8 @@ class View:
         self._controller.point_zoom_request(frame_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)
 
-    def _update_z0(self, pixel_point: tuples.PixelPoint):
-        self._controller.update_z0_request(pixel_point)
+    def _update_z0(self, frame_point: tuples.PixelPoint):
+        self._controller.update_z0_request(frame_point)
         self._set_action(enums.ImageAction.NONE)
 
     def _set_action(self, action: enums.ImageAction):

@@ -74,13 +74,13 @@ class Mandel:
                   expected_iterations_per_pixel: Optional[float] = None,
                   has_border: Optional[bool] = None
                   ) -> Mandel:
-        centre = self._ifnull(centre, self.centre)
-        shape = self._ifnull(shape, self.shape)
-        size = self._ifnull(size, self.size)
-        size_per_gap = self._ifnull(size_per_gap, self.size_per_gap)
-        theta_degrees = self._ifnull(theta_degrees, self.theta_degrees)
-        expected_iterations_per_pixel = self._ifnull(expected_iterations_per_pixel, self.expected_iterations_per_pixel)
-        has_border = self._ifnull(has_border, self.has_border)
+        centre = self._if_none(centre, self.centre)
+        shape = self._if_none(shape, self.shape)
+        size = self._if_none(size, self.size)
+        size_per_gap = self._if_none(size_per_gap, self.size_per_gap)
+        theta_degrees = self._if_none(theta_degrees, self.theta_degrees)
+        expected_iterations_per_pixel = self._if_none(expected_iterations_per_pixel, self.expected_iterations_per_pixel)
+        has_border = self._if_none(has_border, self.has_border)
 
         return Mandel(
             centre=centre,
@@ -92,37 +92,37 @@ class Mandel:
             has_border=has_border
         )
 
+    # region Methods
     @staticmethod
-    def _ifnull(var, val):
+    def _if_none(var, val):
         if var is None:
             return val
         return var
 
-    # region Methods
-    def pan_centre(self):
-        new_centre_pixel = tuples.PixelPoint(
-            x=float(self.shape.x)/2.0 + self.pan.x,
-            y=float(self.shape.y)/2.0 + self.pan.y
-        )
-        self.centre = self.get_complex_from_pixel(new_centre_pixel)
+    # def pan_centre(self):
+    #     new_centre_pixel = tuples.PixelPoint(
+    #         x=float(self.shape.x)/2.0 + self.pan.x,
+    #         y=float(self.shape.y)/2.0 + self.pan.y
+    #     )
+    #     self.centre = self.get_complex_from_frame_point(new_centre_pixel)
 
-    def add_border(self, border_x: int, border_y: int):
-        # print(self.shape)
-        new_shape = tuples.ImageShape(self.shape.x + border_x*2,
-                                      self.shape.y + border_y*2)
-        # print(new_shape)
-        new_offset = tuples.PixelPoint(self.offset.x - border_x,
-                                       self.offset.y - border_y)
-        self.shape = new_shape
-        # noinspection PyAttributeOutsideInit
-        self.offset = new_offset
-        self.has_border = True
+    # def add_border(self, border_x: int, border_y: int):
+    #     # print(self.shape)
+    #     new_shape = tuples.ImageShape(self.shape.x + border_x*2,
+    #                                   self.shape.y + border_y*2)
+    #     # print(new_shape)
+    #     new_offset = tuples.PixelPoint(self.offset.x - border_x,
+    #                                    self.offset.y - border_y)
+    #     self.shape = new_shape
+    #     # noinspection PyAttributeOutsideInit
+    #     self.offset = new_offset
+    #     self.has_border = True
 
-    def remove_border(self):
-        self.shape = self.original_shape
-        # noinspection PyAttributeOutsideInit
-        self.offset = tuples.PixelPoint(x=0, y=0)
-        self.has_border = False
+    # def remove_border(self):
+    #     self.shape = self.original_shape
+    #     # noinspection PyAttributeOutsideInit
+    #     self.offset = tuples.PixelPoint(x=0, y=0)
+    #     self.has_border = False
 
     # def old_get_complex_from_pixel(self, pixel_point: tuples.PixelPoint) -> complex:
     #     x_scale = (float(pixel_point.x) / float(self.shape.x)) - 0.5
@@ -132,15 +132,17 @@ class Mandel:
     #
     #     return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
 
-    def get_complex_from_pixel(self, pixel_point: tuples.PixelPoint) -> complex:
-        x_scale = (float(self.offset.x + pixel_point.x) / float(self.shape.x)) - 0.5
-        y_scale = (float(self.offset.y + pixel_point.y) / float(self.shape.y)) - 0.5
+    def get_complex_from_frame_point(self, frame_point: tuples.PixelPoint) -> complex:
+        # x_scale = (float(self.offset.x + frame_point.x) / float(self.shape.x)) - 0.5
+        # y_scale = (float(self.offset.y + frame_point.y) / float(self.shape.y)) - 0.5
+        x_scale = (float(frame_point.x) / float(self.shape.x)) - 0.5
+        y_scale = (float(frame_point.y) / float(self.shape.y)) - 0.5
         x_dist = x_scale * self.x_size
         y_dist = y_scale * self.y_size
 
         return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
 
-    def get_pixel_from_complex(self, z: complex) -> Optional[tuples.PixelPoint]:
+    def get_frame_point_from_complex(self, z: complex) -> Optional[tuples.PixelPoint]:
         dz = z - self.centre
 
         # take dot products
@@ -161,9 +163,8 @@ class Mandel:
         else:
             return None
 
-    # TODO: should offset be in view and not in model?
-    def set_offset(self, offset: tuples.PixelPoint):
-        """happens when window is resized"""
-        # noinspection PyAttributeOutsideInit
-        self.offset = offset
+    # def set_offset(self, offset: tuples.PixelPoint):
+    #     """happens when window is resized"""
+    #     # noinspection PyAttributeOutsideInit
+    #     self.offset = offset
     # endregion

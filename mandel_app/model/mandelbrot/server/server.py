@@ -25,8 +25,9 @@ class Server:
         self._compute_manager: compute.ComputeManager = compute_manager_
         self._early_stopping_iteration: Optional[int] = early_stopping_iteration
 
-        if self._mandel.pan is not None:
-            self._mandel.pan_centre()
+        # removed
+        # if self._mandel.pan is not None:
+        #     self._mandel.pan_centre()
 
         self._c: cp.ndarray = self._generate_c()
 

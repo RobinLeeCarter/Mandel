@@ -16,7 +16,7 @@ class MandelDraw(portal.Drawable):
         self._norm = colors.Normalize(vmin=0, vmax=1)
         self._transformed_iterations: Optional[np.ndarray] = None
 
-        self._z0_pixel: Optional[tuples.PixelPoint] = None
+        self._z0_frame_point: Optional[tuples.PixelPoint] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
                                        zorder=1, visible=False)
 
@@ -56,7 +56,7 @@ class MandelDraw(portal.Drawable):
             self._transformed_iterations,
             interpolation='none', origin='lower',
             cmap=self._cmap, norm=self._norm, resample=False, filternorm=False)  # , zorder=0
-        if self._z0_pixel is not None:
+        if self._z0_frame_point is not None:
             self._ax.add_line(self._z0_marker)
 
     def update(self):
@@ -70,15 +70,15 @@ class MandelDraw(portal.Drawable):
     def set_z0_marker(self, z0: complex):
         pixel_x: List[int] = []
         pixel_y: List[int] = []
-        self._z0_pixel = self._mandel.get_pixel_from_complex(z0)
-        if self._z0_pixel is not None:
-            pixel_x.append(self._z0_pixel.x)
-            pixel_y.append(self._z0_pixel.y)
+        self._z0_frame_point = self._mandel.get_frame_point_from_complex(z0)
+        if self._z0_frame_point is not None:
+            pixel_x.append(self._z0_frame_point.x)
+            pixel_y.append(self._z0_frame_point.y)
             # self._z0_marker.set_data([pixel_point.x], [pixel_point.y])
         self._z0_marker.set_data(pixel_x, pixel_y)
         # self._z0_marker.set_visible(True)
 
     def hide_z0_marker(self):
-        self._z0_pixel = None
+        self._z0_frame_point = None
         # self._z0_marker.set_visible(False)
         # self.figure_canvas.draw()
