@@ -84,8 +84,8 @@ class MandelJob(thread.Job):
 
         self._new_mandel.iteration = yield from algorithm_.run()
 
-        self._new_mandel.iteration_shape = self._new_mandel.shape
-        self._new_mandel.iteration_offset = self._new_mandel.offset
+        # self._new_mandel.iteration_shape = self._new_mandel.shape
+        # self._new_mandel.iteration_offset = self._new_mandel.offset
         self._new_mandel.max_iteration = self._compute_manager.max_iterations
 
         # set mandel statistics

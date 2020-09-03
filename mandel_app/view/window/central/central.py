@@ -88,7 +88,9 @@ class Central:
 
     def show_z0_marker(self, z0: complex):
         self._mandel_draw.set_z0_marker(z0)
+        self._portal.draw_drawable()
         self._portal.display()
+        self._area.update()
 
     def hide_z0_marker(self):
         self._mandel_draw.hide_z0_marker()

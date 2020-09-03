@@ -21,9 +21,9 @@ class Mandel:
     has_border: bool = False
 
     def __post_init__(self):
-        self.original_shape: tuples.ImageShape = self.shape
+        # self.original_shape: tuples.ImageShape = self.shape
         self.pan: Optional[tuples.PixelPoint] = None
-        self.offset: tuples.PixelPoint = tuples.PixelPoint(x=0, y=0)
+        # self.offset: tuples.PixelPoint = tuples.PixelPoint(x=0, y=0)
         self.iteration: Optional[np.ndarray] = None
         self.max_iteration: int = 0
 
@@ -33,8 +33,8 @@ class Mandel:
         self.final_iteration: int = 0
 
         # keep track of the contents of iteration at all times
-        self.iteration_shape: tuples.ImageShape = self.shape
-        self.iteration_offset: tuples.PixelPoint = tuples.PixelPoint(x=0, y=0)
+        # self.iteration_shape: tuples.ImageShape = self.shape
+        # self.iteration_offset: tuples.PixelPoint = tuples.PixelPoint(x=0, y=0)
 
         # one less gap than shape
         # eg. 4 pixels from [0 to size] have 3 gaps [0, 1, 2, 3]
@@ -157,27 +157,40 @@ class Mandel:
 
         return self.centre + x_dist*self.x_unit + y_dist*self.y_unit
 
-    # TODO: Fix to take in frame also
-    def get_frame_point_from_complex(self, z: complex) -> Optional[tuples.PixelPoint]:
+    def get_source_point_from_complex(self, z: complex) -> Optional[tuples.PixelPoint]:
         dz = z - self.centre
 
         # take dot products
-        x_dist = dz.real * self.x_unit.real + dz.imag * self.x_unit.imag
-        y_dist = dz.real * self.y_unit.real + dz.imag * self.y_unit.imag
+        x_dist = dz.real*self.x_unit.real + dz.imag*self.x_unit.imag
+        y_dist = dz.real*self.y_unit.real + dz.imag*self.y_unit.imag
 
-        x_scale = x_dist / self.x_size
-        y_scale = y_dist / self.y_size
+        x_pixels_from_center = x_dist/self.size_per_gap
+        y_pixels_from_center = y_dist/self.size_per_gap
 
-        if -0.5 <= x_scale <= 0.5 and -0.5 <= y_scale <= 0.5:
-            x_pixel = (x_scale + 0.5) * float(self.shape.x)
-            y_pixel = (y_scale + 0.5) * float(self.shape.y)
-            pixel_point = tuples.PixelPoint(
-                x=round(x_pixel),
-                y=round(y_pixel)
-            )
-            return pixel_point
+        x_pixel = 0.5*float(self.shape.x-1) + x_pixels_from_center
+        y_pixel = 0.5*float(self.shape.y-1) + y_pixels_from_center
+
+        x = round(x_pixel)
+        y = round(y_pixel)
+
+        if 0 <= x <= self.shape.x-1 and 0 <= y <= self.shape.y-1:
+            return tuples.PixelPoint(x, y)
         else:
             return None
+
+        # x_scale = x_dist / self.x_size
+        # y_scale = y_dist / self.y_size
+        #
+        # if -0.5 <= x_scale <= 0.5 and -0.5 <= y_scale <= 0.5:
+        #     x_pixel = (x_scale + 0.5) * float(self.shape.x-1)
+        #     y_pixel = (y_scale + 0.5) * float(self.shape.y-1)
+        #     source_point = tuples.PixelPoint(
+        #         x=round(x_pixel),
+        #         y=round(y_pixel)
+        #     )
+        #     return source_point
+        # else:
+        #     return None
 
     # def set_offset(self, offset: tuples.PixelPoint):
     #     """happens when window is resized"""
