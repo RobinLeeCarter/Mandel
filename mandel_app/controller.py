@@ -27,6 +27,7 @@ class Controller:
     def new_is_ready(self, save_history: bool = False):
         # TODO: Fix when this gets blocked. Possibly rotating and panning enums due to mixed button presses.
         if self._view.ready_to_display_new_mandel:
+            # possibly pass an optional z0 in here
             self._view.show_mandel(self._model.new_mandel)
             self._model.new_is_displayed(save_history=save_history)
         # else:
