@@ -95,8 +95,10 @@ class Server:
         new = self._new_mandel.shape
         prev = self._prev_mandel.shape
         offset = self._offset
-        # print(f"new shape : {new}")
+        # print(f"prev center: {self._prev_mandel.centre}")
+        # print(f"new center: {self._new_mandel.centre}")
         # print(f"prev shape: {prev}")
+        # print(f"new shape : {new}")
         # print(f"offset    : {offset}")
 
         prev_slice_x: Optional[slice] = None

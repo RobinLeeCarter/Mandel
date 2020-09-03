@@ -268,7 +268,7 @@ class View:
         central = self._window.central
         if view_state_.is_waiting:
             frame_point: tuples.PixelPoint = self._mouse_frame_point(event)
-            z: complex = central.mandel.get_complex_from_frame_point(frame_point)
+            z: complex = central.mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
             self._window.status_bar.display_point(z)
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = self._mouse_frame_point(event)

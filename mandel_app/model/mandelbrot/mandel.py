@@ -132,16 +132,32 @@ class Mandel:
     #
     #     return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
 
-    def get_complex_from_frame_point(self, frame_point: tuples.PixelPoint) -> complex:
+    def get_complex_from_frame_point(self,
+                                     frame_shape: tuples.ImageShape,
+                                     frame_point: tuples.PixelPoint
+                                     ) -> complex:
+        # print(f"frame_shape: {frame_shape}")
+        # print(f"frame_point: {frame_point}")
+        # print(f"shape: {self.shape}")
+        x_pixels_from_center = frame_point.x - 0.5*(frame_shape.x-1)
+        y_pixels_from_center = frame_point.y - 0.5*(frame_shape.y-1)
+
         # x_scale = (float(self.offset.x + frame_point.x) / float(self.shape.x)) - 0.5
         # y_scale = (float(self.offset.y + frame_point.y) / float(self.shape.y)) - 0.5
-        x_scale = (float(frame_point.x) / float(self.shape.x)) - 0.5
-        y_scale = (float(frame_point.y) / float(self.shape.y)) - 0.5
-        x_dist = x_scale * self.x_size
-        y_dist = y_scale * self.y_size
+        # x_scale = (float(frame_point.x) / float(self.shape.x)) - 0.5
+        # y_scale = (float(frame_point.y) / float(self.shape.y)) - 0.5
 
-        return self.centre + x_dist * self.x_unit + y_dist * self.y_unit
+        # x_scale = (x_pixels_from_center / float(self.shape.x))
+        # y_scale = (y_pixels_from_center / float(self.shape.y))
+        # x_dist = x_scale * self.x_size
+        # y_dist = y_scale * self.y_size
 
+        x_dist = x_pixels_from_center * self.size_per_gap
+        y_dist = y_pixels_from_center * self.size_per_gap
+
+        return self.centre + x_dist*self.x_unit + y_dist*self.y_unit
+
+    # TODO: Fix to take in frame also
     def get_frame_point_from_complex(self, z: complex) -> Optional[tuples.PixelPoint]:
         dz = z - self.centre
 

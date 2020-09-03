@@ -73,7 +73,7 @@ class Controller:
 
     def update_z0_request(self, frame_point: tuples.PixelPoint):
         self._view.hide_z_graph()
-        z0 = self._model.displayed_mandel.get_complex_from_frame_point(frame_point)
+        z0 = self._model.displayed_mandel.get_complex_from_frame_point(self._view.frame_shape, frame_point)
         self.perform_z_trace(z0)
 
     def perform_z_trace(self, z0: complex):

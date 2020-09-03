@@ -75,7 +75,8 @@ class Model:
         if frame_point is None:
             new_centre = self.displayed_mandel.centre
         else:
-            new_centre = self.displayed_mandel.get_complex_from_frame_point(frame_point)
+            new_centre = self.displayed_mandel.get_complex_from_frame_point(
+                self._frame_shape, frame_point)
 
         save_history: bool = (scaling < 1)
 
@@ -118,11 +119,13 @@ class Model:
         )
 
         if pan is not None:
+            # print(f"model.frame_shape: {self._frame_shape}")
             new_centre_frame_point = tuples.PixelPoint(
                 x=float(self._frame_shape.x) / 2.0 + pan.x,
                 y=float(self._frame_shape.y) / 2.0 + pan.y
             )
-            self.new_mandel.centre = self.displayed_mandel.get_complex_from_frame_point(new_centre_frame_point)
+            self.new_mandel.centre = self.displayed_mandel.get_complex_from_frame_point(
+                self._frame_shape, new_centre_frame_point)
 
         # if pan is not None:
         #     new_centre_frame_point = tuples.PixelPoint(
@@ -197,11 +200,11 @@ class Model:
         self._controller.new_is_ready(mandel_job.save_history)
 
         # TODO: control generation of borders in controller rather than automatically firing?
-        # if not self.new_mandel.has_border:
-        #     self._add_border()
+        if not self.new_mandel.has_border:
+            self._add_border()
 
     def _add_border(self):
-        border_size = 14*4*5    # add 5 large boxes in all directions
+        border_size = 14*4*10    # add 5 large boxes in all directions
         displayed_shape = self.displayed_mandel.shape
         new_shape = tuples.ImageShape(displayed_shape.x + border_size*2,
                                       displayed_shape.y + border_size*2)
@@ -210,7 +213,7 @@ class Model:
             has_border=True
         )
 
-        offset = tuples.PixelPoint(x=border_size, y=border_size)
+        offset = tuples.PixelPoint(x=-border_size, y=-border_size)
 
         job = mandelbrot.MandelJob(
             compute_manager=self._compute_manager,
