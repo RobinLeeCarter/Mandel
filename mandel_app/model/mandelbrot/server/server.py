@@ -16,14 +16,17 @@ from mandel_app.model.mandelbrot.server import request
 # compute does the actual calculation
 class Server:
     def __init__(self,
-                 mandel_: mandel.Mandel,
                  compute_manager_: compute.ComputeManager,
-                 early_stopping_iteration: Optional[int] = None
+                 new_mandel: mandel.Mandel,
+                 early_stopping_iteration: Optional[int] = None,
+                 prev_mandel: Optional[mandel.Mandel] = None,
+                 offset: Optional[tuples.PixelPoint] = None
                  ):
-
-        self._mandel: mandel.Mandel = mandel_
         self._compute_manager: compute.ComputeManager = compute_manager_
+        self._new_mandel: mandel.Mandel = new_mandel
         self._early_stopping_iteration: Optional[int] = early_stopping_iteration
+        self._prev_mandel: Optional[mandel.Mandel] = prev_mandel
+        self._offset: Optional[tuples.PixelPoint] = offset
 
         # removed
         # if self._mandel.pan is not None:
@@ -33,11 +36,11 @@ class Server:
 
         self._iteration: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.int32)
         self._completed: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.bool)
-        if self._mandel.pan is not None:
+        if self._new_mandel.pan is not None:
             self._copy_over_pan()
-        self._mandel.pan = None
+        self._new_mandel.pan = None
 
-        if self._mandel.has_border:
+        if self._new_mandel.has_border:
             self._copy_over_center()
 
         self._requested: cp.ndarray = cp.zeros(shape=self._c.shape, dtype=cp.bool)
@@ -48,7 +51,7 @@ class Server:
         self._box_fill_cpu: np.ndarray = np.zeros(shape=self._c.shape, dtype=np.bool)
 
     def _generate_c(self) -> cp.ndarray:
-        m = self._mandel
+        m = self._new_mandel
         y, x = np.ogrid[-m.y_size/2.0: m.y_size/2.0: m.shape.y * 1j,
                         -m.x_size/2.0: m.x_size/2.0: m.shape.x * 1j]
 
@@ -73,10 +76,10 @@ class Server:
         return cp.asarray(c)
 
     def _copy_over_pan(self):
-        new = self._mandel.shape
-        old = self._mandel.iteration_shape
-        offset = self._mandel.iteration_offset
-        pan = self._mandel.pan
+        new = self._new_mandel.shape
+        old = self._new_mandel.iteration_shape
+        offset = self._new_mandel.iteration_offset
+        pan = self._new_mandel.pan
 
         bottom_left: tuples.PixelPoint = tuples.PixelPoint(x=pan.x - offset.x,
                                                            y=pan.y - offset.y)
@@ -115,13 +118,13 @@ class Server:
         y_old_slice = slice(old_start_y, old_end_y)
         y_new_slice = slice(new_start_y, new_end_y)
 
-        old_iteration = cp.asarray(self._mandel.iteration)
+        old_iteration = cp.asarray(self._new_mandel.iteration)
         self._iteration[y_new_slice, x_new_slice] = old_iteration[y_old_slice, x_old_slice]
         self._completed[y_new_slice, x_new_slice] = True
 
     def _copy_over_center(self):
-        old = self._mandel.iteration_shape
-        offset = self._mandel.offset
+        old = self._new_mandel.iteration_shape
+        offset = self._new_mandel.offset
 
         bottom_left: tuples.PixelPoint = tuples.PixelPoint(x=-offset.x,
                                                            y=-offset.y)
@@ -133,13 +136,13 @@ class Server:
         y_old_slice = slice(0, old.y)
         y_new_slice = slice(bottom_left.y, top_right.y)
 
-        old_iteration = cp.asarray(self._mandel.iteration)
+        old_iteration = cp.asarray(self._new_mandel.iteration)
         self._iteration[y_new_slice, x_new_slice] = old_iteration[y_old_slice, x_old_slice]
         self._completed[y_new_slice, x_new_slice] = True
 
     @property
     def shape(self) -> tuples.ImageShape:
-        return self._mandel.shape
+        return self._new_mandel.shape
 
     @property
     def complete(self) -> bool:

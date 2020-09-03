@@ -56,7 +56,7 @@ class Model:
             save_history=save_history
         )
         if offset is not None:
-            mandel_job.set_previous_mandel(prev_mandel=self.displayed_mandel, prev_offset=offset)
+            mandel_job.set_previous_mandel(prev_mandel=self.displayed_mandel, offset=offset)
 
         self._calc_thread_manager.request_job(mandel_job, queue_as=thread.QueueAs.SINGULAR)
 
@@ -142,7 +142,6 @@ class Model:
         # if self.new_mandel.has_border:
         #     self.new_mandel.remove_border()
 
-
     def _calc_offset(self,
                      previous_shape: tuples.ImageShape,
                      new_shape: tuples.ImageShape,
@@ -192,7 +191,7 @@ class Model:
         # print(f"completed job id = {id(job)}")
         assert isinstance(job, mandelbrot.MandelJob)
         mandel_job: mandelbrot.MandelJob = job
-        self.new_mandel = mandel_job.mandel_
+        self.new_mandel = mandel_job.new_mandel
         if mandel_job.progress_estimator:  # only show time for borderless calculation
             self.new_mandel.time_taken = job.progress_estimator.timer.total
         self._controller.new_is_ready(mandel_job.save_history)
@@ -217,7 +216,7 @@ class Model:
             compute_manager=self._compute_manager,
             new_mandel=self.new_mandel,
             prev_mandel=self.displayed_mandel,
-            prev_offset=offset,
+            offset=offset,
             display_progress=False,  # background job
             save_history=False
         )

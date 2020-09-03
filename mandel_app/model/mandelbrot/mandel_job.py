@@ -14,36 +14,37 @@ class MandelJob(thread.Job):
                  compute_manager: compute.ComputeManager,
                  new_mandel: mandel.Mandel,
                  prev_mandel: Optional[mandel.Mandel] = None,
-                 prev_offset: Optional[tuples.PixelPoint] = None,
+                 offset: Optional[tuples.PixelPoint] = None,
                  display_progress: bool = True,
                  save_history: bool = False):
         super().__init__()
         self._compute_manager: compute.ComputeManager = compute_manager
-        self._mandel: mandel.Mandel = copy.deepcopy(new_mandel)
+        self._new_mandel: mandel.Mandel = copy.deepcopy(new_mandel)
         self._prev_mandel: Optional[mandel.Mandel] = prev_mandel
-        self._prev_offset: Optional[tuples.PixelPoint] = prev_offset
+        # offset vector from prev_mandel origin to new_mandel origin
+        self._offset: Optional[tuples.PixelPoint] = offset
         if display_progress:
             self.progress_estimator = mandel_progress_estimator.MandelProgressEstimator()
         self.save_history: bool = save_history
 
     def set_previous_mandel(self,
                             prev_mandel: mandel.Mandel,
-                            prev_offset: tuples.PixelPoint
+                            offset: tuples.PixelPoint
                             ):
         self._prev_mandel = prev_mandel
-        self._prev_offset = prev_offset
+        self._offset = offset
 
     @property
-    def mandel_(self) -> mandel.Mandel:
-        return self._mandel
+    def new_mandel(self) -> mandel.Mandel:
+        return self._new_mandel
 
     # calculates a mandel using whatever algorithm is implemented
     def _exec(self) -> Generator[float, None, None]:
         pixel_count: int = 0    # just to make warning go away
 
         if self.progress_estimator:
-            pixel_count = self.get_pixel_count(self._mandel)  # , self._pan)
-            expected_work = pixel_count * self._mandel.expected_iterations_per_pixel
+            pixel_count = self.get_pixel_count(self._new_mandel)  # , self._pan)
+            expected_work = pixel_count * self._new_mandel.expected_iterations_per_pixel
             self.progress_estimator.set_expected_work(expected_work)
 
         yield 0.0
@@ -51,12 +52,18 @@ class MandelJob(thread.Job):
             self.progress_estimator.set_progress_range(0.05)
 
         # if adding a border want to use the same early_stopping_iteration
-        if self._mandel.has_border and self._mandel.final_iteration > 0:
-            early_stopping_iteration = self._mandel.final_iteration
+        if self._new_mandel.has_border and self._new_mandel.final_iteration > 0:
+            early_stopping_iteration = self._new_mandel.final_iteration
         else:
             early_stopping_iteration = None
         # create a server for the algorithm and start it based on self._mandel
-        server_ = server.Server(self._mandel, self._compute_manager, early_stopping_iteration)
+        server_ = server.Server(
+            self._compute_manager,
+            self._new_mandel,
+            early_stopping_iteration,
+            self._prev_mandel,
+            self._offset
+        )
 
         yield 1.0
 
@@ -75,20 +82,20 @@ class MandelJob(thread.Job):
 
         algorithm_ = algorithm.Mesh(server_, self.progress_estimator)
 
-        self._mandel.iteration = yield from algorithm_.run()
+        self._new_mandel.iteration = yield from algorithm_.run()
 
-        self._mandel.iteration_shape = self._mandel.shape
-        self._mandel.iteration_offset = self._mandel.offset
-        self._mandel.max_iteration = self._compute_manager.max_iterations
+        self._new_mandel.iteration_shape = self._new_mandel.shape
+        self._new_mandel.iteration_offset = self._new_mandel.offset
+        self._new_mandel.max_iteration = self._compute_manager.max_iterations
 
         # set mandel statistics
         if self.progress_estimator:
-            self._mandel.iterations_performed = int(self.progress_estimator.cumulative_work)
-            self._mandel.iterations_per_pixel = float(self._mandel.iterations_performed) / float(pixel_count)
+            self._new_mandel.iterations_performed = int(self.progress_estimator.cumulative_work)
+            self._new_mandel.iterations_per_pixel = float(self._new_mandel.iterations_performed) / float(pixel_count)
 
         # print("self._compute_manager.final_iteration=", self._compute_manager.final_iteration)
-        if not self._mandel.has_border:
-            self._mandel.final_iteration = self._compute_manager.final_iteration
+        if not self._new_mandel.has_border:
+            self._new_mandel.final_iteration = self._compute_manager.final_iteration
 
     def get_pixel_count(self,
                         mandel_: mandel.Mandel
