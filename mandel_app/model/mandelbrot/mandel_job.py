@@ -21,7 +21,7 @@ class MandelJob(thread.Job):
         self._compute_manager: compute.ComputeManager = compute_manager
         self._new_mandel: mandel.Mandel = copy.deepcopy(new_mandel)
         self._prev_mandel: Optional[mandel.Mandel] = prev_mandel
-        # offset vector from prev_mandel origin to new_mandel origin
+        # offset vector from prev_mandel origin to new_mandel origin (this already includes any pan)
         self._offset: Optional[tuples.PixelPoint] = offset
         if display_progress:
             self.progress_estimator = mandel_progress_estimator.MandelProgressEstimator()
