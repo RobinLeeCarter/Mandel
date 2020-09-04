@@ -3,6 +3,7 @@ from typing import Optional
 import numpy as np
 from PyQt5 import QtWidgets, QtGui
 
+import utils
 from mandel_app import tuples
 from mandel_app.view.portal import canvas, frame, drawable
 
@@ -12,6 +13,7 @@ class Portal:
         self._q_label: QtWidgets.QLabel = q_label
         self._frame = frame.Frame()
         self._canvas = canvas.Canvas()
+        self._timer = utils.Timer()
 
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
@@ -72,8 +74,12 @@ class Portal:
         self._update_label()
 
     def rotate_display(self, degrees: float):
+        """Over 100fps"""
+        # self._timer.start()
         self._frame.rotate(degrees)
         self._update_label()
+        # self._timer.stop(show=False)
+        # print(f"FPS: {1.0/self._timer.total:.1f}")
 
     def scale_display(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
         self._frame.scale(scale, scale_point)

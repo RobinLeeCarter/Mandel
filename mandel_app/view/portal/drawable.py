@@ -31,6 +31,10 @@ class Drawable(ABC):
     def draw(self):
         pass
 
+    def update(self):
+        """Maybe extend to use animation in future"""
+        self.draw()
+
     def _get_shape(self, data: np.ndarray):
         height, width = data.shape
         return tuples.ImageShape(x=width, y=height)

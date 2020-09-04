@@ -27,6 +27,9 @@ class Canvas:
         self._drawable: Optional[drawable.Drawable] = None
         self._rgba: Optional[np.ndarray] = None
 
+        self._ax.clear()
+        self._figure_canvas.draw()
+
         # self._figure_canvas.draw()
         self._timer = utils.Timer()
 
