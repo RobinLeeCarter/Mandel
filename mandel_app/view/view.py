@@ -244,8 +244,9 @@ class View:
     # region Central Mouse Slots
     def _on_central_mouse_press(self, event: QtGui.QMouseEvent):
         # print("_on_central_mouse_press")
+        # TODO: put back on to improve performance
         # add to always request a stop any current GPU work to free it up for scrolling
-        self._controller.stop_request()
+        # self._controller.stop_request()
         view_state_ = self._view_state
         button: QtCore.Qt.MouseButton = event.button()
         if button == QtCore.Qt.LeftButton:

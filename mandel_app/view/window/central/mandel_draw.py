@@ -59,9 +59,9 @@ class MandelDraw(portal.Drawable):
         if self._z0_source_point is not None:
             self._ax.add_line(self._z0_marker)
 
-    def update(self):
-        """Maybe extend to use animation in future"""
-        self.draw()
+    # def update(self):
+    #     """Maybe extend to use animation in future"""
+    #     self.draw()
 
     # def show_z0_marker(self, z0: complex):
     #     self._set_z0_marker(z0)

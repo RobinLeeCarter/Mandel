@@ -77,6 +77,7 @@ class Frame:
         self.get_frame()
 
     def pan(self, pan: tuples.PixelPoint):
+        # TODO: pan is not working and causing tears even jiggled even at top level no border
         self._pan = pan
         self.get_frame()
 
