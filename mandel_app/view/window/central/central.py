@@ -35,7 +35,6 @@ class Central:
         self._mandel_draw.set_mandel(mandel)
         self._portal.draw_drawable()
         self._portal.display()
-        self._area.update()
 
     @property
     def mandel(self) -> mandelbrot.Mandel:
@@ -63,7 +62,6 @@ class Central:
 
     def _rotate_mandel(self, degrees: int):
         self._portal.rotate_display(degrees)
-        self._area.update()
 
     def zoom_mandel_frame(self,
                           zoom_point: Optional[tuples.PixelPoint] = None,
@@ -72,25 +70,17 @@ class Central:
         if zoom_point is None:
             zoom_point = center
 
-        # if scaling is None:
-        #     magnification = 1.0
-        # else:
-        #     magnification = 1.0 / scaling
-        # self._portal.scale_display(magnification, zoom_point)
         if scaling is None:
             scaling = 1.0
         self._portal.scale_display(scaling, zoom_point)
-        self._area.update()
 
     def pan_mandel(self, pan: tuples.PixelPoint):
         self._portal.pan_display(pan)
-        self._area.update()
 
     def show_z0_marker(self, z0: complex):
         self._mandel_draw.set_z0_marker(z0)
         self._portal.draw_drawable()
         self._portal.display()
-        self._area.update()
 
     def hide_z0_marker(self):
         self._mandel_draw.hide_z0_marker()

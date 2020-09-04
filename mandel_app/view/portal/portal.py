@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 
 from mandel_app import tuples
 from mandel_app.view.portal import canvas, frame, drawable
@@ -35,6 +35,10 @@ class Portal:
             self._update_offset()
 
     def draw_drawable(self):
+        """
+        draws to the source i.e. creates rgba array
+        need to call a display method after this for it to display on screen
+        """
         self._canvas.draw()
         self._frame.set_source(source=self._canvas.rgba)
         self._update_offset()

@@ -266,7 +266,7 @@ class View:
         # print("_on_central_mouse_move")
         view_state_ = self._view_state
         central = self._window.central
-        if view_state_.is_waiting:
+        if view_state_.is_waiting and central.mandel is not None:
             frame_point: tuples.PixelPoint = self._mouse_frame_point(event)
             z: complex = central.mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
             self._window.status_bar.display_point(z)

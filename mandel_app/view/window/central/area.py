@@ -49,7 +49,7 @@ class Area:
 
         self._portal_label.setAlignment(QtCore.Qt.AlignCenter)
         # layout.setAlignment(QtCore.Qt.AlignTop)
-        self._portal_label.setVisible(False)
+        # self._portal_label.setVisible(False)
 
         self._q_area_layout.setSpacing(0)
         self._q_area_layout.setContentsMargins(0, 0, 0, 0)
@@ -60,11 +60,11 @@ class Area:
     def portal_label(self) -> widgets.XLabel:
         return self._portal_label
 
-    def update(self):  # TODO: check removal ok , mandel: mandelbrot.Mandel
-        # self.canvas.draw_mandel_test(mandel)
-        self._portal_label.setVisible(True)
-        # self._q_main.resize(mandel.shape.x, mandel.shape.y)   TODO: check removal ok
-        self._q_area_layout.update()
+    # def update(self):
+    #     # self.canvas.draw_mandel_test(mandel)
+    #     self._portal_label.setVisible(True)
+    #     # self._q_main.resize(mandel.shape.x, mandel.shape.y)
+    #     self._q_area_layout.update()
 
     def refresh_shape(self):
         self.shape = self._determine_shape()
