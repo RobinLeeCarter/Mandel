@@ -5,14 +5,14 @@ from PyQt5 import QtWidgets, QtGui
 
 import utils
 from mandel_app import tuples
-from mandel_app.view.portal import canvas, frame, drawable
+from mandel_app.view.portal import canvas_source, frame, drawable
 
 
 class Portal:
     def __init__(self, q_label: QtWidgets.QLabel):
         self._q_label: QtWidgets.QLabel = q_label
         self._frame = frame.Frame()
-        self._canvas = canvas.Canvas()
+        self._canvas = canvas_source.CanvasSource()
         self._timer = utils.Timer()
 
     @property

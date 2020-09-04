@@ -48,7 +48,7 @@ class MandelDraw(portal.Drawable):
     def set_cmap(self, cmap: colors.Colormap):
         self._cmap = cmap
 
-    def draw(self):
+    def draw_source(self):
         assert self._mandel is not None, "MandelDraw: mandel is None"
         self._ax.set_axis_off()
         self._ax.margins(0, 0)

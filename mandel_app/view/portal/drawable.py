@@ -28,7 +28,7 @@ class Drawable(ABC):
         self._ax = ax
 
     @abstractmethod
-    def draw(self):
+    def draw_source(self):
         pass
 
     # def update(self):

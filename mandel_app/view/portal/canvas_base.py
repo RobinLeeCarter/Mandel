@@ -1,6 +1,6 @@
 from __future__ import annotations
-
 from typing import Optional
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -12,7 +12,7 @@ from mandel_app import tuples
 from mandel_app.view.portal import drawable
 
 
-class Canvas:
+class CanvasBase(ABC):
     """
     Renders a single axes to an rgba array.
     Does not need to be physically displayed on the screen but canvas.draw() still required.
@@ -42,25 +42,13 @@ class Canvas:
         self._drawable = drawable_
         self._set_drawable_ax()
 
+    @abstractmethod
     def _set_drawable_ax(self):
-        self._drawable.set_ax(self._ax)
+        pass
 
+    @abstractmethod
     def draw(self):
-        # Get fig ready
-        self._set_fig_size()
-
-        # Get ax ready
-        self._ax.clear()
-
-        # Compose ax
-        assert self._drawable is not None, "Canvas: No drawable set"
-        self._drawable.draw()
-
-        # Draw off-screen and get RGBA array
-        # https://matplotlib.org/gallery/user_interfaces/canvasagg.html#sphx-glr-gallery-user-interfaces-canvasagg-py
-        self._figure_canvas.draw()
-        buf: memoryview = self._figure_canvas.buffer_rgba()
-        self._rgba_output = np.asarray(buf)
+        pass
 
     def _set_fig_size(self):
         width, height = self.shape
