@@ -40,11 +40,7 @@ class CanvasBase(ABC):
 
     def set_drawable(self, drawable_: drawable.Drawable):
         self._drawable = drawable_
-        self._set_drawable_ax()
-
-    @abstractmethod
-    def _set_drawable_ax(self):
-        pass
+        self._drawable.set_ax(self._ax)
 
     @abstractmethod
     def draw(self):

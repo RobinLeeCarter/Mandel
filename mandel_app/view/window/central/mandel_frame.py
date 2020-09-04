@@ -8,7 +8,7 @@ from mandel_app.model import mandelbrot
 from mandel_app.view import portal
 
 
-class MandelDraw(portal.Drawable):
+class MandelFrame(portal.Drawable):
     def __init__(self):
         super().__init__()
         self._mandel: Optional[mandelbrot.Mandel] = None
@@ -48,8 +48,8 @@ class MandelDraw(portal.Drawable):
     def set_cmap(self, cmap: colors.Colormap):
         self._cmap = cmap
 
-    def draw_source(self):
-        assert self._mandel is not None, "MandelDraw: mandel is None"
+    def draw(self):
+        assert self._mandel is not None, "MandelSource: mandel is None"
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
         self._ax.imshow(

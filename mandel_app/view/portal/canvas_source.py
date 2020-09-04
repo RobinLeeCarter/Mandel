@@ -22,9 +22,6 @@ class CanvasSource(canvas_base.CanvasBase):
         super().__init__()
         # self._timer = utils.Timer()
 
-    def _set_drawable_ax(self):
-        self._drawable.set_ax(self._ax)
-
     def draw(self):
         # Get fig ready
         self._set_fig_size()
@@ -34,7 +31,7 @@ class CanvasSource(canvas_base.CanvasBase):
 
         # Compose ax
         assert self._drawable is not None, "Canvas: No drawable set"
-        self._drawable.draw_source()
+        self._drawable.draw()
 
         # Draw off-screen and get RGBA array
         # https://matplotlib.org/gallery/user_interfaces/canvasagg.html#sphx-glr-gallery-user-interfaces-canvasagg-py

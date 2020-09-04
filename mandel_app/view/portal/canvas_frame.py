@@ -22,9 +22,6 @@ class CanvasFrame(canvas_base.CanvasBase):
         super().__init__()
         # self._timer = utils.Timer()
 
-    def _set_drawable_ax(self):
-        self._drawable.set_ax(self._ax)
-
     def draw(self):
         # Get fig ready
         self._set_fig_size()
