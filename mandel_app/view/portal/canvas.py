@@ -25,7 +25,7 @@ class Canvas:
         self._fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self._ax: figure.Axes = self._fig.subplots()
         self._drawable: Optional[drawable.Drawable] = None
-        self._rgba: Optional[np.ndarray] = None
+        self._rgba_output: Optional[np.ndarray] = None
 
         # self._timer = utils.Timer()
 
@@ -34,32 +34,37 @@ class Canvas:
         return self._drawable.shape
 
     @property
-    def rgba(self) -> np.ndarray:
-        assert self._rgba is not None, "Canvas: _rgba is None"
-        return self._rgba
+    def rgba_output(self) -> np.ndarray:
+        assert self._rgba_output is not None, "Canvas: _rgba is None"
+        return self._rgba_output
 
     def set_drawable(self, drawable_: drawable.Drawable):
         self._drawable = drawable_
+        self._set_drawable_ax()
+
+    def _set_drawable_ax(self):
         self._drawable.set_ax(self._ax)
 
     def draw(self):
-        assert self._drawable is not None, "Canvas: No drawable set"
-
         # Get fig ready
-        width, height = self.shape
-        width_inches: float = float(width) / 100.0
-        height_inches: float = float(height) / 100.0
-        self._fig.set_size_inches(width_inches, height_inches)
-        # self._figure_canvas.resize(self._width, self._height)
+        self._set_fig_size()
 
         # Get ax ready
         self._ax.clear()
 
         # Compose ax
+        assert self._drawable is not None, "Canvas: No drawable set"
         self._drawable.draw()
 
         # Draw off-screen and get RGBA array
         # https://matplotlib.org/gallery/user_interfaces/canvasagg.html#sphx-glr-gallery-user-interfaces-canvasagg-py
         self._figure_canvas.draw()
         buf: memoryview = self._figure_canvas.buffer_rgba()
-        self._rgba = np.asarray(buf)
+        self._rgba_output = np.asarray(buf)
+
+    def _set_fig_size(self):
+        width, height = self.shape
+        width_inches: float = float(width) / 100.0
+        height_inches: float = float(height) / 100.0
+        self._fig.set_size_inches(width_inches, height_inches)
+        # self._figure_canvas.resize(self._width, self._height)

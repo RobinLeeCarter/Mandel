@@ -42,7 +42,7 @@ class Portal:
         need to call a display method after this for it to display on screen
         """
         self._canvas.draw()
-        self._frame.set_source(source=self._canvas.rgba)
+        self._frame.set_source(source=self._canvas.rgba_output)
         self._update_offset()
 
     # this could be pushed down to the drawable if we want it to be calculated differently for different drawables
