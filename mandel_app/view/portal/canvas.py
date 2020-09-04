@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from matplotlib import figure
+from matplotlib import figure, lines
 from matplotlib.backends import backend_qt5agg
 
 import utils
@@ -65,6 +65,8 @@ class Canvas:
         # Get ax ready
         self._ax.clear()
 
+        _z0_marker = lines.Line2D([300], [450], marker='x', markersize=30, color="blue")  # , zorder=1)
+
         # Compose ax
         self._drawable.draw()
 
@@ -72,9 +74,50 @@ class Canvas:
         # https://matplotlib.org/gallery/user_interfaces/canvasagg.html#sphx-glr-gallery-user-interfaces-canvasagg-py
         self._figure_canvas.draw()
         buf: memoryview = self._figure_canvas.buffer_rgba()
+        print(f"buf: {buf}")
+        temp: np.ndarray = np.asarray(buf)
+        print(f"temp.data: {temp.data}")
+        # self._rgba = np.asarray(buf)
+
+        # self._ax.clear()
+        red = np.array([255, 0, 0, 255], dtype=np.uint8)
+        # temp[500:600, 500:600, :] = blue
+        # print(f"temp.data: {temp.data}")
+        # renderer = self._figure_canvas.renderer
+        # gc = renderer.new_gc()
+        # renderer.draw_image(gc, 0, 0, temp)
+
+        new_rgba = np.zeros(shape=temp.shape, dtype=np.uint8)
+        new_rgba[:, :, :] = 255
+        new_rgba[200:300, 200:300, :] = red
+
+        # print(temp)
+        self._timer.start()
+
+        np.copyto(dst=temp, src=new_rgba)
+        self._ax.draw_artist(_z0_marker)
+        # self._figure_canvas.blit(self._ax.bbox)
+        # renderer = self._figure_canvas.renderer
+        # gc = renderer.new_gc()
+        # renderer.draw_image(gc, 0, 0, temp)
+
+        # self._ax.imshow(temp)
+
+        self._timer.stop()
+
+        # buf: memoryview = self._figure_canvas.buffer_rgba()
+        # self._rgba = np.asarray(buf)
+
+        # new_buf: memoryview = temp.data
+
+        # buf: memoryview = self._figure_canvas.buffer_rgba()
+        # print(f"buf: {buf}")
         self._rgba = np.asarray(buf)
 
-        return self.rgba
+        # print(f"buf     : {buf}")
+        # print(f"new_buf : {new_buf}")
+
+        return self._rgba
 
         # alternative : https://matplotlib.org/3.1.1/gallery/user_interfaces/canvasagg.html
         # s, (width, height) = self._figure_canvas.print_to_buffer()

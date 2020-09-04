@@ -28,7 +28,8 @@ class Model:
 
     def build(self, frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
-        self.displayed_mandel = self._initial_mandel()
+        # self.displayed_mandel = self._initial_mandel()
+        self.displayed_mandel = self._different_mandel()
         self.new_mandel = self.displayed_mandel.lite_copy()
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
@@ -200,8 +201,8 @@ class Model:
         self._controller.new_is_ready(mandel_job.save_history)
 
         # TODO: control generation of borders in controller rather than automatically firing?
-        if not self.new_mandel.has_border:
-            self._add_border()
+        # if not self.new_mandel.has_border:
+        #     self._add_border()
 
     def _add_border(self):
         border_size = 14*4*10    # add 5 large boxes in all directions
@@ -235,21 +236,21 @@ class Model:
                                    )
         return mandel
 
-    def _test_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+    def _test_mandel(self) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(0.1, 0.1),
                                    size=0.2,
                                    shape=self._frame_shape
                                    )
         return mandel
 
-    def _different_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+    def _different_mandel(self) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(-0.745428, 0.113009),
                                    size=3.0E-5,
                                    shape=self._frame_shape
                                    )
         return mandel
 
-    def _slow_mandel(self, shape: tuples.ImageShape) -> mandelbrot.Mandel:
+    def _slow_mandel(self) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
                                    size=2.1609798031004707e-10,
                                    shape=self._frame_shape
