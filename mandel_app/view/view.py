@@ -381,7 +381,7 @@ class View:
             view_state_.scaling_requested *= extra_scaling
             if steps > 0:  # zooming in
                 pos = event.pos()
-                cursor = self._to_frame_point(x=pos.x(), y=pos.y())
+                cursor = self._frame_image_to_frame_cartesian(x=pos.x(), y=pos.y())
                 zoom_point = self._get_zoom_point(cursor)
                 self._zoom(zoom_point)
             else:  # zooming out, always just go out, no movement
@@ -440,9 +440,9 @@ class View:
         self._window.central.set_cursor(self._view_state.cursor_shape)
 
     def _mouse_frame_point(self, event: QtGui.QMouseEvent) -> tuples.PixelPoint:
-        return self._to_frame_point(event.x(), event.y())
+        return self._frame_image_to_frame_cartesian(event.x(), event.y())
 
-    def _to_frame_point(self, x: int, y: int) -> tuples.PixelPoint:
+    def _frame_image_to_frame_cartesian(self, x: int, y: int) -> tuples.PixelPoint:
         frame_y = self._view_state.frame_shape.y
         frame_point = tuples.PixelPoint(x=x, y=frame_y-y)
         return frame_point
