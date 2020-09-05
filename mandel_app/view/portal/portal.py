@@ -81,11 +81,11 @@ class Portal:
 
     def rotate_display(self, degrees: float):
         """Over 100fps"""
-        self._timer.start()
+        # self._timer.start()
         self._frame.rotate(degrees)
-        self._timer.lap("make frame")
+        # self._timer.lap("make frame")
         self._draw_frame()
-        self._timer.stop()
+        # self._timer.stop()
         # print(f"FPS: {1.0/self._timer.total:.1f}")
 
     def scale_display(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
@@ -95,9 +95,9 @@ class Portal:
     def _draw_frame(self):
         self._canvas_frame.set_rgba_input(self._frame.rgba_output)
         self._canvas_frame.draw()
-        self._timer.lap("canvas_frame")
+        # self._timer.lap("canvas_frame")
         self._update_label()
-        self._timer.lap("update_label")
+        # self._timer.lap("update_label")
 
     def _update_label(self):
         # print("_update_label")

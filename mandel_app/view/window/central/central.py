@@ -59,23 +59,13 @@ class Central:
         mandel = self._draw_mandel_source.mandel
         return tuples.PixelPoint(mandel.shape.x * 0.5, mandel.shape.y * 0.5)
 
-    def rotate_mandel_mouse(self, total_theta_delta: int):
-        self._rotate_mandel(-total_theta_delta)
+    def rotate_image(self, degrees: int):
+        # to rotate image is one direction we need to rotate the frame in the other
+        self._portal.rotate_display(-degrees)
 
-    def rotate_mandel_frame(self, to_theta_degrees: int):
-        mandel = self._draw_mandel_source.mandel
-        # new rotation is required rotation minus current rotation
-        theta_delta = to_theta_degrees - mandel.theta_degrees
-        # to rotate the frame one direction we must rotate the image in the opposite direction
-        degrees = -theta_delta
-        self._rotate_mandel(degrees)
-
-    def _rotate_mandel(self, degrees: int):
-        self._portal.rotate_display(degrees)
-
-    def zoom_mandel_frame(self,
-                          zoom_point: Optional[tuples.PixelPoint] = None,
-                          scaling: Optional[float] = None):
+    def zoom_image(self,
+                   zoom_point: Optional[tuples.PixelPoint] = None,
+                   scaling: Optional[float] = None):
         center = self.center_pixel_point
         if zoom_point is None:
             zoom_point = center
@@ -84,7 +74,7 @@ class Central:
             scaling = 1.0
         self._portal.scale_display(scaling, zoom_point)
 
-    def pan_mandel(self, pan: tuples.PixelPoint):
+    def pan_image(self, pan: tuples.PixelPoint):
         self._portal.pan_display(pan)
 
     def show_z0_marker(self, z0: complex):

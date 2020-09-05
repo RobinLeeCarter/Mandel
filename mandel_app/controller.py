@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional
 
 from mandel_app import model, view, tuples
+from mandel_app.model import mandelbrot
 
 
 class Controller:
@@ -17,7 +18,13 @@ class Controller:
         self._model.calc_new_mandel(save_history=True)
     # endregion
 
-    # region View requests
+    # region Requests from View
+    def get_displayed_mandel(self) -> mandelbrot.Mandel:
+        return self._model.displayed_mandel
+
+    def get_z0(self) -> complex:
+        return self._model.z_model.z0
+
     def on_resized(self):
         self._model.on_resized(self._view.frame_shape)
 
@@ -75,7 +82,7 @@ class Controller:
         self._view.hide_z_graph()
     # endregion
 
-    # region Model notifications
+    # region Notifications from Model
     def progress_update(self, progress: float):
         self._view.display_progress(progress)
 

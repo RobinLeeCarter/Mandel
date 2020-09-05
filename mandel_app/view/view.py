@@ -43,11 +43,27 @@ class View:
         self._connect_signals()
     # endregion
 
-    # region Controller Messages
+    # region Properties
+    # properties exposing part of Model that View needs rather than View holding & updating it's own reference
+    @property
+    def _displayed_mandel(self) -> mandelbrot.Mandel:
+        return self._controller.get_displayed_mandel()
+
+    @property
+    def _z0(self) -> complex:
+        return self._controller.get_z0()
+
+    # properties exposing parts of View that Controller needs in order to pass on to Model
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
         return self._window.central.frame_shape
 
+    @property
+    def ready_to_display_new_mandel(self) -> bool:
+        return self._view_state.ready_to_display_new_mandel
+    # endregion
+
+    # region Controller Messages
     def show_z_graph(self, z_model_: z_model.ZModel):
         self._z_window.central.show_graph(z_model_)
         self._z_window.q_main_window.raise_()
@@ -60,10 +76,6 @@ class View:
 
     def hide_z0_on_mandel(self):
         self._window.central.hide_z0_marker()
-
-    @property
-    def ready_to_display_new_mandel(self) -> bool:
-        return self._view_state.ready_to_display_new_mandel
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         self._set_action(enums.ImageAction.DRAWING)
@@ -92,7 +104,8 @@ class View:
 
     def stop_success(self):
         if self._view_state.revert_on_stop:
-            self.show_mandel(self._window.central.mandel)
+            # self.show_mandel(self._window.central.mandel)
+            self.show_mandel(self._displayed_mandel)
     # endregion
 
     # region Connect Events
@@ -119,7 +132,8 @@ class View:
 
     def _connect_dial_rotate(self):
         self._window.toolbars.dial.set_on_rotating(on_rotating=self._on_rotating)
-        self._window.toolbars.dial.set_on_rotated(on_rotated=self._controller.rotate_request)
+        # self._window.toolbars.dial.set_on_rotated(on_rotated=self._controller.rotate_request)
+        self._window.toolbars.dial.set_on_rotated(on_rotated=self._on_rotated)
 
     def _connect_iteration_slider(self):
         self._window.actions.max_iterations.set_on_triggered(on_triggered=self._on_max_iteration)
@@ -163,8 +177,14 @@ class View:
         central = self._window.central
         view_state_ = self._view_state
         if view_state_.ready_to_rotate:
-            central.rotate_mandel_frame(theta_degrees)
+            # central.rotate_mandel_frame(theta_degrees)
+            theta_delta = theta_degrees - self._displayed_mandel.theta_degrees
+            central.rotate_image(theta_delta)
             self._set_action(enums.ImageAction.ROTATED)
+
+    def _on_rotated(self, theta_degrees: int):
+        self._controller.rotate_request(theta_degrees)
+        self._set_action(enums.ImageAction.ROTATED)
 
     def _on_max_iteration(self, max_iterations_pressed: bool):
         if max_iterations_pressed:
@@ -256,7 +276,7 @@ class View:
         elif button == QtCore.Qt.MiddleButton:
             if view_state_.ready_to_rotate:
                 view_state_.rotate_start = self._mouse_frame_point(event)
-                # view_state_.mandel_shape = self._window.central.mandel.shape
+                # view_state_.mandel_shape = self._window.central.mandel.shape change
                 self._set_action(enums.ImageAction.ROTATING)
         elif button == QtCore.Qt.RightButton:
             if view_state_.ready_to_zoom:
@@ -266,17 +286,19 @@ class View:
         # print("_on_central_mouse_move")
         view_state_ = self._view_state
         central = self._window.central
-        if view_state_.is_waiting and central.mandel is not None:
+        # if view_state_.is_waiting and central.mandel is not None:
+        if view_state_.is_waiting and self._displayed_mandel is not None:
             frame_point: tuples.PixelPoint = self._mouse_frame_point(event)
-            z: complex = central.mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
+            # z: complex = central.mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
+            z: complex = self._displayed_mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
             self._window.status_bar.display_point(z)
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = self._mouse_frame_point(event)
-            central.pan_mandel(pan=view_state_.total_pan)
+            central.pan_image(pan=view_state_.total_pan)
             self._set_action(enums.ImageAction.PANNING)
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
             view_state_.rotate_end = self._mouse_frame_point(event)
-            central.rotate_mandel_mouse(view_state_.total_theta_delta)
+            central.rotate_image(view_state_.total_theta_delta)
 
     def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
         # print("_on_central_mouse_release")
@@ -305,7 +327,8 @@ class View:
             view_state_.rotate_end = self._mouse_frame_point(event)
             mouse_theta_delta = view_state_.mouse_theta_delta
             if mouse_theta_delta is not None and mouse_theta_delta != 0:
-                new_theta = central.mandel.theta_degrees + \
+                # new_theta = central.mandel.theta_degrees + \
+                new_theta = self._displayed_mandel.theta_degrees + \
                             view_state_.released_theta_delta + \
                             mouse_theta_delta
                 self._controller.rotate_request(new_theta)
@@ -385,7 +408,7 @@ class View:
         # import time
         # time.sleep(5)
 
-        central.zoom_mandel_frame(frame_point, scaling)
+        central.zoom_image(frame_point, scaling)
         self._controller.point_zoom_request(frame_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)
 
