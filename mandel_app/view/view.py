@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-from matplotlib import backend_bases
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mandel_app import controller, tuples
@@ -53,10 +51,22 @@ class View:
     def _z0(self) -> complex:
         return self._controller.get_z0()
 
-    # properties exposing parts of View that Controller needs in order to pass on to Model
+    # other properties that are better calculated in one place
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
         return self._window.central.frame_shape
+
+    @property
+    def center_frame_point(self) -> Optional[tuples.ImageShape]:
+        frame_shape = self.frame_shape
+        if frame_shape is None:
+            return None
+        else:
+            center_frame_point = tuples.PixelPoint(
+                x=(self.frame_shape.x-1) * 0.5,
+                y=(self.frame_shape.y-1) * 0.5
+            )
+            return center_frame_point
 
     @property
     def ready_to_display_new_mandel(self) -> bool:
@@ -303,7 +313,6 @@ class View:
     def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
         # print("_on_central_mouse_release")
         view_state_ = self._view_state
-        central = self._window.central
 
         # if event.button == backend_bases.MouseButton.LEFT:
         if view_state_.action_in_progress == enums.ImageAction.PANNING:
@@ -354,6 +363,8 @@ class View:
 
     def _on_central_mouse_wheel(self, event: QtGui.QWheelEvent):
         # print("_on_central_mouse_wheel")
+        # add to always request a stop any current GPU work to free it up for scrolling
+        self._controller.stop_request()
         view_state_ = self._view_state
         steps: float = self._get_scroll_steps(event)
         # print("_on_central_mouse_wheel")
@@ -396,18 +407,16 @@ class View:
             view_state_.scaling_requested = scaling
 
         # if not yet set, then set, else ignore the new pixel point and adjust the zoom on the current point
-        if view_state_.scaling_pixel_point is None:
+        if view_state_.scaling_frame_point is None:
             if frame_point is None:
-                view_state_.scaling_pixel_point = central.center_pixel_point
+                view_state_.scaling_frame_point = self.center_frame_point
             else:
-                view_state_.scaling_pixel_point = frame_point
+                view_state_.scaling_frame_point = frame_point
 
-        frame_point = view_state_.scaling_pixel_point
+        frame_point = view_state_.scaling_frame_point
         scaling = view_state_.scaling_requested
-        # print(f"zoom pixel_point={pixel_point} scaling={scaling:.2f}")
-        # import time
-        # time.sleep(5)
-
+        assert frame_point is not None, "View._zoom frame_point is None"
+        assert scaling is not None, "View._zoom scaling is None"
         central.zoom_image(frame_point, scaling)
         self._controller.point_zoom_request(frame_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)

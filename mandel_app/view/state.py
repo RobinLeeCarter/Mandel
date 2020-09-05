@@ -24,7 +24,7 @@ class State:
         self.released_pan_delta: Optional[tuples.PixelPoint] = None
         self.released_theta_delta: int = 0
 
-        self.scaling_pixel_point: Optional[tuples.PixelPoint] = None
+        self.scaling_frame_point: Optional[tuples.PixelPoint] = None
         self.scaling_requested: float = 1.0
 
         self.revert_on_stop: bool = False
@@ -35,7 +35,7 @@ class State:
     def reset(self):
         self.released_pan_delta = None
         self.released_theta_delta = 0
-        self.scaling_pixel_point = None
+        self.scaling_frame_point = None
         self.scaling_requested = 1.0
         self.revert_on_stop = False
 

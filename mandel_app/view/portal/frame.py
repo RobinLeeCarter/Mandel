@@ -85,8 +85,7 @@ class Frame:
         self._rotation_degrees = rotation_degrees
         self.get_frame()
 
-    # TODO: scale a point for actual zooming, possibly pan (from center) + scale
-    def scale(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
+    def scale(self, scale: float, scale_point: tuples.PixelPoint):
         self._scale = scale
         self._scale_point = scale_point
         self.get_frame()

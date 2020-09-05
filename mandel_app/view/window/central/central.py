@@ -47,32 +47,19 @@ class Central:
         self._portal.display()
 
     @property
-    def mandel(self) -> mandelbrot.Mandel:
-        return self._draw_mandel_source.mandel
-
-    @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
         return self._portal.frame_shape
-
-    @property
-    def center_pixel_point(self) -> tuples.PixelPoint:
-        mandel = self._draw_mandel_source.mandel
-        return tuples.PixelPoint(mandel.shape.x * 0.5, mandel.shape.y * 0.5)
 
     def rotate_image(self, degrees: int):
         # to rotate image is one direction we need to rotate the frame in the other
         self._portal.rotate_display(-degrees)
 
     def zoom_image(self,
-                   zoom_point: Optional[tuples.PixelPoint] = None,
+                   zoom_frame_point: tuples.PixelPoint,
                    scaling: Optional[float] = None):
-        center = self.center_pixel_point
-        if zoom_point is None:
-            zoom_point = center
-
         if scaling is None:
             scaling = 1.0
-        self._portal.scale_display(scaling, zoom_point)
+        self._portal.scale_display(scaling, zoom_frame_point)
 
     def pan_image(self, pan: tuples.PixelPoint):
         self._portal.pan_display(pan)
@@ -94,6 +81,3 @@ class Central:
         # x_offset = min(int((new_image_shape.x - image_shape.x) / 2.0), 0)
         # y_offset = min(int((new_image_shape.y - image_shape.y) / 2.0), 0)
         # self._mandel_draw.mandel.set_offset(tuples.PixelPoint(x=x_offset, y=y_offset))
-
-    # def above_center(self, y: int) -> bool:
-    #     return y >= self._mandel_draw.mandel.shape.y / 2

@@ -88,8 +88,8 @@ class Portal:
         # self._timer.stop()
         # print(f"FPS: {1.0/self._timer.total:.1f}")
 
-    def scale_display(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
-        self._frame.scale(scale, scale_point)
+    def scale_display(self, scale: float, scale_frame_point: tuples.PixelPoint):
+        self._frame.scale(scale, scale_frame_point)
         self._draw_frame()
 
     def _draw_frame(self):
@@ -109,4 +109,3 @@ class Portal:
         q_image: QtGui.QImage = QtGui.QImage(rgba.data, w, h, c * w, QtGui.QImage.Format_RGBA8888)
         q_pixmap: QtGui.QPixmap = QtGui.QPixmap(q_image)
         return q_pixmap
-
