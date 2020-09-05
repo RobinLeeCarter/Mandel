@@ -18,7 +18,7 @@ class Portal:
 
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
-        return self._frame.shape
+        return self._frame.frame_shape
 
     def set_drawable_source(self, drawable_: drawable.Drawable):
         self._canvas_source.set_drawable(drawable_)
@@ -36,7 +36,7 @@ class Portal:
         # q_size: QtCore.QSize = self._q_label.size()
         # print(q_size)
         # image_shape = tuples.ImageShape(x=q_size.width(), y=q_size.height())
-        current_frame_shape = self._frame.shape
+        current_frame_shape = self._frame.frame_shape
         if current_frame_shape is None or frame_shape != current_frame_shape:
             self._frame.set_frame_shape(frame_shape)
             self._update_offset()
@@ -48,7 +48,6 @@ class Portal:
         need to call a display method after this for it to display on screen
         """
         self._canvas_source.draw()
-
         self._frame.set_source(source=self._canvas_source.rgba_output)
         self._update_offset()
 
@@ -56,7 +55,7 @@ class Portal:
     def _update_offset(self):
         """Called once canvas or frame is updated"""
         canvas_shape = self._canvas_source.shape
-        frame_shape = self._frame.shape
+        frame_shape = self._frame.frame_shape
         # print(f"canvas_shape: {canvas_shape}")
         # print(f"frame_shape: {frame_shape}")
         if canvas_shape is not None and frame_shape is not None:
@@ -74,29 +73,34 @@ class Portal:
     def display(self):
         # print("display")
         self._frame.plain()
-        self._update_label()
+        self._draw_frame()
 
     def pan_display(self, pan: tuples.PixelPoint):
         self._frame.pan(pan)
-        self._update_label()
+        self._draw_frame()
 
     def rotate_display(self, degrees: float):
         """Over 100fps"""
         self._timer.start()
         self._frame.rotate(degrees)
         self._timer.lap("make frame")
-        self._update_label()
+        self._draw_frame()
         self._timer.lap("show frame")
         self._timer.stop()
         # print(f"FPS: {1.0/self._timer.total:.1f}")
 
     def scale_display(self, scale: float, scale_point: Optional[tuples.PixelPoint] = None):
         self._frame.scale(scale, scale_point)
+        self._draw_frame()
+
+    def _draw_frame(self):
+        self._canvas_frame.set_rgba_input(self._frame.rgba_output)
+        self._canvas_frame.draw()
         self._update_label()
 
     def _update_label(self):
         # print("_update_label")
-        q_pixmap: QtGui.QPixmap = self._pixmap_from_numpy_rgba(self._frame.result_rgba)
+        q_pixmap: QtGui.QPixmap = self._pixmap_from_numpy_rgba(self._canvas_frame.rgba_output)
         self._q_label.setPixmap(q_pixmap)
 
     def _pixmap_from_numpy_rgba(self, rgba: np.ndarray) -> QtGui.QPixmap:

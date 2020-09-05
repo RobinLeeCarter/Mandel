@@ -53,6 +53,9 @@ class DrawMandelSource(portal.Drawable):
         self._ax.clear()
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
+        self._ax.autoscale(False)
+        self._ax.set_xlim(xmin=0, xmax=self.shape.x - 1)
+        self._ax.set_ylim(ymin=0, ymax=self.shape.y - 1)
         self._ax.imshow(
             self._transformed_iterations,
             interpolation='none', origin='lower',

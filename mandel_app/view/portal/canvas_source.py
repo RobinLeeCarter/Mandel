@@ -26,6 +26,7 @@ class CanvasSource(canvas_base.CanvasBase):
     def draw(self):
         # Get fig ready
         self._fig_size()
+        # print(self._ax.get_xlim())
 
         # Compose ax
         assert self._drawable is not None, "Canvas: No drawable set"

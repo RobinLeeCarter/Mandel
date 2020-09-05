@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from matplotlib import figure
+from matplotlib import figure, lines
 from matplotlib.backends import backend_qt5agg
 
 # import utils
@@ -28,10 +28,10 @@ class CanvasFrame(canvas_base.CanvasBase):
         self._ax.clear()
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
+        self._ax.autoscale(False)
+        self._ax.set_xlim(xmin=0, xmax=self.shape.x - 1)
+        self._ax.set_ylim(ymin=0, ymax=self.shape.y - 1)
         self._figure_canvas.draw()
-
-        print(f"self._rgba_output.shape: {self._rgba_output.shape}")
-        print(f"self._rgba_output.dtype: {self._rgba_output.dtype}")
 
     # def set_frame_shape(self, frame_shape: tuples.ImageShape):
     #     self._drawable.set_frame_shape(frame_shape)
@@ -45,6 +45,8 @@ class CanvasFrame(canvas_base.CanvasBase):
 
         self._buf = self._figure_canvas.buffer_rgba()
         self._rgba_output = np.asarray(self._buf)
+        # print(f"self._rgba_output.shape: {self._rgba_output.shape}")
+        # print(f"self._rgba_output.dtype: {self._rgba_output.dtype}")
 
         if self._rgba_input is not None:
             np.copyto(dst=self._rgba_output, src=self._rgba_input)
@@ -58,8 +60,14 @@ class CanvasFrame(canvas_base.CanvasBase):
         assert self._drawable is not None, "CanvasFrame: No drawable set"
         self._drawable.draw()
 
+        # self._figure_canvas.blit(self._ax.bbox)
+
+        # red = np.array([255, 0, 0, 255], dtype=np.uint8)
+        # self._rgba_output[200:300, 200:300, :] = red
+
         # self._rgba_output should now be updated
         # might need:
+        # self._figure_canvas.draw()
         # self._buf = self._figure_canvas.buffer_rgba()
         # self._rgba_output = np.asarray(self._buf)
 

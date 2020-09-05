@@ -15,12 +15,12 @@ class Frame:
         self.offset: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
         # portal arrays that only change when window is resized
-        self.shape: Optional[tuples.ImageShape] = None
+        self.frame_shape: Optional[tuples.ImageShape] = None
         self._frame_pixels: Optional[cp.ndarray] = None
         self._frame_to_source_fp32: Optional[cp.ndarray] = None
         self._frame_to_source_int32: Optional[cp.ndarray] = None
         self._frame_rgba: Optional[cp.ndarray] = None
-        self._np_frame_rgba: Optional[np.ndarray] = None
+        self._rgba_output: Optional[np.ndarray] = None
 
         self._pan: tuples.PixelPoint = tuples.PixelPoint(0, 0)
         self._rotation_degrees: float = 0.0
@@ -31,15 +31,15 @@ class Frame:
         self._transform_vector: Optional[cp.ndarray] = None
 
     @property
-    def result_rgba(self) -> np.ndarray:
-        return self._np_frame_rgba
+    def rgba_output(self) -> np.ndarray:
+        return self._rgba_output
 
-    def set_frame_shape(self, image_shape: tuples.ImageShape):
+    def set_frame_shape(self, frame_shape: tuples.ImageShape):
         """call when resize window"""
         # print("set_frame_shape", image_shape)
-        self.shape = image_shape
-        frame_y = self.shape.y
-        frame_x = self.shape.x
+        self.frame_shape = frame_shape
+        frame_y = self.frame_shape.y
+        frame_x = self.frame_shape.x
 
         self._frame_pixels = cp.zeros(shape=(frame_y, frame_x, 2), dtype=cp.float32)
 
@@ -116,13 +116,13 @@ class Frame:
         #     print(mapped)
         # print(f"mapped count_nonzero: {cp.count_nonzero(mapped)}")
 
-        frame_y_size: int = self.shape.y
-        frame_x_size: int = self.shape.x
+        frame_y_size: int = self.frame_shape.y
+        frame_x_size: int = self.frame_shape.x
         self._frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
         self._frame_rgba[mapped, :] = self._source[frame_y[mapped], frame_x[mapped], :]
         # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
 
-        self._np_frame_rgba = cp.asnumpy(self._frame_rgba)
+        self._rgba_output = cp.asnumpy(self._frame_rgba)
 
         # print(f"self._frame_rgba.shape: {self.frame_rgba.shape}")
         # print(f"frame_rgba count_nonzero: {cp.count_nonzero(self.frame_rgba)}")
@@ -144,8 +144,8 @@ class Frame:
         # values
         # source_x = float(self._source.shape[1])
         source_y = float(self._source.shape[0])
-        frame_x = float(self.shape.x)
-        frame_y = float(self.shape.y)
+        frame_x = float(self.frame_shape.x)
+        frame_y = float(self.frame_shape.y)
         # cartesian offset when source and portal were first generated, x and y are both positive
         offset_x = float(self.offset.x)
         offset_y = float(self.offset.y)
