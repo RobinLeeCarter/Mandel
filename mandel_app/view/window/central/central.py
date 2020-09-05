@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets, portal
-from mandel_app.view.window.central import mandel_source, overlay, area
+from mandel_app.view.window.central import draw_mandel_source, overlay, area
 
 
 class Central:
@@ -14,7 +14,7 @@ class Central:
         self._area.build()
         self.x_label: widgets.XLabel = self._area.portal_label
         self._portal = portal.Portal(self.x_label)
-        self._mandel_draw = mandel_source.MandelSource()
+        self._mandel_draw = draw_mandel_source.DrawMandelSource()
         self._portal.set_drawable(self._mandel_draw)
 
         self.overlay = overlay.Overlay(parent=self.x_label)

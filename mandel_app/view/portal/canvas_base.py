@@ -25,7 +25,9 @@ class CanvasBase(ABC):
         self._fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self._ax: figure.Axes = self._fig.subplots()
         self._drawable: Optional[drawable.Drawable] = None
+        self._buf: Optional[memoryview] = None
         self._rgba_output: Optional[np.ndarray] = None
+        self._current_shape: Optional[tuples.ImageShape] = None
 
         # self._timer = utils.Timer()
 
@@ -46,7 +48,13 @@ class CanvasBase(ABC):
     def draw(self):
         pass
 
-    def _set_fig_size(self):
+    def _fig_size(self):
+        new_shape = self.shape
+        if self._current_shape is None or self._current_shape != new_shape:
+            self._on_resize()
+            self._current_shape = new_shape
+
+    def _on_resize(self):
         width, height = self.shape
         width_inches: float = float(width) / 100.0
         height_inches: float = float(height) / 100.0
