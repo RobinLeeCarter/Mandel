@@ -23,18 +23,13 @@ class Central:
         self.x_label.set_overlay(self.overlay)
 
     def build(self, cursor_shape: QtCore.Qt.CursorShape):
-        self._draw_mandel_frame.set_source_to_frame(self._portal.get_frame_point_from_source_point)
+        self._draw_mandel_frame.set_source_to_transformed_frame(self._portal.source_to_transformed_frame)
         self.set_frame_shape()
-        # self._area.refresh_shape()
-        # # # print(f"self._area.shape: {self._area.shape}")
-        # self._portal.set_frame_shape(self._area.shape)
         self.set_cursor(cursor_shape)
 
     def on_resized(self):
-        # self._area.refresh_shape()
         self.set_frame_shape()
         self._portal.display()
-        # self._portal.on_resized(self._area.shape)
 
     def set_frame_shape(self):
         self._area.refresh_shape()
@@ -44,6 +39,7 @@ class Central:
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""
         self._draw_mandel_source.set_mandel(mandel)
+        # self._draw_mandel_frame.set_complex_to_source(mandel.get_source_point_from_complex)
         self._portal.prepare_source_and_frame()
         self._portal.display()
 

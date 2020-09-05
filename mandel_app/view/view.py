@@ -113,13 +113,13 @@ class View:
     def hide_z_graph(self):
         self._z_window.central.hide_graph()
 
-    def _set_z0_marker(self, z0: complex, mandel: mandelbrot.Mandel):
-        source_point = mandel.get_source_point_from_complex(z0)
-        self._window.central.set_z0_marker(source_point)
-
     def show_z0_marker(self, z0: complex):
         source_point = self._displayed_mandel.get_source_point_from_complex(z0)
         self._window.central.show_z0_marker(source_point)
+
+    def _set_z0_marker(self, z0: complex, mandel: mandelbrot.Mandel):
+        source_point = mandel.get_source_point_from_complex(z0)
+        self._window.central.set_z0_marker(source_point)
 
     def hide_z0_marker(self):
         self._window.central.hide_z0_marker()

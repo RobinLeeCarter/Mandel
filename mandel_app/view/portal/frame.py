@@ -227,7 +227,7 @@ class Frame:
         self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._matrix_cp.T) \
                                      + self._vector_cp
 
-    def get_frame_point_from_source_point(self, source_point: tuples.PixelPoint):
+    def source_to_transformed_frame(self, source_point: tuples.PixelPoint):
         source_np = np.array([source_point.x, source_point.y], dtype=float)
         frame_np = np.matmul(self._source_frame_matrix, source_np) + self._source_frame_vector
         frame_point = tuples.PixelPoint(x=frame_np[0], y=frame_np[1])

@@ -110,5 +110,5 @@ class Portal:
         q_pixmap: QtGui.QPixmap = QtGui.QPixmap(q_image)
         return q_pixmap
 
-    def get_frame_point_from_source_point(self, source_point: tuples.PixelPoint):
-        return self._frame.get_frame_point_from_source_point(source_point)
+    def source_to_transformed_frame(self, source_point: tuples.PixelPoint):
+        return self._frame.source_to_transformed_frame(source_point)
