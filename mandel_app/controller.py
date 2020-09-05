@@ -68,7 +68,7 @@ class Controller:
         self.perform_z_trace(z0)
 
     def perform_z_trace(self, z0: complex):
-        self._view.show_z0_on_mandel(z0)
+        self._view.show_z0_marker(z0)
         self._model.z_model.build(z0=z0)
         self._view.show_z_graph(self._model.z_model)
 
@@ -78,7 +78,7 @@ class Controller:
         self._view.show_z_graph(self._model.z_model)
 
     def hide_z_trace(self):
-        self._view.hide_z0_on_mandel()
+        self._view.hide_z0_marker()
         self._view.hide_z_graph()
     # endregion
 

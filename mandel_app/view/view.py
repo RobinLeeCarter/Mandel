@@ -74,24 +74,13 @@ class View:
     # endregion
 
     # region Controller Messages
-    def show_z_graph(self, z_model_: z_model.ZModel):
-        self._z_window.central.show_graph(z_model_)
-        self._z_window.q_main_window.raise_()
-
-    def hide_z_graph(self):
-        self._z_window.central.hide_graph()
-
-    def show_z0_on_mandel(self, z0: complex):
-        self._window.central.show_z0_marker(z0)
-
-    def hide_z0_on_mandel(self):
-        self._window.central.hide_z0_marker()
-
     def show_mandel(self, mandel: mandelbrot.Mandel):
         self._set_action(enums.ImageAction.DRAWING)
         # print(f"show_mandel")
         # import time
         # time.sleep(5)
+        if self._view_state.is_z_mode:
+            self._set_z0_marker(self._z0, mandel)
         self._window.central.show_mandel(mandel)
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
@@ -116,6 +105,24 @@ class View:
         if self._view_state.revert_on_stop:
             # self.show_mandel(self._window.central.mandel)
             self.show_mandel(self._displayed_mandel)
+
+    def show_z_graph(self, z_model_: z_model.ZModel):
+        self._z_window.central.show_graph(z_model_)
+        self._z_window.q_main_window.raise_()
+
+    def hide_z_graph(self):
+        self._z_window.central.hide_graph()
+
+    def _set_z0_marker(self, z0: complex, mandel: mandelbrot.Mandel):
+        source_point = mandel.get_source_point_from_complex(z0)
+        self._window.central.set_z0_marker(source_point)
+
+    def show_z0_marker(self, z0: complex):
+        source_point = self._displayed_mandel.get_source_point_from_complex(z0)
+        self._window.central.show_z0_marker(source_point)
+
+    def hide_z0_marker(self):
+        self._window.central.hide_z0_marker()
     # endregion
 
     # region Connect Events

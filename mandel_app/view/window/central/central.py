@@ -23,6 +23,7 @@ class Central:
         self.x_label.set_overlay(self.overlay)
 
     def build(self, cursor_shape: QtCore.Qt.CursorShape):
+        self._draw_mandel_frame.set_source_to_frame(self._portal.get_frame_point_from_source_point)
         self.set_frame_shape()
         # self._area.refresh_shape()
         # # # print(f"self._area.shape: {self._area.shape}")
@@ -37,8 +38,8 @@ class Central:
 
     def set_frame_shape(self):
         self._area.refresh_shape()
-        self._draw_mandel_frame.set_frame_shape(self._area.shape)
         self._portal.set_frame_shape(self._area.shape)
+        self._draw_mandel_frame.set_frame_shape(self._area.shape)
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""
@@ -64,10 +65,13 @@ class Central:
     def pan_image(self, pan: tuples.PixelPoint):
         self._portal.pan_display(pan)
 
-    def show_z0_marker(self, z0: complex):
-        self._draw_mandel_frame.set_z0(z0)
-        self._portal.prepare_source_and_frame()
+    def show_z0_marker(self, source_point: tuples.PixelPoint):
+        self.set_z0_marker(source_point)
+        # self._portal.prepare_source_and_frame()
         self._portal.display()
+
+    def set_z0_marker(self, source_point: tuples.PixelPoint):
+        self._draw_mandel_frame.set_z0_source_point(source_point)
 
     def hide_z0_marker(self):
         self._draw_mandel_frame.hide_z0()

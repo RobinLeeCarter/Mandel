@@ -27,8 +27,10 @@ class Frame:
         self._scale: float = 1.0
         self._scale_point: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
-        self._transform_matrix: Optional[cp.ndarray] = None
-        self._transform_vector: Optional[cp.ndarray] = None
+        self._source_frame_matrix: Optional[np.ndarray] = None
+        self._source_frame_vector: Optional[np.ndarray] = None
+        self._matrix_cp: Optional[cp.ndarray] = None
+        self._vector_cp: Optional[cp.ndarray] = None
 
     @property
     def rgba_output(self) -> np.ndarray:
@@ -196,23 +198,19 @@ class Frame:
             frame_transform @ \
             frame_image_to_frame_cartesian
 
-        # if offset_x < 0:
-        #     self.print_transform("frame_image_to_frame_cartesian", frame_image_to_frame_cartesian)
-        #     self.print_transform("frame_transform", frame_transform)
-        #     self.print_transform("frame_cartesian_to_source_cartesian", frame_cartesian_to_source_cartesian)
-        #     self.print_transform("source_cartesian_to_source_image", source_cartesian_to_source_image)
-        #     self.print_transform("frame_image_to_source_image", frame_image_to_source_image)
+        matrix_np = frame_image_to_source_image[0:2, 0:2]
+        vector_np = frame_image_to_source_image[0:2, 2]
+        self._matrix_cp = cp.asarray(matrix_np, dtype=cp.float32)
+        self._vector_cp = cp.asarray(vector_np, dtype=cp.float32)
 
-        np_matrix = frame_image_to_source_image[0:2, 0:2]
-        np_vector = frame_image_to_source_image[0:2, 2]
-
-        # print(t)
-
-        self._transform_matrix = cp.asarray(np_matrix, dtype=cp.float32)
-        self._transform_vector = cp.asarray(np_vector, dtype=cp.float32)
-
-        # self._transform_matrix = cp.asarray(I, dtype=cp.float32)
-        # self._transform_vector = cp.asarray(Frame.zero_vector, dtype=cp.float32)
+        # source_point to frame_point transform
+        source_cartesian_to_frame_cartesian = translate(-offset_x, -offset_y)
+        inv_frame_transform = np.linalg.inv(frame_transform)
+        # combine matrices using multiplication, so in reserve order:
+        source_cartesian_to_frame_point = inv_frame_transform @ \
+            source_cartesian_to_frame_cartesian
+        self._source_frame_matrix = source_cartesian_to_frame_point[0:2, 0:2]
+        self._source_frame_vector = source_cartesian_to_frame_point[0:2, 2]
 
     def print_transform(self, desc: str, array: np.ndarray):
         print(desc + "\n", np.rint(array).astype(cp.int32))
@@ -226,5 +224,11 @@ class Frame:
     def _apply_transform(self):
         # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
         # print(f"self._transform_vector: {self._transform_vector}")
-        self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._transform_matrix.T) \
-                                     + self._transform_vector
+        self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._matrix_cp.T) \
+                                     + self._vector_cp
+
+    def get_frame_point_from_source_point(self, source_point: tuples.PixelPoint):
+        source_np = np.array([source_point.x, source_point.y], dtype=float)
+        frame_np = np.matmul(self._source_frame_matrix, source_np) + self._source_frame_vector
+        frame_point = tuples.PixelPoint(x=frame_np[0], y=frame_np[1])
+        return frame_point

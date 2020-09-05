@@ -109,3 +109,6 @@ class Portal:
         q_image: QtGui.QImage = QtGui.QImage(rgba.data, w, h, c * w, QtGui.QImage.Format_RGBA8888)
         q_pixmap: QtGui.QPixmap = QtGui.QPixmap(q_image)
         return q_pixmap
+
+    def get_frame_point_from_source_point(self, source_point: tuples.PixelPoint):
+        return self._frame.get_frame_point_from_source_point(source_point)
