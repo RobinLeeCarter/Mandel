@@ -1,15 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 
-from matplotlib import figure
-from matplotlib.backends import backend_qt5agg
-
-# import utils
-from mandel_app import tuples
-from mandel_app.view.portal import drawable, canvas_base
+from mandel_app.view.portal import canvas_base
 
 
 class CanvasSource(canvas_base.CanvasBase):
@@ -26,7 +19,6 @@ class CanvasSource(canvas_base.CanvasBase):
     def draw(self):
         # Get fig ready
         self._fig_size()
-        # print(self._ax.get_xlim())
 
         # Compose ax
         assert self._drawable is not None, "Canvas: No drawable set"

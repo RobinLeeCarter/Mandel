@@ -7,7 +7,6 @@ import numpy as np
 from matplotlib import figure
 from matplotlib.backends import backend_qt5agg
 
-# import utils
 from mandel_app import tuples
 from mandel_app.view.portal import drawable
 

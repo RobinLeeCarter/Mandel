@@ -80,12 +80,12 @@ class Portal:
         self._draw_frame()
 
     def rotate_display(self, degrees: float):
-        """Over 100fps"""
+        """Over 100fps at 1080p with border"""
         # self._timer.start()
         self._frame.rotate(degrees)
         # self._timer.lap("make frame")
         self._draw_frame()
-        # self._timer.stop()
+        # self._timer.stop(show=False)
         # print(f"FPS: {1.0/self._timer.total:.1f}")
 
     def scale_display(self, scale: float, scale_frame_point: tuples.PixelPoint):
