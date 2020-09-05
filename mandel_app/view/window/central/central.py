@@ -43,7 +43,7 @@ class Central:
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""
         self._draw_mandel_source.set_mandel(mandel)
-        self._portal.draw_drawable()
+        self._portal.prepare_source_and_frame()
         self._portal.display()
 
     @property
@@ -88,12 +88,12 @@ class Central:
         self._portal.pan_display(pan)
 
     def show_z0_marker(self, z0: complex):
-        self._draw_mandel_source.set_z0_marker(z0)
-        self._portal.draw_drawable()
+        self._draw_mandel_frame.set_z0(z0)
+        self._portal.prepare_source_and_frame()
         self._portal.display()
 
     def hide_z0_marker(self):
-        self._draw_mandel_source.hide_z0_marker()
+        self._draw_mandel_frame.hide_z0()
         self._portal.display()
 
     def set_cursor(self, cursor_shape: QtCore.Qt.CursorShape):

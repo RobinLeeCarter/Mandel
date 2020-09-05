@@ -17,8 +17,6 @@ class DrawMandelFrame(portal.Drawable):
         self._z0_frame_point: Optional[tuples.PixelPoint] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
                                        zorder=1, visible=False)
-        # TODO: Remove
-        self.set_z0_frame_point()
 
     @property
     def shape(self) -> Optional[tuples.ImageShape]:
@@ -33,9 +31,9 @@ class DrawMandelFrame(portal.Drawable):
 
     def set_z0(self, z0: complex):
         self._z0 = z0
-        self.set_z0_frame_point()
+        self._set_z0_frame_point()
 
-    def set_z0_frame_point(self):
+    def _set_z0_frame_point(self):
         self._z0_frame_point = tuples.PixelPoint(400, 200)
         # self._z0_frame_point = self._mandel.get_source_point_from_complex(z0)
         if self._z0_frame_point is None:

@@ -42,7 +42,7 @@ class Portal:
             self._update_offset()
             # self._canvas_frame.set_frame_shape(frame_shape)
 
-    def draw_drawable(self):
+    def prepare_source_and_frame(self):
         """
         draws to the source i.e. creates rgba array
         need to call a display method after this for it to display on screen
@@ -85,7 +85,6 @@ class Portal:
         self._frame.rotate(degrees)
         self._timer.lap("make frame")
         self._draw_frame()
-        self._timer.lap("show frame")
         self._timer.stop()
         # print(f"FPS: {1.0/self._timer.total:.1f}")
 
@@ -96,7 +95,9 @@ class Portal:
     def _draw_frame(self):
         self._canvas_frame.set_rgba_input(self._frame.rgba_output)
         self._canvas_frame.draw()
+        self._timer.lap("canvas_frame")
         self._update_label()
+        self._timer.lap("update_label")
 
     def _update_label(self):
         # print("_update_label")
