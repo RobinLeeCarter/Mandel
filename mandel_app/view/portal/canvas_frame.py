@@ -20,7 +20,7 @@ class CanvasFrame(canvas_base.CanvasBase):
     """
     def __init__(self):
         super().__init__()
-        self.rgba_input: Optional[np.ndarray] = None
+        self._rgba_input: Optional[np.ndarray] = None
         # self._timer = utils.Timer()
 
     def _on_resize(self):
@@ -29,17 +29,25 @@ class CanvasFrame(canvas_base.CanvasBase):
         self._ax.set_axis_off()
         self._ax.margins(0, 0)
         self._figure_canvas.draw()
-        self._buf = self._figure_canvas.buffer_rgba()
-        self._rgba_output = np.asarray(self._buf)
+
         print(f"self._rgba_output.shape: {self._rgba_output.shape}")
         print(f"self._rgba_output.dtype: {self._rgba_output.dtype}")
+
+    # def set_frame_shape(self, frame_shape: tuples.ImageShape):
+    #     self._drawable.set_frame_shape(frame_shape)
+
+    def set_rgba_input(self, rgba_input: np.ndarray):
+        self._rgba_input = rgba_input
 
     def draw(self):
         # Get fig ready
         self._fig_size()
 
-        if self.rgba_input is not None:
-            np.copyto(dst=self._rgba_output, src=self.rgba_input)
+        self._buf = self._figure_canvas.buffer_rgba()
+        self._rgba_output = np.asarray(self._buf)
+
+        if self._rgba_input is not None:
+            np.copyto(dst=self._rgba_output, src=self._rgba_input)
 
         # Get ax ready
         # self._ax.clear()
@@ -51,6 +59,9 @@ class CanvasFrame(canvas_base.CanvasBase):
         self._drawable.draw()
 
         # self._rgba_output should now be updated
+        # might need:
+        # self._buf = self._figure_canvas.buffer_rgba()
+        # self._rgba_output = np.asarray(self._buf)
 
         # Draw off-screen and get RGBA array
         # https://matplotlib.org/gallery/user_interfaces/canvasagg.html#sphx-glr-gallery-user-interfaces-canvasagg-py

@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets, portal
-from mandel_app.view.window.central import draw_mandel_source, overlay, area
+from mandel_app.view.window.central import draw_mandel_source, draw_mandel_frame, overlay, area
 
 
 class Central:
@@ -14,31 +14,41 @@ class Central:
         self._area.build()
         self.x_label: widgets.XLabel = self._area.portal_label
         self._portal = portal.Portal(self.x_label)
-        self._mandel_draw = draw_mandel_source.DrawMandelSource()
-        self._portal.set_drawable(self._mandel_draw)
+        self._draw_mandel_source = draw_mandel_source.DrawMandelSource()
+        self._draw_mandel_frame = draw_mandel_frame.DrawMandelFrame()
+        self._portal.set_drawable_source(self._draw_mandel_source)
+        self._portal.set_drawable_frame(self._draw_mandel_frame)
 
         self.overlay = overlay.Overlay(parent=self.x_label)
         self.x_label.set_overlay(self.overlay)
 
     def build(self, cursor_shape: QtCore.Qt.CursorShape):
-        self._area.refresh_shape()
-        # # print(f"self._area.shape: {self._area.shape}")
-        self._portal.set_frame_shape(self._area.shape)
+        self.set_frame_shape()
+        # self._area.refresh_shape()
+        # # # print(f"self._area.shape: {self._area.shape}")
+        # self._portal.set_frame_shape(self._area.shape)
         self.set_cursor(cursor_shape)
 
     def on_resized(self):
+        # self._area.refresh_shape()
+        self.set_frame_shape()
+        self._portal.display()
+        # self._portal.on_resized(self._area.shape)
+
+    def set_frame_shape(self):
         self._area.refresh_shape()
-        self._portal.on_resized(self._area.shape)
+        self._draw_mandel_frame.set_frame_shape(self._area.shape)
+        self._portal.set_frame_shape(self._area.shape)
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""
-        self._mandel_draw.set_mandel(mandel)
+        self._draw_mandel_source.set_mandel(mandel)
         self._portal.draw_drawable()
         self._portal.display()
 
     @property
     def mandel(self) -> mandelbrot.Mandel:
-        return self._mandel_draw.mandel
+        return self._draw_mandel_source.mandel
 
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
@@ -46,14 +56,14 @@ class Central:
 
     @property
     def center_pixel_point(self) -> tuples.PixelPoint:
-        mandel = self._mandel_draw.mandel
+        mandel = self._draw_mandel_source.mandel
         return tuples.PixelPoint(mandel.shape.x * 0.5, mandel.shape.y * 0.5)
 
     def rotate_mandel_mouse(self, total_theta_delta: int):
         self._rotate_mandel(-total_theta_delta)
 
     def rotate_mandel_frame(self, to_theta_degrees: int):
-        mandel = self._mandel_draw.mandel
+        mandel = self._draw_mandel_source.mandel
         # new rotation is required rotation minus current rotation
         theta_delta = to_theta_degrees - mandel.theta_degrees
         # to rotate the frame one direction we must rotate the image in the opposite direction
@@ -78,12 +88,12 @@ class Central:
         self._portal.pan_display(pan)
 
     def show_z0_marker(self, z0: complex):
-        self._mandel_draw.set_z0_marker(z0)
+        self._draw_mandel_source.set_z0_marker(z0)
         self._portal.draw_drawable()
         self._portal.display()
 
     def hide_z0_marker(self):
-        self._mandel_draw.hide_z0_marker()
+        self._draw_mandel_source.hide_z0_marker()
         self._portal.display()
 
     def set_cursor(self, cursor_shape: QtCore.Qt.CursorShape):

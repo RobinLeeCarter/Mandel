@@ -5,27 +5,32 @@ from PyQt5 import QtWidgets, QtGui
 
 import utils
 from mandel_app import tuples
-from mandel_app.view.portal import canvas_source, frame, drawable
+from mandel_app.view.portal import canvas_source, canvas_frame, frame, drawable
 
 
 class Portal:
     def __init__(self, q_label: QtWidgets.QLabel):
         self._q_label: QtWidgets.QLabel = q_label
-        self._frame = frame.Frame()
-        self._canvas = canvas_source.CanvasSource()
-        self._timer = utils.Timer()
+        self._frame: frame.Frame = frame.Frame()
+        self._canvas_source: canvas_source.CanvasSource = canvas_source.CanvasSource()
+        self._canvas_frame: canvas_frame.CanvasFrame = canvas_frame.CanvasFrame()
+        self._timer: utils.Timer = utils.Timer()
 
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
         return self._frame.shape
 
-    def set_drawable(self, drawable_: drawable.Drawable):
-        self._canvas.set_drawable(drawable_)
+    def set_drawable_source(self, drawable_: drawable.Drawable):
+        self._canvas_source.set_drawable(drawable_)
         self._update_offset()
 
-    def on_resized(self, frame_shape: tuples.ImageShape):
-        self.set_frame_shape(frame_shape)
-        self.display()
+    def set_drawable_frame(self, drawable_: drawable.Drawable):
+        self._canvas_frame.set_drawable(drawable_)
+        # self._update_offset()
+
+    # def on_resized(self, frame_shape: tuples.ImageShape):
+    #     self.set_frame_shape(frame_shape)
+    #     self.display()
 
     def set_frame_shape(self, frame_shape: tuples.ImageShape):
         # q_size: QtCore.QSize = self._q_label.size()
@@ -35,20 +40,22 @@ class Portal:
         if current_frame_shape is None or frame_shape != current_frame_shape:
             self._frame.set_frame_shape(frame_shape)
             self._update_offset()
+            # self._canvas_frame.set_frame_shape(frame_shape)
 
     def draw_drawable(self):
         """
         draws to the source i.e. creates rgba array
         need to call a display method after this for it to display on screen
         """
-        self._canvas.draw()
-        self._frame.set_source(source=self._canvas.rgba_output)
+        self._canvas_source.draw()
+
+        self._frame.set_source(source=self._canvas_source.rgba_output)
         self._update_offset()
 
     # this could be pushed down to the drawable if we want it to be calculated differently for different drawables
     def _update_offset(self):
         """Called once canvas or frame is updated"""
-        canvas_shape = self._canvas.shape
+        canvas_shape = self._canvas_source.shape
         frame_shape = self._frame.shape
         # print(f"canvas_shape: {canvas_shape}")
         # print(f"frame_shape: {frame_shape}")

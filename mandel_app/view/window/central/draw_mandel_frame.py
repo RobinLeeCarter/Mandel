@@ -12,7 +12,7 @@ class DrawMandelFrame(portal.Drawable):
     def __init__(self):
         super().__init__()
         self._z0: Optional[complex] = None
-        self.frame_shape: Optional[tuples.ImageShape] = None
+        self._frame_shape: Optional[tuples.ImageShape] = None
 
         self._z0_frame_point: Optional[tuples.PixelPoint] = None
         self._z0_marker = lines.Line2D([], [], marker='x', markersize=30, color="blue",
@@ -20,7 +20,10 @@ class DrawMandelFrame(portal.Drawable):
 
     @property
     def shape(self) -> Optional[tuples.ImageShape]:
-        return self.frame_shape
+        return self._frame_shape
+
+    def set_frame_shape(self, frame_shape: tuples.ImageShape):
+        self._frame_shape = frame_shape
 
     @property
     def z0(self) -> Optional[complex]:
