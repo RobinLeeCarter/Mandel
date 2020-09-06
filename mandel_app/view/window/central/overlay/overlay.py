@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtWidgets
 
 from mandel_app.view import common
-from mandel_app.view.window.central import copy_message
+from mandel_app.view.window.central.overlay import copy_message
 
 
 class Overlay(common.BaseOverlay):
@@ -9,19 +9,21 @@ class Overlay(common.BaseOverlay):
         # parent is the q_object we are overlaying
         super().__init__(parent)
         self._copy_message: copy_message.CopyMessage = copy_message.CopyMessage(
-            parent=self._parent, hide_callback=self.hide_copy_message)
+            parent=self._parent,
+            hide_callback=self.hide_copy_message
+        )
         self._refresh_overlay_visible()
 
     def show_copy_message(self):
         self._copy_message.visible = True
         self._refresh_overlay_visible()
-        self._parent.draw()     # suspect this will fail
+        self._parent.update()
         self._copy_message.start_hide_timer()
 
     def hide_copy_message(self):
         self._copy_message.visible = False
         self._refresh_overlay_visible()
-        self._parent.draw()     # suspect this will fail
+        self._parent.update()
 
     def _refresh_overlay_visible(self):
         if self._copy_message.visible:
