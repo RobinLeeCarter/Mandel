@@ -17,8 +17,8 @@ class Portal:
         self._timer: utils.Timer = utils.Timer()
 
     @property
-    def frame_shape(self) -> Optional[tuples.ImageShape]:
-        return self._frame.frame_shape
+    def frame(self) -> frame.Frame:
+        return self._frame
 
     def set_drawable_source(self, drawable_: drawable.Drawable):
         self._canvas_source.set_drawable(drawable_)
@@ -26,21 +26,12 @@ class Portal:
 
     def set_drawable_frame(self, drawable_: drawable.Drawable):
         self._canvas_frame.set_drawable(drawable_)
-        # self._update_offset()
-
-    # def on_resized(self, frame_shape: tuples.ImageShape):
-    #     self.set_frame_shape(frame_shape)
-    #     self.display()
 
     def set_frame_shape(self, frame_shape: tuples.ImageShape):
-        # q_size: QtCore.QSize = self._q_label.size()
-        # print(q_size)
-        # image_shape = tuples.ImageShape(x=q_size.width(), y=q_size.height())
         current_frame_shape = self._frame.frame_shape
         if current_frame_shape is None or frame_shape != current_frame_shape:
             self._frame.set_frame_shape(frame_shape)
             self._update_offset()
-            # self._canvas_frame.set_frame_shape(frame_shape)
 
     def prepare_source_and_frame(self):
         """

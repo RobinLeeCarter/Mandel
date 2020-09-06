@@ -58,13 +58,6 @@ class Frame:
         self._frame_to_source_int32 = cp.zeros(shape=(frame_y, frame_x), dtype=cp.int32)
         self._frame_rgba = cp.zeros(shape=(frame_y, frame_x, 4), dtype=cp.uint8)
 
-    # def set_source(self, source: np.ndarray, offset: Optional[tuples.PixelPoint] = None):
-    #     """call when change the source"""
-    #     self._source = cp.asarray(source)
-    #     if offset is not None:
-    #         self.offset = offset
-    #     self._reset_transform()
-
     def set_source(self, source: np.ndarray):
         """call when change the source"""
         self._source = cp.asarray(source)

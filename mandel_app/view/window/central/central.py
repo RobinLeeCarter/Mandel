@@ -5,14 +5,14 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets, portal
-from mandel_app.view.window.central import draw_mandel_source, draw_mandel_frame, overlay, area
+from mandel_app.view.window.central import draw_mandel_source, draw_mandel_frame, overlay, scroll_area
 
 
 class Central:
     def __init__(self, q_main_window: QtWidgets.QMainWindow):
-        self._area = area.Area(q_main_window)
-        self._area.build()
-        self.x_label: widgets.XLabel = self._area.portal_label
+        self._scroll_area = scroll_area.ScrollArea(q_main_window)
+        # self._area.build()
+        self.x_label: widgets.XLabel = self._scroll_area.portal_label
         self._portal = portal.Portal(self.x_label)
         self._draw_mandel_source = draw_mandel_source.DrawMandelSource()
         self._draw_mandel_frame = draw_mandel_frame.DrawMandelFrame()
@@ -23,7 +23,7 @@ class Central:
         self.x_label.set_overlay(self.overlay)
 
     def build(self, cursor_shape: QtCore.Qt.CursorShape):
-        self._draw_mandel_frame.set_source_to_transformed_frame(self._portal.source_to_transformed_frame)
+        self._draw_mandel_frame.set_frame(self._portal.frame)
         self.set_frame_shape()
         self.set_cursor(cursor_shape)
 
@@ -32,20 +32,18 @@ class Central:
         self._portal.display()
 
     def set_frame_shape(self):
-        self._area.refresh_shape()
-        self._portal.set_frame_shape(self._area.shape)
-        self._draw_mandel_frame.set_frame_shape(self._area.shape)
+        shape = self._scroll_area.get_shape()
+        self._portal.set_frame_shape(shape)
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""
         self._draw_mandel_source.set_mandel(mandel)
-        # self._draw_mandel_frame.set_complex_to_source(mandel.get_source_point_from_complex)
         self._portal.prepare_source_and_frame()
         self._portal.display()
 
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
-        return self._portal.frame_shape
+        return self._portal.frame.frame_shape
 
     def rotate_image(self, degrees: int):
         # to rotate image is one direction we need to rotate the frame in the other
