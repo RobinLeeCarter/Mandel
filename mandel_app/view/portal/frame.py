@@ -29,6 +29,8 @@ class Frame:
 
         self._source_frame_matrix: Optional[np.ndarray] = None
         self._source_frame_vector: Optional[np.ndarray] = None
+        self._matrix_np: Optional[np.ndarray] = None
+        self._vector_np: Optional[np.ndarray] = None
         self._matrix_cp: Optional[cp.ndarray] = None
         self._vector_cp: Optional[cp.ndarray] = None
 
@@ -88,7 +90,7 @@ class Frame:
     def get_frame(self):
         # print("get_frame")
         self._calculate_transform()
-        self._apply_transform()
+        self._apply_transform_cp()
         # TODO: double conversion?
         self._frame_to_source_int32 = cp.rint(self._frame_to_source_fp32).astype(cp.int32)
         # if self.offset.x < 0:
@@ -191,10 +193,10 @@ class Frame:
             frame_transform @ \
             frame_image_to_frame_cartesian
 
-        matrix_np = frame_image_to_source_image[0:2, 0:2]
-        vector_np = frame_image_to_source_image[0:2, 2]
-        self._matrix_cp = cp.asarray(matrix_np, dtype=cp.float32)
-        self._vector_cp = cp.asarray(vector_np, dtype=cp.float32)
+        self._matrix_np = frame_image_to_source_image[0:2, 0:2]
+        self._vector_np = frame_image_to_source_image[0:2, 2]
+        self._matrix_cp = cp.asarray(self._matrix_np, dtype=cp.float32)
+        self._vector_cp = cp.asarray(self._vector_np, dtype=cp.float32)
 
         # source_point to frame_point transform
         source_cartesian_to_frame_cartesian = translate(-offset_x, -offset_y)
@@ -214,7 +216,13 @@ class Frame:
         self._scale = 1.0
         self._scale_point = tuples.PixelPoint(0, 0)
 
-    def _apply_transform(self):
+    # def _apply_transform_np(self):
+    #     # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
+    #     # print(f"self._transform_vector: {self._transform_vector}")
+    #     self._frame_to_source_fp32 = np.matmul(self._frame_pixels, self._matrix_np.T) \
+    #                                  + self._vector_np
+
+    def _apply_transform_cp(self):
         # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
         # print(f"self._transform_vector: {self._transform_vector}")
         self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._matrix_cp.T) \
