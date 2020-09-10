@@ -121,12 +121,14 @@ class Model:
 
         if pan is not None:
             # print(f"model.frame_shape: {self._frame_shape}")
-            new_centre_frame_point = tuples.PixelPoint(
-                x=float(self._frame_shape.x) / 2.0 + pan.x,
-                y=float(self._frame_shape.y) / 2.0 + pan.y
-            )
-            self.new_mandel.centre = self.displayed_mandel.get_complex_from_frame_point(
-                self._frame_shape, new_centre_frame_point)
+            # new_centre_frame_point = tuples.PixelPoint(
+            #     x=float(self._frame_shape.x) / 2.0 + pan.x,
+            #     y=float(self._frame_shape.y) / 2.0 + pan.y
+            # )
+            # self.new_mandel.centre = self.displayed_mandel.get_complex_from_frame_point(
+            #     self._frame_shape, new_centre_frame_point)
+
+            self.new_mandel.centre = self.displayed_mandel.get_complex_from_center_diff(pan)
 
         # if pan is not None:
         #     new_centre_frame_point = tuples.PixelPoint(

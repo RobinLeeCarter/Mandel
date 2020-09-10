@@ -95,6 +95,7 @@ class Server:
         new = self._new_mandel.shape
         prev = self._prev_mandel.shape
         offset = self._offset
+        # print("\n")
         # print(f"prev center: {self._prev_mandel.centre}")
         # print(f"new center: {self._new_mandel.centre}")
         # print(f"prev shape: {prev}")
@@ -151,8 +152,8 @@ class Server:
         if prev_start_x is not None and prev_start_y is not None:
             # there is some overlap, so copy over and mark as completed
             # print(f"prev_slice_x: {prev_slice_x}")
-            # print(f"new_slice_x : {new_slice_x}")
             # print(f"prev_slice_y: {prev_slice_y}")
+            # print(f"new_slice_x : {new_slice_x}")
             # print(f"new_slice_y : {new_slice_y}")
 
             prev_iteration = cp.asarray(self._prev_mandel.iteration)

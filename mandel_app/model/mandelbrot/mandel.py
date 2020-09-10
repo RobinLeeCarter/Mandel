@@ -139,8 +139,14 @@ class Mandel:
         # print(f"frame_shape: {frame_shape}")
         # print(f"frame_point: {frame_point}")
         # print(f"shape: {self.shape}")
-        x_pixels_from_center = frame_point.x - 0.5*(frame_shape.x-1)
-        y_pixels_from_center = frame_point.y - 0.5*(frame_shape.y-1)
+        center_diff = tuples.PixelPoint(
+            x=frame_point.x - 0.5*(frame_shape.x-1),
+            y=frame_point.y - 0.5*(frame_shape.y-1)
+        )
+        return self.get_complex_from_center_diff(center_diff)
+
+        # x_pixels_from_center = frame_point.x - 0.5*(frame_shape.x-1)
+        # y_pixels_from_center = frame_point.y - 0.5*(frame_shape.y-1)
 
         # x_scale = (float(self.offset.x + frame_point.x) / float(self.shape.x)) - 0.5
         # y_scale = (float(self.offset.y + frame_point.y) / float(self.shape.y)) - 0.5
@@ -152,8 +158,33 @@ class Mandel:
         # x_dist = x_scale * self.x_size
         # y_dist = y_scale * self.y_size
 
-        x_dist = x_pixels_from_center * self.size_per_gap
-        y_dist = y_pixels_from_center * self.size_per_gap
+        # x_dist = x_pixels_from_center * self.size_per_gap
+        # y_dist = y_pixels_from_center * self.size_per_gap
+        #
+        # return self.centre + x_dist*self.x_unit + y_dist*self.y_unit
+
+    def get_complex_from_center_diff(self,
+                                     # frame_shape: tuples.ImageShape,
+                                     center_diff: tuples.PixelPoint
+                                     ) -> complex:
+        # print(f"frame_shape: {frame_shape}")
+        # print(f"frame_point: {frame_point}")
+        # print(f"shape: {self.shape}")
+        # x_pixels_from_center = frame_point.x - 0.5*(frame_shape.x-1)
+        # y_pixels_from_center = frame_point.y - 0.5*(frame_shape.y-1)
+
+        # x_scale = (float(self.offset.x + frame_point.x) / float(self.shape.x)) - 0.5
+        # y_scale = (float(self.offset.y + frame_point.y) / float(self.shape.y)) - 0.5
+        # x_scale = (float(frame_point.x) / float(self.shape.x)) - 0.5
+        # y_scale = (float(frame_point.y) / float(self.shape.y)) - 0.5
+
+        # x_scale = (x_pixels_from_center / float(self.shape.x))
+        # y_scale = (y_pixels_from_center / float(self.shape.y))
+        # x_dist = x_scale * self.x_size
+        # y_dist = y_scale * self.y_size
+
+        x_dist = center_diff.x * self.size_per_gap
+        y_dist = center_diff.y * self.size_per_gap
 
         return self.centre + x_dist*self.x_unit + y_dist*self.y_unit
 

@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
 
 from mandel_app import tuples
 from mandel_app.view.portal import transform
@@ -11,15 +11,15 @@ class Frame:
     def __init__(self):
         # arrays are all cupy arrays unless prefixed np_
 
-        self._source: Optional[cp.ndarray] = None
+        self._source: Optional[np.ndarray] = None
         self.offset: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
         # portal arrays that only change when window is resized
         self.frame_shape: Optional[tuples.ImageShape] = None
-        self._frame_pixels: Optional[cp.ndarray] = None
-        self._frame_to_source_fp32: Optional[cp.ndarray] = None
-        self._frame_to_source_int32: Optional[cp.ndarray] = None
-        self._frame_rgba: Optional[cp.ndarray] = None
+        self._frame_pixels: Optional[np.ndarray] = None
+        self._frame_to_source_fp32: Optional[np.ndarray] = None
+        self._frame_to_source_int32: Optional[np.ndarray] = None
+        self._frame_rgba: Optional[np.ndarray] = None
         self._rgba_output: Optional[np.ndarray] = None
 
         self._pan: tuples.PixelPoint = tuples.PixelPoint(0, 0)
@@ -31,8 +31,8 @@ class Frame:
         self._source_frame_vector: Optional[np.ndarray] = None
         self._matrix_np: Optional[np.ndarray] = None
         self._vector_np: Optional[np.ndarray] = None
-        self._matrix_cp: Optional[cp.ndarray] = None
-        self._vector_cp: Optional[cp.ndarray] = None
+        self._matrix_cp: Optional[np.ndarray] = None
+        self._vector_cp: Optional[np.ndarray] = None
 
     @property
     def rgba_output(self) -> np.ndarray:
@@ -45,24 +45,24 @@ class Frame:
         frame_y = self.frame_shape.y
         frame_x = self.frame_shape.x
 
-        self._frame_pixels = cp.zeros(shape=(frame_y, frame_x, 2), dtype=cp.float32)
+        self._frame_pixels = np.zeros(shape=(frame_y, frame_x, 2), dtype=np.float32)
 
-        y_range = cp.arange(start=0, stop=frame_y, dtype=cp.float32)
-        x_range = cp.arange(start=0, stop=frame_x, dtype=cp.float32)
+        y_range = np.arange(start=0, stop=frame_y, dtype=np.float32)
+        x_range = np.arange(start=0, stop=frame_x, dtype=np.float32)
 
         # for 3D array: 0 is x, 1 is y
         # noinspection PyTypeChecker
-        self._frame_pixels[:, :, 1], self._frame_pixels[:, :, 0] = cp.meshgrid(y_range, x_range, indexing='ij')
+        self._frame_pixels[:, :, 1], self._frame_pixels[:, :, 0] = np.meshgrid(y_range, x_range, indexing='ij')
         # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
         # print(self._frame_pixels)
 
-        self._frame_to_source_fp32 = cp.zeros(shape=(frame_y, frame_x), dtype=cp.float32)
-        self._frame_to_source_int32 = cp.zeros(shape=(frame_y, frame_x), dtype=cp.int32)
-        self._frame_rgba = cp.zeros(shape=(frame_y, frame_x, 4), dtype=cp.uint8)
+        self._frame_to_source_fp32 = np.zeros(shape=(frame_y, frame_x), dtype=np.float32)
+        self._frame_to_source_int32 = np.zeros(shape=(frame_y, frame_x), dtype=np.int32)
+        self._frame_rgba = np.zeros(shape=(frame_y, frame_x, 4), dtype=np.uint8)
 
     def set_source(self, source: np.ndarray):
         """call when change the source"""
-        self._source = cp.asarray(source)
+        self._source = np.asarray(source)
         self._reset_transform()
 
     def set_offset(self, offset: Optional[tuples.PixelPoint]):
@@ -92,7 +92,7 @@ class Frame:
         self._calculate_transform()
         self._apply_transform_cp()
         # TODO: double conversion?
-        self._frame_to_source_int32 = cp.rint(self._frame_to_source_fp32).astype(cp.int32)
+        self._frame_to_source_int32 = np.rint(self._frame_to_source_fp32).astype(np.int32)
         # if self.offset.x < 0:
         #     print(f"self._frame_to_source_int32.shape: {self._frame_to_source_int32.shape}")
         #     print(self._frame_to_source_int32)
@@ -110,18 +110,18 @@ class Frame:
         # if self.offset.x < 0:
         #     print(f"mapped.shape: {mapped.shape}")
         #     print(mapped)
-        # print(f"mapped count_nonzero: {cp.count_nonzero(mapped)}")
+        # print(f"mapped count_nonzero: {np.count_nonzero(mapped)}")
 
         frame_y_size: int = self.frame_shape.y
         frame_x_size: int = self.frame_shape.x
-        self._frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
+        self._frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
         self._frame_rgba[mapped, :] = self._source[frame_y[mapped], frame_x[mapped], :]
         # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
 
-        self._rgba_output = cp.asnumpy(self._frame_rgba)
+        self._rgba_output = self._frame_rgba
 
         # print(f"self._frame_rgba.shape: {self.frame_rgba.shape}")
-        # print(f"frame_rgba count_nonzero: {cp.count_nonzero(self.frame_rgba)}")
+        # print(f"frame_rgba count_nonzero: {np.count_nonzero(self.frame_rgba)}")
         # print(self.frame_rgba)
 
         # return self.np_frame_rgba
@@ -192,11 +192,15 @@ class Frame:
             frame_cartesian_to_source_cartesian @ \
             frame_transform @ \
             frame_image_to_frame_cartesian
+        # print(f"frame_image_to_frame_cartesian:\n{frame_image_to_frame_cartesian}")
+        # print(f"source_cartesian_to_source_image:\n{source_cartesian_to_source_image}")
+        # print(f"frame_cartesian_to_source_cartesian:\n{frame_cartesian_to_source_cartesian}")
+        # print(f"frame_transform:\n{frame_transform}")
 
         self._matrix_np = frame_image_to_source_image[0:2, 0:2]
         self._vector_np = frame_image_to_source_image[0:2, 2]
-        self._matrix_cp = cp.asarray(self._matrix_np, dtype=cp.float32)
-        self._vector_cp = cp.asarray(self._vector_np, dtype=cp.float32)
+        self._matrix_cp = np.asarray(self._matrix_np, dtype=np.float32)
+        self._vector_cp = np.asarray(self._vector_np, dtype=np.float32)
 
         # source_point to frame_point transform
         source_cartesian_to_frame_cartesian = translate(-offset_x, -offset_y)
@@ -208,7 +212,7 @@ class Frame:
         self._source_frame_vector = source_cartesian_to_frame_point[0:2, 2]
 
     def print_transform(self, desc: str, array: np.ndarray):
-        print(desc + "\n", np.rint(array).astype(cp.int32))
+        print(desc + "\n", np.rint(array).astype(np.int32))
 
     def _reset_transform(self):
         self._pan = tuples.PixelPoint(0, 0)
@@ -225,7 +229,7 @@ class Frame:
     def _apply_transform_cp(self):
         # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
         # print(f"self._transform_vector: {self._transform_vector}")
-        self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._matrix_cp.T) \
+        self._frame_to_source_fp32 = np.matmul(self._frame_pixels, self._matrix_np.T) \
                                      + self._vector_cp
 
     def source_to_transformed_frame(self, source_point: tuples.PixelPoint):
