@@ -39,9 +39,22 @@ class CanvasFrame(canvas_base.CanvasBase):
         # https://matplotlib.org/gallery/user_interfaces/canvasagg.html#sphx-glr-gallery-user-interfaces-canvasagg-py
         self._buf = self._figure_canvas.buffer_rgba()
         self._rgba_output = np.asarray(self._buf)
+        # print(f"self._drawable.shape:\t{self._drawable.shape}")
+        # print(f"CanvasFrame._rgba_output:\t{self._rgba_output.shape}")
+        # print(f"CanvasFrame._rgba_input:\t{self._rgba_input.shape}")
 
         if self._rgba_input is not None:
-            np.copyto(dst=self._rgba_output, src=self._rgba_input)
+            if self._rgba_output.shape == self._rgba_input.shape:
+                np.copyto(dst=self._rgba_output, src=self._rgba_input)
+            else:
+                # very occasionally self._rgba_output.shape is essentially the wrong shape (!= self._drawable.shape)
+                # print(f"self._drawable.shape:\t{self._drawable.shape}")
+                # print(f"CanvasFrame._rgba_input:\t{self._rgba_input.shape}")
+                # print(f"CanvasFrame._rgba_output:\t{self._rgba_output.shape}")
+                min_y = min(self._rgba_input.shape[0], self._rgba_output.shape[0])
+                min_x = min(self._rgba_input.shape[1], self._rgba_output.shape[1])
+                self._rgba_output[:, :, :] = 0
+                self._rgba_output[0:min_y, 0:min_x, :] = self._rgba_input[0:min_y, 0:min_x, :]
 
         # Compose ax
         assert self._drawable is not None, "CanvasFrame: No drawable set"

@@ -13,7 +13,7 @@ class CanvasSource(canvas_base.CanvasBase):
     """
     def __init__(self):
         super().__init__()
-        self.first_draw: bool = True
+        # self.first_draw: bool = True
         # self._timer = utils.Timer()
 
     def draw(self):

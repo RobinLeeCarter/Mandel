@@ -49,11 +49,13 @@ class CanvasBase(ABC):
 
     def _fig_size(self):
         new_shape = self.shape
+        # print(f"CanvasBase.shape:\t{self.shape}")
         if self._current_shape is None or self._current_shape != new_shape:
             self._on_resize()
             self._current_shape = new_shape
 
     def _on_resize(self):
+        # print("CanvasBase._on_resize")
         width, height = self.shape
         width_inches: float = float(width) / 100.0
         height_inches: float = float(height) / 100.0

@@ -84,6 +84,7 @@ class Portal:
         self._draw_frame()
 
     def _draw_frame(self):
+        # print(f"self._frame.rgba_output:\t{self._frame.rgba_output.shape}")
         self._canvas_frame.set_rgba_input(self._frame.rgba_output)
         self._canvas_frame.draw()
         # self._timer.lap("canvas_frame")

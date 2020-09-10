@@ -89,6 +89,7 @@ class Frame:
 
     def get_frame(self):
         # print("get_frame")
+        # print(f"get_frame frame.frame_shape:\t{self.frame_shape}")
         self._calculate_transform()
         self._apply_transform_cp()
         # TODO: double conversion?

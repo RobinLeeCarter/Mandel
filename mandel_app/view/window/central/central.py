@@ -33,6 +33,7 @@ class Central:
 
     def set_frame_shape(self):
         shape = self._scroll_area.get_shape()
+        # print(f"_scroll_area.shape:\t{shape}")
         self._portal.set_frame_shape(shape)
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
