@@ -32,9 +32,9 @@ class Central:
         self._portal.display()
 
     def set_frame_shape(self):
-        shape = self._scroll_area.get_shape()
+        frame_shape = self._scroll_area.get_shape()
         # print(f"_scroll_area.shape:\t{shape}")
-        self._portal.set_frame_shape(shape)
+        self._portal.set_frame_shape(frame_shape)
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
         """assuming frame size is not changing"""

@@ -28,6 +28,7 @@ class Portal:
         self._canvas_frame.set_drawable(drawable_)
 
     def set_frame_shape(self, frame_shape: tuples.ImageShape):
+        # frame_shape = self._canvas_frame.set_area_shape(area_shape)
         current_frame_shape = self._frame.frame_shape
         if current_frame_shape is None or frame_shape != current_frame_shape:
             self._frame.set_frame_shape(frame_shape)

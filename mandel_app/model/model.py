@@ -203,8 +203,8 @@ class Model:
         self._controller.new_is_ready(mandel_job.save_history)
 
         # TODO: control generation of borders in controller rather than automatically firing?
-        # if not self.new_mandel.has_border:
-        #     self._add_border()
+        if not self.new_mandel.has_border:
+            self._add_border()
 
     def _add_border(self):
         border_size = 14*4*10    # add 5 large boxes in all directions

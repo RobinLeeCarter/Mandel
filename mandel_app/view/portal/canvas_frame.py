@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 
 from mandel_app.view.portal import canvas_base
+# import utils
 
 
 class CanvasFrame(canvas_base.CanvasBase):
@@ -47,10 +48,8 @@ class CanvasFrame(canvas_base.CanvasBase):
             if self._rgba_output.shape == self._rgba_input.shape:
                 np.copyto(dst=self._rgba_output, src=self._rgba_input)
             else:
-                # very occasionally self._rgba_output.shape is essentially the wrong shape (!= self._drawable.shape)
-                # print(f"self._drawable.shape:\t{self._drawable.shape}")
-                # print(f"CanvasFrame._rgba_input:\t{self._rgba_input.shape}")
-                # print(f"CanvasFrame._rgba_output:\t{self._rgba_output.shape}")
+                # very occasionally self._rgba_output.shape is the wrong shape by 1 pixel (!= self._drawable.shape)
+                # this copy process is almost instant 0.001s or less
                 min_y = min(self._rgba_input.shape[0], self._rgba_output.shape[0])
                 min_x = min(self._rgba_input.shape[1], self._rgba_output.shape[1])
                 self._rgba_output[:, :, :] = 0
