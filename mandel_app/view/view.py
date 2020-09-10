@@ -282,21 +282,23 @@ class View:
     def _on_central_mouse_press(self, event: QtGui.QMouseEvent):
         # print("_on_central_mouse_press")
         # add to always request a stop any current GPU work to free it up for scrolling
-        self._controller.stop_request()
         view_state_ = self._view_state
         button: QtCore.Qt.MouseButton = event.button()
         if button == QtCore.Qt.LeftButton:
             if view_state_.ready_to_pan:
+                self._controller.stop_request()
                 view_state_.pan_start = self._mouse_frame_point(event)
                 view_state_.pan_end = view_state_.pan_start
                 self._set_action(enums.ImageAction.PANNING)
         elif button == QtCore.Qt.MiddleButton:
             if view_state_.ready_to_rotate:
+                self._controller.stop_request()
                 view_state_.rotate_start = self._mouse_frame_point(event)
                 # view_state_.mandel_shape = self._window.central.mandel.shape change
                 self._set_action(enums.ImageAction.ROTATING)
         elif button == QtCore.Qt.RightButton:
             if view_state_.ready_to_zoom:
+                self._controller.stop_request()
                 self._zoom(scaling=2.0)
 
     def _on_central_mouse_move(self, event: QtGui.QMouseEvent):
@@ -349,7 +351,10 @@ class View:
                             mouse_theta_delta
                 self._controller.rotate_request(new_theta)
                 view_state_.released_theta_delta = view_state_.released_theta_delta + mouse_theta_delta
-            self._set_action(enums.ImageAction.ROTATED)
+                self._set_action(enums.ImageAction.ROTATED)
+            else:
+                # nothing to do
+                self._set_action(enums.ImageAction.NONE)
 
     def _on_central_mouse_double_click(self, event: QtGui.QMouseEvent):
         """

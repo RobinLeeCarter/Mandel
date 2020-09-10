@@ -12,7 +12,7 @@ class State:
         self._central: Optional[central.Central] = None
         self.is_z_mode: bool = False  # Pan button on toolbar depressed
 
-        self.action_in_progress: enums.ImageAction = enums.ImageAction.NONE
+        self._action_in_progress: enums.ImageAction = enums.ImageAction.NONE
         self.pan_start: Optional[tuples.PixelPoint] = None
         self.pan_end: Optional[tuples.PixelPoint] = None
 
@@ -28,6 +28,15 @@ class State:
         self.scaling_requested: float = 1.0
 
         self.revert_on_stop: bool = False
+
+    @property
+    def action_in_progress(self) -> enums.ImageAction:
+        return self._action_in_progress
+
+    @action_in_progress.setter
+    def action_in_progress(self, new_action: enums.ImageAction):
+        self._action_in_progress = new_action
+        # print(f"new_action: {new_action.__str__()}\t\trevert_on_stop: {self.revert_on_stop}")
 
     def set_central(self, central_: central.Central):
         self._central = central_
