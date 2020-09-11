@@ -7,9 +7,10 @@ from thread import job, enums
 
 class Worker(QtCore.QObject):
     progressUpdate = QtCore.pyqtSignal(float, int)
+    jobComplete = QtCore.pyqtSignal(job.Job)
+
     activeChange = QtCore.pyqtSignal(bool)
     stopSuccess = QtCore.pyqtSignal()
-    jobComplete = QtCore.pyqtSignal(job.Job)
     debugMessage = QtCore.pyqtSignal(str)
 
     # region Setup

@@ -3,40 +3,47 @@ from typing import Optional
 import numpy as np
 import cupy as cp
 
+import thread
 from mandel_app import tuples
 from mandel_app.view.portal import transform
 
 
 class Frame:
     def __init__(self):
-        # arrays are all cupy arrays unless prefixed np_
+        self._calc_thread_state: Optional[thread.State] = None
 
-        self._source: Optional[cp.ndarray] = None
+        self._source_np: Optional[np.ndarray] = None
+        self._source_cp: Optional[cp.ndarray] = None
         self.offset: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
         # portal arrays that only change when window is resized
         self.frame_shape: Optional[tuples.ImageShape] = None
-        self._frame_pixels: Optional[cp.ndarray] = None
-        self._frame_to_source_fp32: Optional[cp.ndarray] = None
-        self._frame_to_source_int32: Optional[cp.ndarray] = None
-        self._frame_rgba: Optional[cp.ndarray] = None
-        self._rgba_output: Optional[np.ndarray] = None
-
         self._pan: tuples.PixelPoint = tuples.PixelPoint(0, 0)
         self._rotation_degrees: float = 0.0
         self._scale: float = 1.0
         self._scale_point: tuples.PixelPoint = tuples.PixelPoint(0, 0)
 
+        self._use_gpu: bool = True
+
+        # numpy transformations
+        self._matrix: Optional[np.ndarray] = None
+        self._vector: Optional[np.ndarray] = None
         self._source_frame_matrix: Optional[np.ndarray] = None
         self._source_frame_vector: Optional[np.ndarray] = None
-        self._matrix_np: Optional[np.ndarray] = None
-        self._vector_np: Optional[np.ndarray] = None
-        self._matrix_cp: Optional[cp.ndarray] = None
-        self._vector_cp: Optional[cp.ndarray] = None
+
+        # numpy and cupy frame array (both prepared in advance)
+        self._frame_pixels_np: Optional[np.ndarray] = None
+        self._frame_pixels_cp: Optional[cp.ndarray] = None
+
+        # result (GPU or CPU)
+        self._frame_rgba: Optional[np.ndarray] = None
 
     @property
-    def rgba_output(self) -> np.ndarray:
-        return self._rgba_output
+    def rgba(self) -> np.ndarray:
+        return self._frame_rgba
+
+    def set_calc_thread_state(self, calc_thread_state: thread.State):
+        self._calc_thread_state = calc_thread_state
 
     def set_frame_shape(self, frame_shape: tuples.ImageShape):
         """call when resize window"""
@@ -45,24 +52,20 @@ class Frame:
         frame_y = self.frame_shape.y
         frame_x = self.frame_shape.x
 
-        self._frame_pixels = cp.zeros(shape=(frame_y, frame_x, 2), dtype=cp.float32)
+        self._frame_pixels_np = np.zeros(shape=(frame_y, frame_x, 2), dtype=np.float32)
 
-        y_range = cp.arange(start=0, stop=frame_y, dtype=cp.float32)
-        x_range = cp.arange(start=0, stop=frame_x, dtype=cp.float32)
+        y_range = np.arange(start=0, stop=frame_y, dtype=cp.float32)
+        x_range = np.arange(start=0, stop=frame_x, dtype=cp.float32)
 
         # for 3D array: 0 is x, 1 is y
         # noinspection PyTypeChecker
-        self._frame_pixels[:, :, 1], self._frame_pixels[:, :, 0] = cp.meshgrid(y_range, x_range, indexing='ij')
-        # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
-        # print(self._frame_pixels)
-
-        self._frame_to_source_fp32 = cp.zeros(shape=(frame_y, frame_x), dtype=cp.float32)
-        self._frame_to_source_int32 = cp.zeros(shape=(frame_y, frame_x), dtype=cp.int32)
-        self._frame_rgba = cp.zeros(shape=(frame_y, frame_x, 4), dtype=cp.uint8)
+        self._frame_pixels_np[:, :, 1], self._frame_pixels_np[:, :, 0] = np.meshgrid(y_range, x_range, indexing='ij')
+        self._frame_pixels_cp = cp.asarray(self._frame_pixels_np)
 
     def set_source(self, source: np.ndarray):
         """call when change the source"""
-        self._source = cp.asarray(source)
+        self._source_np = source
+        self._source_cp = cp.asarray(self._source_np)
         self._reset_transform()
 
     def set_offset(self, offset: Optional[tuples.PixelPoint]):
@@ -74,12 +77,21 @@ class Frame:
         self.get_frame()
 
     def pan(self, pan: tuples.PixelPoint):
-        # TODO: pan is not working and causing tears even jiggled even at top level no border
         self._pan = pan
+        # print("Pan")
+        if not cp.cuda.get_current_stream().done:
+            print("Stream.done: False")
+        if self._calc_thread_state.worker_active:
+            print(f"Worker active: {self._calc_thread_state.worker_active}")
         self.get_frame()
 
     def rotate(self, rotation_degrees: float):
         self._rotation_degrees = rotation_degrees
+        # print("Rotate")
+        if not cp.cuda.get_current_stream().done:
+            print("Stream.done: False")
+        if self._calc_thread_state.worker_active:
+            print(f"Worker active: {self._calc_thread_state.worker_active}")
         self.get_frame()
 
     def scale(self, scale: float, scale_point: tuples.PixelPoint):
@@ -91,46 +103,28 @@ class Frame:
         # print("get_frame")
         # print(f"get_frame frame.frame_shape:\t{self.frame_shape}")
         self._calculate_transform()
-        self._apply_transform_cp()
-        # TODO: double conversion?
-        self._frame_to_source_int32 = cp.rint(self._frame_to_source_fp32).astype(cp.int32)
-        # if self.offset.x < 0:
-        #     print(f"self._frame_to_source_int32.shape: {self._frame_to_source_int32.shape}")
-        #     print(self._frame_to_source_int32)
 
-        # for 3D array: 0 is x, 1 is y
-        frame_x = self._frame_to_source_int32[:, :, 0]  # 2D array of x pixel in source
-        frame_y = self._frame_to_source_int32[:, :, 1]  # 2D array of y pixel in source
+        # self._apply_transform_cp()
 
-        source_y_shape: int = self._source.shape[0]
-        source_x_shape: int = self._source.shape[1]
-        # boolean 2-D array of portal pixels that map to a pixel on the source
-        # will be false if the pixel on source would fall outside of source
-        mapped = (frame_y >= 0) & (frame_y < source_y_shape) & \
-                 (frame_x >= 0) & (frame_x < source_x_shape)
-        # if self.offset.x < 0:
-        #     print(f"mapped.shape: {mapped.shape}")
-        #     print(mapped)
-        # print(f"mapped count_nonzero: {cp.count_nonzero(mapped)}")
+        if cp.cuda.get_current_stream().done:
+            # GPU ready so use that
+            self._apply_transform_cp()
+        else:
+            # GPU not ready so fall back to CPU
+            self._apply_transform_np()
 
-        frame_y_size: int = self.frame_shape.y
-        frame_x_size: int = self.frame_shape.x
-        self._frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
-        self._frame_rgba[mapped, :] = self._source[frame_y[mapped], frame_x[mapped], :]
-        # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
-
-        self._rgba_output = cp.asnumpy(self._frame_rgba)
-
-        # print(f"self._frame_rgba.shape: {self.frame_rgba.shape}")
-        # print(f"frame_rgba count_nonzero: {cp.count_nonzero(self.frame_rgba)}")
-        # print(self.frame_rgba)
-
-        # return self.np_frame_rgba
+        # if self._calc_thread_state.worker_active:
+        #     # GPU not ready so fall back to CPU
+        #     self._apply_transform_np()
+        # else:
+        #     # GPU ready so use that
+        #     self._apply_transform_cp()
 
     # noinspection PyPep8Naming,PyPep8
     def _calculate_transform(self):
         """takes 0.0001s"""
-        # for readability
+        # purely numpy
+
         # functions
         identity = transform.Transform.identity
         flip_y = transform.Transform.flip_y
@@ -140,7 +134,7 @@ class Frame:
 
         # values
         # source_x = float(self._source.shape[1])
-        source_y = float(self._source.shape[0])
+        source_y = float(self._source_cp.shape[0])
         frame_x = float(self.frame_shape.x)
         frame_y = float(self.frame_shape.y)
         # cartesian offset when source and portal were first generated, x and y are both positive
@@ -194,10 +188,9 @@ class Frame:
             frame_transform @ \
             frame_image_to_frame_cartesian
 
-        self._matrix_np = frame_image_to_source_image[0:2, 0:2]
-        self._vector_np = frame_image_to_source_image[0:2, 2]
-        self._matrix_cp = cp.asarray(self._matrix_np, dtype=cp.float32)
-        self._vector_cp = cp.asarray(self._vector_np, dtype=cp.float32)
+        # final transform for frame_image to source_image
+        self._matrix = frame_image_to_source_image[0:2, 0:2]
+        self._vector = frame_image_to_source_image[0:2, 2]
 
         # source_point to frame_point transform
         source_cartesian_to_frame_cartesian = translate(-offset_x, -offset_y)
@@ -208,8 +201,12 @@ class Frame:
         self._source_frame_matrix = source_cartesian_to_frame_point[0:2, 0:2]
         self._source_frame_vector = source_cartesian_to_frame_point[0:2, 2]
 
-    def print_transform(self, desc: str, array: np.ndarray):
-        print(desc + "\n", np.rint(array).astype(cp.int32))
+    def source_to_transformed_frame(self, source_point: tuples.PixelPoint):
+        # always uses numpy as just one point
+        source_np = np.array([source_point.x, source_point.y], dtype=float)
+        frame_np = np.matmul(self._source_frame_matrix, source_np) + self._source_frame_vector
+        frame_point = tuples.PixelPoint(x=frame_np[0], y=frame_np[1])
+        return frame_point
 
     def _reset_transform(self):
         self._pan = tuples.PixelPoint(0, 0)
@@ -217,20 +214,55 @@ class Frame:
         self._scale = 1.0
         self._scale_point = tuples.PixelPoint(0, 0)
 
-    # def _apply_transform_np(self):
-    #     # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
-    #     # print(f"self._transform_vector: {self._transform_vector}")
-    #     self._frame_to_source_fp32 = np.matmul(self._frame_pixels, self._matrix_np.T) \
-    #                                  + self._vector_np
-
     def _apply_transform_cp(self):
-        # print(f"self._frame_pixels.shape: {self._frame_pixels.shape}")
-        # print(f"self._transform_vector: {self._transform_vector}")
-        self._frame_to_source_fp32 = cp.matmul(self._frame_pixels, self._matrix_cp.T) \
-                                     + self._vector_cp
+        source_y_shape: cp.int32 = cp.int32(self._source_cp.shape[0])
+        source_x_shape: cp.int32 = cp.int32(self._source_cp.shape[1])
+        frame_y_size: cp.int32 = cp.int32(self.frame_shape.y)
+        frame_x_size: cp.int32 = cp.int32(self.frame_shape.x)
 
-    def source_to_transformed_frame(self, source_point: tuples.PixelPoint):
-        source_np = np.array([source_point.x, source_point.y], dtype=float)
-        frame_np = np.matmul(self._source_frame_matrix, source_np) + self._source_frame_vector
-        frame_point = tuples.PixelPoint(x=frame_np[0], y=frame_np[1])
-        return frame_point
+        matrix = cp.asarray(self._matrix, dtype=cp.float32)
+        vector = cp.asarray(self._vector, dtype=cp.float32)
+        frame_to_source_fp32 = cp.matmul(self._frame_pixels_cp, matrix.T) + vector
+        # TODO: double conversion?
+        frame_to_source_int32 = cp.rint(frame_to_source_fp32).astype(cp.int32)
+
+        # for 3D array: 0 is x, 1 is y
+        source_x = frame_to_source_int32[:, :, 0]  # 2D array of x pixel in source
+        source_y = frame_to_source_int32[:, :, 1]  # 2D array of y pixel in source
+
+        # boolean 2-D array of portal pixels that map to a pixel on the source
+        # will be false if the pixel on source would fall outside of source
+        mapped = (source_y >= 0) & (source_y < source_y_shape) & \
+                 (source_x >= 0) & (source_x < source_x_shape)
+
+        frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
+        frame_rgba[mapped, :] = self._source_cp[source_y[mapped], source_x[mapped], :]
+        # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
+
+        self._frame_rgba = cp.asnumpy(frame_rgba)
+
+    def _apply_transform_np(self):
+        # print("_apply_transform_np")
+
+        source_y_shape: np.int32 = np.int32(self._source_np.shape[0])
+        source_x_shape: np.int32 = np.int32(self._source_np.shape[1])
+        frame_y_size: np.int32 = np.int32(self.frame_shape.y)
+        frame_x_size: np.int32 = np.int32(self.frame_shape.x)
+
+        frame_to_source_fp32 = np.matmul(self._frame_pixels_np, self._matrix.T) + self._vector
+        frame_to_source_int32 = np.rint(frame_to_source_fp32).astype(np.int32)
+
+        # for 3D array: 0 is x, 1 is y
+        source_x = frame_to_source_int32[:, :, 0]  # 2D array of x pixel in source
+        source_y = frame_to_source_int32[:, :, 1]  # 2D array of y pixel in source
+
+        # boolean 2-D array of portal pixels that map to a pixel on the source
+        # will be false if the pixel on source would fall outside of source
+        mapped = (source_y >= 0) & (source_y < source_y_shape) & \
+                 (source_x >= 0) & (source_x < source_x_shape)
+
+        frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
+        frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
+        # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
+
+        self._frame_rgba = frame_rgba

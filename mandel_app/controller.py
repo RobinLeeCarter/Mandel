@@ -14,6 +14,7 @@ class Controller:
     def build(self):
         self._view.build()
         self._model.build(self._view.frame_shape)
+        self._view.set_calc_thread_state(self._model.calc_thread_state)
         # self._model.start_test_mandel()
         self._model.calc_new_mandel(save_history=True)
     # endregion

@@ -2,6 +2,7 @@ from typing import Optional
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+import thread
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets, portal
@@ -9,6 +10,7 @@ from mandel_app.view.window.central import draw_mandel_source, draw_mandel_frame
 
 
 class Central:
+    # region Setup
     def __init__(self, q_main_window: QtWidgets.QMainWindow):
         self._scroll_area = scroll_area.ScrollArea(q_main_window)
         # self._area.build()
@@ -26,6 +28,10 @@ class Central:
         self._draw_mandel_frame.set_frame(self._portal.frame)
         self.set_frame_shape()
         self.set_cursor(cursor_shape)
+
+    def set_calc_thread_state(self, calc_thread_state: thread.State):
+        self._portal.frame.set_calc_thread_state(calc_thread_state)
+    # endregion
 
     def on_resized(self):
         self.set_frame_shape()

@@ -28,7 +28,8 @@ class Model:
 
     def build(self, frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
-        self.displayed_mandel = self._initial_mandel()
+        # self.displayed_mandel = self._initial_mandel()
+        self.displayed_mandel = self._slow_mandel()
         # self.displayed_mandel = self._different_mandel()
         self.new_mandel = self.displayed_mandel.lite_copy()
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
@@ -45,9 +46,13 @@ class Model:
 
         self._calc_thread_manager.start_thread()
 
+    # @property
+    # def calc_thread_active(self) -> bool:
+    #     return self._calc_thread_manager.state.worker_active
+
     @property
-    def calc_thread_active(self) -> bool:
-        return self._calc_thread_manager.worker_active
+    def calc_thread_state(self) -> thread.State:
+        return self._calc_thread_manager.state
     # endregion
 
     # region Controller Messages

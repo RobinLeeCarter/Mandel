@@ -4,6 +4,7 @@ from typing import Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import thread
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
 from mandel_app.view import window, state, settings, z_window, enums
@@ -39,6 +40,9 @@ class View:
         self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
 
         self._connect_signals()
+
+    def set_calc_thread_state(self, calc_thread_state: thread.State):
+        self._window.central.set_calc_thread_state(calc_thread_state)
     # endregion
 
     # region Properties

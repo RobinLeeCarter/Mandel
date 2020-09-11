@@ -2,7 +2,7 @@ from typing import Optional, Callable
 
 from PyQt5 import QtWidgets, QtCore
 
-from thread import worker, job, enums
+from thread import worker, job, enums, state
 
 
 class Manager(QtCore.QObject):
@@ -19,7 +19,8 @@ class Manager(QtCore.QObject):
         super().__init__()
         self._thread: QtCore.QThread = QtCore.QThread()
         self._worker: worker.Worker = worker.Worker()
-        self._worker_active: bool = False
+        self._state: state.State = state.State()
+        # self._worker_active: bool = False
         self._on_progress_update: Optional[Callable[[float, int], None]] = on_progress_update
         # self._on_active_change: Optional[Callable[[bool], None]] = on_active_change
         self._on_stop_success: Optional[Callable[[], None]] = on_stop_success
@@ -27,9 +28,13 @@ class Manager(QtCore.QObject):
 
         self._singular_job: Optional[job.Job] = None
 
+    # @property
+    # def worker_active(self) -> bool:
+    #     return self._state.worker_active
+
     @property
-    def worker_active(self) -> bool:
-        return self._worker_active
+    def state(self) -> state.State:
+        return self._state
     # endregion
 
     # region Requests from main thread
@@ -69,7 +74,7 @@ class Manager(QtCore.QObject):
             self._on_progress_update(progress, job_number)
 
     def active_change_slot(self, active: bool):
-        self._worker_active = active
+        self._state.worker_active = active
         # if self._on_active_change is not None:
         #     self._on_active_change(active_change)
 
