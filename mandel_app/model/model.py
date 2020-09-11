@@ -34,6 +34,7 @@ class Model:
         self._compute_manager = mandelbrot.ComputeManager(MAX_ITERATIONS)
         self._calc_thread_manager = thread.Manager(
             on_progress_update=self._on_progress_update,
+            # on_active_change=self._on_active_change,
             on_stop_success=self._on_stop_success,
             on_job_complete=self._on_job_complete
         )
@@ -43,6 +44,10 @@ class Model:
                            image_shape=tuples.ImageShape(x=700, y=700))
 
         self._calc_thread_manager.start_thread()
+
+    @property
+    def calc_thread_active(self) -> bool:
+        return self._calc_thread_manager.worker_active
     # endregion
 
     # region Controller Messages
@@ -189,6 +194,9 @@ class Model:
     # region Events from Thread
     def _on_progress_update(self, progress: float, job_number: int):
         self._controller.progress_update(progress)
+
+    # def _on_active_change(self, active: bool):
+    #     self._worker_active = active
 
     def _on_stop_success(self):
         self._controller.stop_success()

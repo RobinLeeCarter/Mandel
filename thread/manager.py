@@ -12,17 +12,24 @@ class Manager(QtCore.QObject):
     # region Setup
     def __init__(self,
                  on_progress_update: Optional[Callable[[float, int], None]] = None,
+                 # on_active_change: Optional[Callable[[bool], None]] = None,
                  on_stop_success: Optional[Callable[[], None]] = None,
                  on_job_complete: Optional[Callable[[job.Job], None]] = None
                  ):
         super().__init__()
         self._thread: QtCore.QThread = QtCore.QThread()
         self._worker: worker.Worker = worker.Worker()
+        self._worker_active: bool = False
         self._on_progress_update: Optional[Callable[[float, int], None]] = on_progress_update
+        # self._on_active_change: Optional[Callable[[bool], None]] = on_active_change
         self._on_stop_success: Optional[Callable[[], None]] = on_stop_success
         self._on_job_complete: Optional[Callable[[job.Job], None]] = on_job_complete
 
         self._singular_job: Optional[job.Job] = None
+
+    @property
+    def worker_active(self) -> bool:
+        return self._worker_active
     # endregion
 
     # region Requests from main thread
@@ -37,6 +44,7 @@ class Manager(QtCore.QObject):
         self._request_stop.connect(self._worker.request_stop)
         # worker -> gui
         self._worker.progressUpdate.connect(self.progress_update_slot)
+        self._worker.activeChange.connect(self.active_change_slot)
         self._worker.stopSuccess.connect(self.stop_success_slot)
         self._worker.jobComplete.connect(self.job_complete_slot)
         self._worker.debugMessage.connect(self.debug_message)
@@ -59,6 +67,11 @@ class Manager(QtCore.QObject):
     def progress_update_slot(self, progress: float, job_number: int):
         if self._on_progress_update is not None:
             self._on_progress_update(progress, job_number)
+
+    def active_change_slot(self, active: bool):
+        self._worker_active = active
+        # if self._on_active_change is not None:
+        #     self._on_active_change(active_change)
 
     def stop_success_slot(self):
         if self._on_stop_success is not None:

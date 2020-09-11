@@ -25,6 +25,9 @@ class Controller:
     def get_z0(self) -> complex:
         return self._model.z_model.z0
 
+    def get_calc_thread_active(self) -> bool:
+        return self._model.calc_thread_active
+
     def on_resized(self):
         self._model.on_resized(self._view.frame_shape)
 
