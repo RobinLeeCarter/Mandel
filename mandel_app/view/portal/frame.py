@@ -106,19 +106,22 @@ class Frame:
         # print(f"get_frame frame.frame_shape:\t{self.frame_shape}")
         self._calculate_transform()
 
-        done_ready = cp.cuda.get_current_stream().done
-        inactive_ready = not self._calc_thread_state.worker_active
-        either_ready = done_ready or inactive_ready
+        stream_done = cp.cuda.get_current_stream().done
+        worker_ready = not self._calc_thread_state.worker_active
+        either_ready = stream_done or worker_ready
 
-        # if inactive_ready and not done_ready:
-        #     print("inactive_ready and not done_ready")
-        # if done_ready and not inactive_ready:
-        #     print("done_ready and not inactive_ready")
+        # if worker_ready and not stream_done:
+        #     print("worker_ready and not stream_done")
+        # if stream_done and not worker_ready:
+        #     print("stream_done and not worker_ready")
 
-        # if not cp.cuda.get_current_stream().done:
-        #     print("Stream.done: False")
-        # if self._calc_thread_state.worker_active:
-        #     print(f"Worker active: {self._calc_thread_state.worker_active}")
+        # print(f"Stream.done: {stream_done}")
+        # print(f"worker_ready: {worker_ready}")
+
+        # if not stream_done:
+        #     print(f"stream_done: {stream_done}")
+        # if not worker_ready:
+        #     print(f"worker_ready: {worker_ready}")
 
         # self._apply_transform_cp()
 
@@ -136,12 +139,12 @@ class Frame:
         # self._timer.stop(show=False)
         # either_fps = 1.0/self._timer.total
 
-        # if not (done_ready and inactive_ready):
-        #     print(f"done_ready: {done_ready}\tinactive_ready: {inactive_ready}\teither_fps FPS: {either_fps:.1f}")
+        # if not (stream_done and worker_ready):
+        #     print(f"stream_done: {stream_done}\tworker_ready: {worker_ready}\teither_fps FPS: {either_fps:.1f}")
 
         # self._timer.start()
         #
-        # if inactive_ready:
+        # if worker_ready:
         #     # GPU ready so use that
         #     self._apply_transform_cp()
         # else:
@@ -153,7 +156,7 @@ class Frame:
         #
         # self._timer.start()
         #
-        # if done_ready:
+        # if stream_done:
         #     # GPU ready so use that
         #     self._apply_transform_cp()
         # else:

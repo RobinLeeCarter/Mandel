@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-import cupy as cp
+# import cupy as cp
 from PyQt5 import QtWidgets, QtCore
 
 from thread import job, enums
@@ -92,6 +92,9 @@ class Worker(QtCore.QObject):
         self._job_queue.remove(job_)
         # if this was the last job set the worker to inactive
         if not self._job_queue:
+            # stream_done = cp.cuda.get_current_stream().done
+            # if not stream_done:
+            #     print(f"last job stream_done: {stream_done}")
             self._set_active(False)
         # if the job was requested to be stopped then we don't want the actions associated with the job completing
         if not job_.stop_requested:
