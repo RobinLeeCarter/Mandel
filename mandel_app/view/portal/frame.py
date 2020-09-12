@@ -122,6 +122,8 @@ class Frame:
 
         # self._apply_transform_cp()
 
+        # self._apply_transform_np()
+
         # self._timer.start()
 
         if either_ready:
