@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import cupy as cp
 from PyQt5 import QtWidgets, QtCore
@@ -17,10 +17,20 @@ class Worker(QtCore.QObject):
     # region Setup
     def __init__(self):
         super().__init__()
+        # 0 is the front of the queue, the current job is the only at the front of the queue
+        # a job must always be on the queue before calling do_job
         self._job_queue: List[job.Job] = []
-        self._job_count: int = 0
-        self._active: bool = False
-        self._interrupt_requested: bool = False
+        self._job_number: int = 0
+        self._queue_active: bool = False
+        # self._jobs_in_progress: int = 0
+        # self._interrupt_current_job: bool = False
+
+    # @property
+    # def _current_job(self) -> Optional[job.Job]:
+    #     if len(self._job_queue) == 0:
+    #         return None
+    #     else:
+    #         return self._job_queue[0]
     # endregion
 
     # region Slots for Manager
@@ -28,68 +38,88 @@ class Worker(QtCore.QObject):
                     job_: job.Job,
                     queue_as: enums.QueueAs
                     ):
-        self._job_count += 1
-        job_.job_number = self._job_count
+        self._job_number += 1
+        job_.job_number = self._job_number
         job_.set_job_checkpoint(self._job_checkpoint)
 
         if queue_as == enums.QueueAs.ENQUEUE:
-            self._job_queue.append(job_)      # join the back of the queue
-        elif queue_as == enums.QueueAs.EXPEDITE:
-            if self._active:
-                self._do_job(job_)      # jump the queue and the job being served, then continue as before
-            else:
-                self._job_queue.append(job_)  # just add to the front of the work queue
-        elif queue_as == enums.QueueAs.SINGULAR:    # eliminate the queue and interrupt the job being served
-            self._job_queue.clear()
+            # join the back of the queue and waits it's turn
             self._job_queue.append(job_)
-            if self._active:
-                self._interrupt_requested = True
-            # debug = f"is_running = {self.is_running}\n" + \
-            #         f"interrupt_requested = {self.interrupt_requested}"
-            # self.debugMessage.emit(debug)
+        elif queue_as == enums.QueueAs.EXPEDITE:
+            # add to this job to the front of the queue
+            self._job_queue.insert(0, job_)
+            # do this job leaving the previous current job partially completed
+            self._do_job(job_)
+            # so can then continue with previous job that was in progress or the next in the queue
+        elif queue_as == enums.QueueAs.SINGULAR:
+            # Command to just run this job and get rid of all the others as quickly as possible
+            # request all other jobs to stop
+            # add this job to be next in the queue
+            self.request_stop()
+            self._job_queue.append(job_)
 
-        if not self._active:
+        if not self._queue_active and len(self._job_queue) > 0:
             self._do_job_queue()
 
     def request_stop(self):
-        if self._active:
+        # request to stop the current job if there is one and if running
+        # clear the rest of the queue
+        if self._job_queue:
+            current_job = self._job_queue[0]
             self._job_queue.clear()
-            self._interrupt_requested = True
+            if current_job.in_progress:
+                # rebuild job_queue as just the current job and request it to stop
+                self._job_queue.append(current_job)
+                current_job.stop_requested = True
+
+        # if self._queue_active:
+        #     self._job_queue.clear()
+        # if self._jobs_in_progress > 0:
+        #     # interrupt any job being served
+        #     self._interrupt_current_job = True
     # endregion
 
     # region Job Processing
     def _do_job_queue(self):
-        # self._set_active(True)
+        current_job: Optional[job.Job] = None
+        self._queue_active = True
         while self._job_queue:
-            job_ = self._job_queue.pop(0)
-            self._do_job(job_)
-        # self._set_active(False)
+            current_job = self._job_queue[0]
+            self._do_job(current_job)
+        self._queue_active = False
 
-        if self._interrupt_requested:
+        # if the final job in the queue was requested to stop then that was a full stop request so emit stopSuccess
+        if current_job is not None and current_job.stop_requested:
             self.stopSuccess.emit()
 
     def _set_active(self, active: bool):
-        if active != self._active:
-            self._active = active
+        if active != self._queue_active:
+            self._queue_active = active
             self.activeChange.emit(active)
 
     def _do_job(self, job_: job.Job):
-        self._interrupt_requested = False
-        self._set_active(True)
+        # reset to not interrupting job
+        # self._interrupt_current_job = False
+        # self._set_active(True)
+        # self._jobs_in_progress += 1
+        # self._jobs_in_progress -= 1
+        assert job_ in self._job_queue, "job_ not in _job_queue"
         job_.run()
-        QtWidgets.QApplication.processEvents()  # lets thread event-queue run so other things can happen
-        if len(self._job_queue) == 0:
-            self._set_active(False)
-        if not self._interrupt_requested:
-            # print(f"stream done: {cp.cuda.get_current_stream().done}")
-            # print(f"len(queue) : {len(self._job_queue)}")
+        # let the thread event-queue run so this job can be requested to be stopped
+        QtWidgets.QApplication.processEvents()
+        # if the job was requested to be stopped then we don't want the actions associated with the job completing
+        if not job_.stop_requested:
             self.jobComplete.emit(job_)
-        # job_.follow_on_actions()
+        # job is always removed from the queue at the end (so it must always be added else this will fail)
+        self._job_queue.remove(job_)
 
     def _job_checkpoint(self, job_: job.Job, progress: float = 0.0):
         if job_.progress_estimator:
             self.progressUpdate.emit(progress, job_.job_number)
-        QtWidgets.QApplication.processEvents()  # lets thread event-queue run so other things can happen
-        if self._interrupt_requested:
-            job_.interrupt_requested = True
+        # let the thread event-queue run so this job can be requested to be stopped
+        QtWidgets.QApplication.processEvents()
+        # if it does stop execution will re-emerge in _do_job after job_.run()
+
+        # if self._interrupt_current_job:
+        #     job_.stop_requested = True
     # endregion
