@@ -56,8 +56,8 @@ class Frame:
 
         self._frame_pixels_np = np.zeros(shape=(frame_y, frame_x, 2), dtype=np.float32)
 
-        y_range = np.arange(start=0, stop=frame_y, dtype=cp.float32)
-        x_range = np.arange(start=0, stop=frame_x, dtype=cp.float32)
+        y_range = np.arange(start=0, stop=frame_y, dtype=np.float32)
+        x_range = np.arange(start=0, stop=frame_x, dtype=np.float32)
 
         # for 3D array: 0 is x, 1 is y
         # noinspection PyTypeChecker
@@ -180,7 +180,7 @@ class Frame:
 
         # values
         # source_x = float(self._source.shape[1])
-        source_y = float(self._source_cp.shape[0])
+        source_y = float(self._source_np.shape[0])
         frame_x = float(self.frame_shape.x)
         frame_y = float(self.frame_shape.y)
         # cartesian offset when source and portal were first generated, x and y are both positive
