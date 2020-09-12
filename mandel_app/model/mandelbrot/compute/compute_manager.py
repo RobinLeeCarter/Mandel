@@ -35,7 +35,13 @@ class ComputeManager:
 
         # desired_loops: int = 5
         # multiplier_per_loop: float = 1.0
-        early_stop_tolerance: float = 0.0001
+
+        # iterations_per_loop = 10000
+        # early_stop_tolerance: float = 0.0001
+
+        iterations_per_loop = 1000
+        early_stop_tolerance: float = 0.00001
+
         total_pixels = c.size
         pixel_tolerance = math.floor(early_stop_tolerance * total_pixels)
 
@@ -43,7 +49,7 @@ class ComputeManager:
         # desired_multiplier = sum(multipliers.__next__() for _ in range(desired_loops))
         # initial_iterations = math.ceil(float(expected_iterations) / desired_multiplier)
         # multipliers = self.multipliers(multiplier_per_loop)  # reset generator
-        iterations_per_loop = 10000
+        # iterations_per_loop = 10000
 
         # loops = 100     # optimal with early_stopping
         # loops = 10      # optimal without early_stopping
