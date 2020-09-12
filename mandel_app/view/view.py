@@ -318,7 +318,8 @@ class View:
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = self._mouse_frame_point(event)
             central.pan_image(pan=view_state_.total_pan)
-            self._set_action(enums.ImageAction.PANNING)
+            self._update_cursor()
+            # self._set_action(enums.ImageAction.PANNING)
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
             view_state_.rotate_end = self._mouse_frame_point(event)
             central.rotate_image(view_state_.total_theta_delta)

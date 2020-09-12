@@ -18,8 +18,6 @@ class State:
 
         self.rotate_start: Optional[tuples.PixelPoint] = None
         self.rotate_end: Optional[tuples.PixelPoint] = None
-        # TODO: should mandel_shape be here? Should it be mandel?
-        # self.mandel_shape: Optional[tuples.ImageShape] = None
 
         self.released_pan_delta: Optional[tuples.PixelPoint] = None
         self.released_theta_delta: int = 0
