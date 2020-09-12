@@ -116,8 +116,8 @@ class Frame:
         # if done_ready and not inactive_ready:
         #     print("done_ready and not inactive_ready")
 
-        # if not cp.cuda.get_current_stream().done:
-        #     print("Stream.done: False")
+        if not cp.cuda.get_current_stream().done:
+            print("Stream.done: False")
         # if self._calc_thread_state.worker_active:
         #     print(f"Worker active: {self._calc_thread_state.worker_active}")
 
