@@ -108,7 +108,6 @@ class Frame:
 
         done_ready = cp.cuda.get_current_stream().done
         inactive_ready = not self._calc_thread_state.worker_active
-
         either_ready = done_ready or inactive_ready
 
         # if inactive_ready and not done_ready:
@@ -116,14 +115,14 @@ class Frame:
         # if done_ready and not inactive_ready:
         #     print("done_ready and not inactive_ready")
 
-        if not cp.cuda.get_current_stream().done:
-            print("Stream.done: False")
+        # if not cp.cuda.get_current_stream().done:
+        #     print("Stream.done: False")
         # if self._calc_thread_state.worker_active:
         #     print(f"Worker active: {self._calc_thread_state.worker_active}")
 
         # self._apply_transform_cp()
 
-        self._timer.start()
+        # self._timer.start()
 
         if either_ready:
             # GPU ready so use that
@@ -132,11 +131,11 @@ class Frame:
             # GPU not ready so fall back to CPU
             self._apply_transform_np()
 
-        self._timer.stop(show=False)
-        either_fps = 1.0/self._timer.total
+        # self._timer.stop(show=False)
+        # either_fps = 1.0/self._timer.total
 
-        if not (done_ready and inactive_ready):
-            print(f"done_ready: {done_ready}\tinactive_ready: {inactive_ready}\teither_fps FPS: {either_fps:.1f}")
+        # if not (done_ready and inactive_ready):
+        #     print(f"done_ready: {done_ready}\tinactive_ready: {inactive_ready}\teither_fps FPS: {either_fps:.1f}")
 
         # self._timer.start()
         #
@@ -164,7 +163,6 @@ class Frame:
 
         # if done_fps < 100.0 or inactive_fps < 100.0:
         #     print(f"Inactive FPS: {inactive_fps:.1f}\t Done FPS: {done_fps:.1f}")
-
 
     # noinspection PyPep8Naming,PyPep8
     def _calculate_transform(self):

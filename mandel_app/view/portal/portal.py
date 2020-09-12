@@ -68,8 +68,13 @@ class Portal:
         self._draw_frame()
 
     def pan_display(self, pan: tuples.PixelPoint):
+        # self._timer.start()
         self._frame.pan(pan)
         self._draw_frame()
+        # self._timer.stop(show=False)
+        # fps = 1.0/self._timer.total
+        # if fps < 50.0:
+        #     print(f"FPS: {1.0/self._timer.total:.1f}")
 
     def rotate_display(self, degrees: float):
         """Over 100fps at 1080p with border"""

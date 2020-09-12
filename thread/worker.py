@@ -22,16 +22,7 @@ class Worker(QtCore.QObject):
         self._job_queue: List[job.Job] = []
         self._job_number: int = 0
         self._queue_active: bool = False
-        # self._jobs_in_progress: int = 0
-        # self._interrupt_current_job: bool = False
-
-    # @property
-    # def _current_job(self) -> Optional[job.Job]:
-    #     if len(self._job_queue) == 0:
-    #         return None
-    #     else:
-    #         return self._job_queue[0]
-    # endregion
+        self._worker_active: bool = False
 
     # region Slots for Manager
     def request_job(self,
@@ -71,12 +62,6 @@ class Worker(QtCore.QObject):
                 # rebuild job_queue as just the current job and request it to stop
                 self._job_queue.append(current_job)
                 current_job.stop_requested = True
-
-        # if self._queue_active:
-        #     self._job_queue.clear()
-        # if self._jobs_in_progress > 0:
-        #     # interrupt any job being served
-        #     self._interrupt_current_job = True
     # endregion
 
     # region Job Processing
@@ -93,25 +78,24 @@ class Worker(QtCore.QObject):
             self.stopSuccess.emit()
 
     def _set_active(self, active: bool):
-        if active != self._queue_active:
-            self._queue_active = active
+        if active != self._worker_active:
+            self._worker_active = active
             self.activeChange.emit(active)
 
     def _do_job(self, job_: job.Job):
-        # reset to not interrupting job
-        # self._interrupt_current_job = False
-        # self._set_active(True)
-        # self._jobs_in_progress += 1
-        # self._jobs_in_progress -= 1
         assert job_ in self._job_queue, "job_ not in _job_queue"
+        self._set_active(True)
         job_.run()
         # let the thread event-queue run so this job can be requested to be stopped
         QtWidgets.QApplication.processEvents()
+        # job is always removed from the queue at the end (so it must always be added else this will fail)
+        self._job_queue.remove(job_)
+        # if this was the last job set the worker to inactive
+        if not self._job_queue:
+            self._set_active(False)
         # if the job was requested to be stopped then we don't want the actions associated with the job completing
         if not job_.stop_requested:
             self.jobComplete.emit(job_)
-        # job is always removed from the queue at the end (so it must always be added else this will fail)
-        self._job_queue.remove(job_)
 
     def _job_checkpoint(self, job_: job.Job, progress: float = 0.0):
         if job_.progress_estimator:
@@ -119,7 +103,4 @@ class Worker(QtCore.QObject):
         # let the thread event-queue run so this job can be requested to be stopped
         QtWidgets.QApplication.processEvents()
         # if it does stop execution will re-emerge in _do_job after job_.run()
-
-        # if self._interrupt_current_job:
-        #     job_.stop_requested = True
     # endregion
