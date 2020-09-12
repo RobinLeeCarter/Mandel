@@ -1,5 +1,4 @@
 import sys
-import gc
 
 from PyQt5 import QtWidgets
 
@@ -29,5 +28,4 @@ class Application:
 
 
 def launch_application():
-    gc.disable()
     Application()
