@@ -1,5 +1,6 @@
 from typing import List
 
+import cupy as cp
 from PyQt5 import QtWidgets, QtCore
 
 from thread import job, enums
@@ -58,11 +59,11 @@ class Worker(QtCore.QObject):
 
     # region Job Processing
     def _do_job_queue(self):
-        self._set_active(True)
+        # self._set_active(True)
         while self._job_queue:
             job_ = self._job_queue.pop(0)
             self._do_job(job_)
-        self._set_active(False)
+        # self._set_active(False)
 
         if self._interrupt_requested:
             self.stopSuccess.emit()
@@ -74,9 +75,14 @@ class Worker(QtCore.QObject):
 
     def _do_job(self, job_: job.Job):
         self._interrupt_requested = False
+        self._set_active(True)
         job_.run()
         QtWidgets.QApplication.processEvents()  # lets thread event-queue run so other things can happen
+        if len(self._job_queue) == 0:
+            self._set_active(False)
         if not self._interrupt_requested:
+            # print(f"stream done: {cp.cuda.get_current_stream().done}")
+            # print(f"len(queue) : {len(self._job_queue)}")
             self.jobComplete.emit(job_)
         # job_.follow_on_actions()
 

@@ -4,12 +4,14 @@ import numpy as np
 import cupy as cp
 
 import thread
+import utils
 from mandel_app import tuples
 from mandel_app.view.portal import transform
 
 
 class Frame:
     def __init__(self):
+        self._timer: utils.Timer = utils.Timer()
         self._calc_thread_state: Optional[thread.State] = None
 
         self._source_np: Optional[np.ndarray] = None
@@ -79,19 +81,19 @@ class Frame:
     def pan(self, pan: tuples.PixelPoint):
         self._pan = pan
         # print("Pan")
-        if not cp.cuda.get_current_stream().done:
-            print("Stream.done: False")
-        if self._calc_thread_state.worker_active:
-            print(f"Worker active: {self._calc_thread_state.worker_active}")
+        # if not cp.cuda.get_current_stream().done:
+        #     print("Stream.done: False")
+        # if self._calc_thread_state.worker_active:
+        #     print(f"Worker active: {self._calc_thread_state.worker_active}")
         self.get_frame()
 
     def rotate(self, rotation_degrees: float):
         self._rotation_degrees = rotation_degrees
         # print("Rotate")
-        if not cp.cuda.get_current_stream().done:
-            print("Stream.done: False")
-        if self._calc_thread_state.worker_active:
-            print(f"Worker active: {self._calc_thread_state.worker_active}")
+        # if not cp.cuda.get_current_stream().done:
+        #     print("Stream.done: False")
+        # if self._calc_thread_state.worker_active:
+        #     print(f"Worker active: {self._calc_thread_state.worker_active}")
         self.get_frame()
 
     def scale(self, scale: float, scale_point: tuples.PixelPoint):
@@ -104,21 +106,65 @@ class Frame:
         # print(f"get_frame frame.frame_shape:\t{self.frame_shape}")
         self._calculate_transform()
 
+        done_ready = cp.cuda.get_current_stream().done
+        inactive_ready = not self._calc_thread_state.worker_active
+
+        either_ready = done_ready or inactive_ready
+
+        # if inactive_ready and not done_ready:
+        #     print("inactive_ready and not done_ready")
+        # if done_ready and not inactive_ready:
+        #     print("done_ready and not inactive_ready")
+
+        # if not cp.cuda.get_current_stream().done:
+        #     print("Stream.done: False")
+        # if self._calc_thread_state.worker_active:
+        #     print(f"Worker active: {self._calc_thread_state.worker_active}")
+
         # self._apply_transform_cp()
 
-        if cp.cuda.get_current_stream().done:
+        self._timer.start()
+
+        if either_ready:
             # GPU ready so use that
             self._apply_transform_cp()
         else:
             # GPU not ready so fall back to CPU
             self._apply_transform_np()
 
-        # if self._calc_thread_state.worker_active:
-        #     # GPU not ready so fall back to CPU
-        #     self._apply_transform_np()
-        # else:
+        self._timer.stop(show=False)
+        either_fps = 1.0/self._timer.total
+
+        if not (done_ready and inactive_ready):
+            print(f"done_ready: {done_ready}\tinactive_ready: {inactive_ready}\teither_fps FPS: {either_fps:.1f}")
+
+        # self._timer.start()
+        #
+        # if inactive_ready:
         #     # GPU ready so use that
         #     self._apply_transform_cp()
+        # else:
+        #     # GPU not ready so fall back to CPU
+        #     self._apply_transform_np()
+        #
+        # self._timer.stop(show=False)
+        # inactive_fps = 1.0/self._timer.total
+        #
+        # self._timer.start()
+        #
+        # if done_ready:
+        #     # GPU ready so use that
+        #     self._apply_transform_cp()
+        # else:
+        #     # GPU not ready so fall back to CPU
+        #     self._apply_transform_np()
+        #
+        # self._timer.stop(show=False)
+        # done_fps = 1.0 / self._timer.total
+
+        # if done_fps < 100.0 or inactive_fps < 100.0:
+        #     print(f"Inactive FPS: {inactive_fps:.1f}\t Done FPS: {done_fps:.1f}")
+
 
     # noinspection PyPep8Naming,PyPep8
     def _calculate_transform(self):
