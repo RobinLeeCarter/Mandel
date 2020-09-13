@@ -83,6 +83,7 @@ class Worker(QtCore.QObject):
             self.activeChange.emit(active)
 
     def _do_job(self, job_: job.Job):
+        # TODO: This assert error fired once
         assert job_ in self._job_queue, "job_ not in _job_queue"
         self._set_active(True)
         job_.run()
