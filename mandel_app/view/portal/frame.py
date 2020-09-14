@@ -272,7 +272,6 @@ class Frame:
         matrix = cp.asarray(self._matrix, dtype=cp.float32)
         vector = cp.asarray(self._vector, dtype=cp.float32)
         frame_to_source_fp32 = cp.matmul(self._frame_pixels_cp, matrix.T) + vector
-        # TODO: double conversion?
         frame_to_source_int32 = cp.rint(frame_to_source_fp32).astype(cp.int32)
 
         # for 3D array: 0 is x, 1 is y

@@ -79,11 +79,7 @@ class ComputeManager:
         # print(f"loop=0\t{start_iter}->{end_iter}")
         # print(f"all:\t{c.size}")
         yield from self._compute.compute_iterations(c, z, iteration, start_iter, end_iter)
-        # yield self.calc_work_done(iteration, start_iter)
-        # claim 4-times the progress for the first one (usually much slower)
-        # yield starting_iterations * 4 * yield_per_iteration
-        # yield yield_per_loop * 4  # claim 4-times the progress for the first one (usually much slower)
-        # print(f"iteration_max = {cp.amax(iteration)}")
+
         continuing = (iteration == end_iter)
         if not cp.any(continuing):
             return iteration
@@ -100,7 +96,6 @@ class ComputeManager:
             # end_iter = min(start_iter + iterations_per_loop, self._max_iterations)
             start_iter = end_iter
             end_iter = min(start_iter + iterations_per_loop, self.max_iterations)
-            # performed_iter = start_iter - end_iter
             # print(f"loop={loop}\t{start_iter}->{end_iter}")
             # count_continuing = cp.count_nonzero(continuing)
             # print(f"cont:\t{count_continuing}")
@@ -116,9 +111,6 @@ class ComputeManager:
                 start_iter,
                 end_iter
             )
-            # yield self.calc_work_done(continuing_iteration, start_iter)
-            # yield (starting_iterations * 3 + end_iter) * yield_per_iteration
-            # yield yield_per_loop * (loop + 4)
             # print(f"cp.sum(continuing) after compute: {cp.sum(continuing)}")
             # print(f"z.shape: {z.shape}")
             # print(f"continuing.shape: {continuing.shape}")
@@ -161,20 +153,3 @@ class ComputeManager:
         # yield 1.0
         self.final_iteration = end_iter
         return iteration
-
-    # def calc_work_done(self, iteration: cp.ndarray, start_iter: int) -> float:
-    #     # TODO: This calculation is skew
-    #     total_iterations = cp.sum(iteration)
-    #     base_iterations = start_iter * iteration.size
-    #     extra_iterations = total_iterations - base_iterations
-    #     # print(f"total_iterations={total_iterations}")
-    #     # print(f"base_iterations={base_iterations}")
-    #
-    #     return float(extra_iterations)
-
-    # @staticmethod
-    # def multipliers(factor: float = 2.0):
-    #     i: float = 1.0
-    #     while True:
-    #         yield i
-    #         i *= factor

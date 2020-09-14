@@ -27,6 +27,7 @@ class Worker(QtCore.QObject):
         self._job_loop_active: bool = False
         self._worker_active: bool = False
         self._stopping: bool = False
+    # endregion
 
     # region Slots for Manager
     def request_job(self,
@@ -41,16 +42,12 @@ class Worker(QtCore.QObject):
         if queue_as == enums.QueueAs.ENQUEUE:
             # join the back of the queue and waits it's turn
             self._to_do_queue.append(job_)
-            if not self._job_loop_active:
-                self._do_job_loop()
         elif queue_as == enums.QueueAs.SINGULAR:
             # Command to just run this job and get rid of all the others as quickly as possible
             # request all other jobs to stop
             # add this job to be next in the queue
             self._request_all_existing_jobs_stop()
             self._to_do_queue.append(job_)
-            if not self._job_loop_active:
-                self._do_job_loop()
         elif queue_as == enums.QueueAs.EXPEDITE:
             # should always have the job loop active if running a job
             if self._job_loop_active:
@@ -58,15 +55,22 @@ class Worker(QtCore.QObject):
                 # do this job leaving the previous current job partially completed
                 self._do_job(job_)
                 # so can then continue with previous job that was in progress or the next in the queue
-                if not self._job_loop_active and not self._to_do_queue:
-                    self._final_cleanup()
+
+                # Clean up:
+                # If job queue already active it will do nothing. Cleanup will happen when another one stops.
+                # If it is inactive but there is nothing to_do then it is the last job in progress then will clean up.
+
+                # if not self._job_loop_active and not self._to_do_queue:
+                #     self._final_cleanup()
             else:
                 # use the job loop to run the job
                 self._to_do_queue.append(job_)
-                self._do_job_loop()
+
+        # Always call the job loop and let it sort out running of other jobs and ultimate cleanup.
+        self._job_loop()
 
         # if not self._job_loop_active and len(self._todo_queue) > 0:
-        #     self._do_job_loop()
+        #     self._job_loop()
 
     # def _print_status(self, calling_point: str):
     #     print(calling_point)
@@ -93,18 +97,16 @@ class Worker(QtCore.QObject):
     # endregion
 
     # region Job Processing
-    def _do_job_loop(self):
-        self._job_loop_active = True
-        while self._to_do_queue:
-            if self._stopping:
-                # should never happen
-                print(f"Stopping error. To_do: {len(self._to_do_queue)}")
-                break
-            else:
+    def _job_loop(self):
+        if not self._job_loop_active:
+            self._job_loop_active = True
+            while self._to_do_queue:
                 current_job = self._to_do_queue.pop(0)
                 self._do_job(current_job)
-        self._job_loop_active = False
-        self._final_cleanup()
+            self._job_loop_active = False
+
+            if not self._doing_queue:   # otherwise it will clean up here once the doing queue is empty
+                self._final_cleanup()
 
     def _final_cleanup(self):
         # execution about to end, do clean-up

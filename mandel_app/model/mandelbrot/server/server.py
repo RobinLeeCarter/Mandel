@@ -185,7 +185,7 @@ class Server:
     def c_cpu(self) -> np.ndarray:
         return cp.asnumpy(self._c)
 
-    # TODO: implemented for flatten
+    # TODO: implement for flatten
     def compute_flat_array(self, gpu_c_flat: cp.ndarray) -> cp.ndarray:
         raise NotImplementedError
 
