@@ -84,13 +84,15 @@ class Worker(QtCore.QObject):
 
     def _do_job(self, job_: job.Job):
         # TODO: This assert error fired once
-        assert job_ in self._job_queue, "job_ not in _job_queue"
+        # assert job_ in self._job_queue, "job_ not in _job_queue"
         self._set_active(True)
         job_.run()
         # let the thread event-queue run so this job can be requested to be stopped
         QtWidgets.QApplication.processEvents()
         # job is always removed from the queue at the end (so it must always be added else this will fail)
-        self._job_queue.remove(job_)
+        # TODO: remove this workaround
+        if job_ in self._job_queue:
+            self._job_queue.remove(job_)
         # if this was the last job set the worker to inactive
         if not self._job_queue:
             # stream_done = cp.cuda.get_current_stream().done

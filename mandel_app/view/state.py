@@ -120,7 +120,7 @@ class State:
 
     @property
     def tiny_pan(self) -> bool:
-        return tuples.pixel_distance(self.mouse_pan_delta) <= 4
+        return tuples.pixel_distance(self.mouse_pan_delta) <= 0
 
     @property
     def mouse_theta_delta(self) -> Optional[int]:
