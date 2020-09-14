@@ -23,6 +23,7 @@ class Timer:
         self.lap_start: float = self.start_time
         self.end_time: float = 0
         self.laps: List[Lap] = []
+        self.running: bool = False
 
     @property
     def total(self) -> float:
@@ -32,6 +33,7 @@ class Timer:
             return 0.0
 
     def start(self):
+        self.running = True
         self.laps.clear()
         self.start_time = time.perf_counter()
         self.lap_start = self.start_time
@@ -48,6 +50,7 @@ class Timer:
 
     def stop(self, name: str = "", show=True) -> float:
         self.end_time = time.perf_counter()
+        self.running = False
         if show:
             print("")
             for lap in self.laps:

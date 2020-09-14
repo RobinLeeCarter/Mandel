@@ -12,7 +12,6 @@ class Compute:
         self._mandel_kernel: cp.RawKernel = self._load_mandel_kernel()
 
         self.iterations_per_kernel: int = 0
-        self.kernels_per_loop: int = 0
 
         # cupy mandel variables
         # experimentally this gives the best results

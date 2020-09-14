@@ -47,8 +47,8 @@ class ComputeManager:
         # early_stop_tolerance: float = 0.00001
 
         self._compute.iterations_per_kernel = 1000
-        self._compute.kernels_per_loop = 10
-        iterations_per_loop = self._compute.iterations_per_kernel * self._compute.kernels_per_loop
+        kernels_per_loop = 10
+        iterations_per_loop = self._compute.iterations_per_kernel * kernels_per_loop
         early_stop_tolerance: float = 0.0001
         # early_stop_tolerance: float = 0.000001
 
