@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional
 
 from matplotlib import lines
 
@@ -24,27 +24,6 @@ class DrawMandelFrame(portal.Drawable):
 
     def set_frame(self, frame: portal.Frame):
         self._frame = frame
-
-    # either store and update this function when mandel changes, or have a fresh source point calculated and passed in
-    # would still need z0 passed in again
-    # unless could get a link back to z0, perhaps another callback function
-    # is this getting too messy? But what if wanted to update many things here which depended on z-values
-    # def set_complex_to_source(self,
-    #                           complex_to_source: Callable[[complex], tuples.PixelPoint]):
-    #     self._complex_to_source = complex_to_source
-    #
-    # def set_z0(self, z0: complex):
-    #     self._z0_source_point = self._complex_to_source(z0)
-    #     self.show_z0()
-
-    # rather than storing a pointer to frame or portal, just store the transform function
-    # this link is set at the start and never changes
-    # def set_source_to_transformed_frame(self,
-    #                                     source_to_transformed_frame: Callable[[tuples.PixelPoint], tuples.PixelPoint]):
-    #     self._source_to_transformed_frame = source_to_transformed_frame
-
-    # def set_frame_shape(self, frame_shape: tuples.ImageShape):
-    #     self._frame_shape = frame_shape
 
     def set_z0_source_point(self, z0_source_point: tuples.PixelPoint):
         # print("set_z0_source_point")

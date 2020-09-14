@@ -47,7 +47,7 @@ class Mesh:
         # self._timer.lap(f"start {self.mesh_step}\t")
         self.server.grid_lines_request(self.mesh_step)
         # self._timer.lap("request  \t")
-        yield from self.server.serve(early_stopping=True)
+        yield from self.server.serve()
         # self._timer.lap("serve    \t")
 
         self.iteration = self.server.iteration_cpu
@@ -64,7 +64,7 @@ class Mesh:
         # self._timer.lap(f"remainder\t")
         self.server.request_incomplete()
         # self._timer.lap("request  \t")
-        yield from self.server.serve(early_stopping=True)
+        yield from self.server.serve()
         # self._timer.lap("serve    \t")
         self.iteration = self.server.iteration_cpu
         # self._timer.lap("retrieve \t")

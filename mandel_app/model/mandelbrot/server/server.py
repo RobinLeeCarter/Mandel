@@ -226,10 +226,10 @@ class Server:
         if completed is not None:
             completed()
 
-    def serve(self, early_stopping: bool = False) -> Generator[float, None, None]:
+    def serve(self) -> Generator[float, None, None]:
         if self._box_fills:
             self._do_box_fills()
-        yield from self._compute_new_requests(early_stopping)
+        yield from self._compute_new_requests()
         self._respond_to_requests()
         self._reset()
 
@@ -240,7 +240,7 @@ class Server:
         self._completed[box_fill_gpu] = True
         self._iteration[box_fill_gpu] = box_iter_gpu[box_fill_gpu]
 
-    def _compute_new_requests(self, early_stopping: bool = False) -> Generator[float, None, None]:
+    def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
         new_requests = self._requested & ~self._completed  # ~ is logical_not
         request_count = cp.count_nonzero(new_requests)
@@ -252,7 +252,6 @@ class Server:
         # get the result as a flat array
         result_flat = yield from self._compute_manager.compute_flat_array(
             to_compute_flat,
-            # early_stopping,
             self._early_stopping_iteration
         )
         # early_stop_iteration = self._compute_manager.early_stop_iteration

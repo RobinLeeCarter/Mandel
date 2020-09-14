@@ -34,7 +34,7 @@ class State:
     @action_in_progress.setter
     def action_in_progress(self, new_action: enums.ImageAction):
         self._action_in_progress = new_action
-        # print(f"new_action: {new_action.__str__()}\t\trevert_on_stop: {self.revert_on_stop}")
+        # print(f"new_action: {new_action.__str__()}\t\t revert_on_stop: {self.revert_on_stop}")
 
     def set_central(self, central_: central.Central):
         self._central = central_

@@ -140,7 +140,7 @@ class Frame:
         # either_fps = 1.0/self._timer.total
 
         # if not (stream_done and worker_ready):
-        #     print(f"stream_done: {stream_done}\tworker_ready: {worker_ready}\teither_fps FPS: {either_fps:.1f}")
+        #     print(f"stream_done: {stream_done}\t worker_ready: {worker_ready}\t either_fps FPS: {either_fps:.1f}")
 
         # self._timer.start()
         #

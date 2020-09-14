@@ -24,7 +24,6 @@ class ComputeManager:
     def compute_flat_array(
             self,
             c: cp.ndarray,
-            # early_stopping: bool = False,
             early_stopping_iteration: Optional[int] = None
     ) -> Generator[float, None, cp.ndarray]:
         z = cp.copy(c)
@@ -34,45 +33,17 @@ class ComputeManager:
 
         # print(early_stopping_iteration)
 
-        # desired_loops: int = 5
-        # multiplier_per_loop: float = 1.0
-
-        # iterations_per_loop = 100000
-        # early_stop_tolerance: float = 0.001
-
-        # iterations_per_loop = 10000
-        # early_stop_tolerance: float = 0.0001
-
-        # iterations_per_loop = 1000
-        # early_stop_tolerance: float = 0.00001
-
         self._compute.iterations_per_kernel = 1000
         kernels_per_loop = 10
         iterations_per_loop = self._compute.iterations_per_kernel * kernels_per_loop
         early_stop_tolerance: float = 0.0001
-        # early_stop_tolerance: float = 0.000001
 
         total_pixels = c.size
         pixel_tolerance = math.floor(early_stop_tolerance * total_pixels)
 
-        # multipliers = self.multipliers(multiplier_per_loop)  # generator
-        # desired_multiplier = sum(multipliers.__next__() for _ in range(desired_loops))
-        # initial_iterations = math.ceil(float(expected_iterations) / desired_multiplier)
-        # multipliers = self.multipliers(multiplier_per_loop)  # reset generator
-        # iterations_per_loop = 10000
-
-        # loops = 100     # optimal with early_stopping
-        # loops = 10      # optimal without early_stopping
-        # starting_iterations = math.ceil(self._mandel.max_iterations * (2**-loops))
-        # iterations_per_loop = math.ceil(self._max_iterations / loops)
-        # yield_per_loop: float = 1.0 / float(loops+4)
-        # yield_per_iteration: float = 1.0 / float(self._mandel.max_iterations + starting_iterations*4)
-
         # first iteration different
         start_iter = 0
         end_iter = iterations_per_loop
-        # end_iter = starting_iterations
-        # performed_iter = start_iter - end_iter
         # print(f"{c.shape}")
         # print(f"{start_iter}->{end_iter}")
         # print(f"iteration_max = {cp.amax(iteration)}")

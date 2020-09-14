@@ -1,5 +1,3 @@
-from typing import Callable
-
 from PyQt5 import QtWidgets
 
 from mandel_app.view import widgets

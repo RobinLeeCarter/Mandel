@@ -88,13 +88,6 @@ class Compute:
         # print(f"block_size: {self.block_size}")
         # print(f"total_blocks: {total_blocks}")
 
-        # end_points = cp.arange(start=start_iter+self.iterations_per_kernel,
-        #                        stop=end_iter+1,
-        #                        step=self.iterations_per_kernel,
-        #                        dtype=cp.int32)
-        # print(end_points)
-        # for i in cp.arange(self.kernels_per_loop):
-
         end_points = range(start_iter+self.iterations_per_kernel,
                            end_iter+1,
                            self.iterations_per_kernel)

@@ -7,7 +7,7 @@ from thread import job, enums
 
 
 class Worker(QtCore.QObject):
-    progressUpdate = QtCore.pyqtSignal(float, int)
+    progressUpdate = QtCore.pyqtSignal(job.Job, float)
     jobComplete = QtCore.pyqtSignal(job.Job)
 
     activeChange = QtCore.pyqtSignal(bool)
@@ -139,7 +139,7 @@ class Worker(QtCore.QObject):
 
     def _job_checkpoint(self, job_: job.Job, progress: float = 0.0):
         if job_.progress_estimator:
-            self.progressUpdate.emit(progress, job_.job_number)
+            self.progressUpdate.emit(job_, progress)
         # let the thread event-queue run so this job can be requested to be stopped
         QtWidgets.QApplication.processEvents()
         # if it does stop execution will re-emerge in _do_job after job_.run()

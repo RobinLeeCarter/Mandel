@@ -33,7 +33,7 @@ class View:
     def build(self):
         dock_icon = icon.Icon("mandel_icon.png")
         self._application.setWindowIcon(dock_icon.q_icon)
-        self._window = window.Window(self._application_name, self._view_settings.window_settings)
+        self._window = window.Window(self._application_name)
         self._window.build(self._view_settings.window_settings, self._view_state.cursor_shape)
         self._view_state.set_central(self._window.central)
         self._window.central.set_cursor(self._view_state.cursor_shape)

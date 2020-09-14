@@ -197,7 +197,7 @@ class Model:
     # endregion
 
     # region Events from Thread
-    def _on_progress_update(self, progress: float, job_number: int):
+    def _on_progress_update(self, _: thread.Job, progress: float):
         self._controller.progress_update(progress)
 
     # def _on_active_change(self, active: bool):

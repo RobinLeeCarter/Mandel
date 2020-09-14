@@ -11,7 +11,7 @@ class Manager(QtCore.QObject):
 
     # region Setup
     def __init__(self,
-                 on_progress_update: Optional[Callable[[float, int], None]] = None,
+                 on_progress_update: Optional[Callable[[job.Job, int], None]] = None,
                  # on_active_change: Optional[Callable[[bool], None]] = None,
                  on_stop_success: Optional[Callable[[], None]] = None,
                  on_job_complete: Optional[Callable[[job.Job], None]] = None
@@ -69,9 +69,9 @@ class Manager(QtCore.QObject):
     # endregion
 
     # region Slots for Worker
-    def progress_update_slot(self, progress: float, job_number: int):
+    def progress_update_slot(self, job_: job.Job,  progress: float):
         if self._on_progress_update is not None:
-            self._on_progress_update(progress, job_number)
+            self._on_progress_update(job_, progress)
 
     def active_change_slot(self, active: bool):
         self._state.worker_active = active
