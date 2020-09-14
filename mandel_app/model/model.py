@@ -75,10 +75,6 @@ class Model:
         if save_history and self.displayed_mandel is not None:
             self.mandel_history.append(self.displayed_mandel)
         self.displayed_mandel = self.new_mandel
-        # self.new_mandel = copy.deepcopy(self.new_mandel)
-
-    # def revert_to_displayed_as_new(self):
-    #     self.new_mandel = copy.deepcopy(self.displayed_mandel)
 
     def zoom_and_calc(self,
                       frame_point: Optional[tuples.PixelPoint],
@@ -215,16 +211,12 @@ class Model:
             self.new_mandel.time_taken = job.progress_estimator.timer.total
         self._controller.new_is_ready(mandel_job.save_history)
 
-        # TODO: control generation of borders in controller rather than automatically firing?
-        if not self.new_mandel.has_border:
-            self._add_border()
-
-    def _add_border(self):
+    def add_border(self, mandel: mandelbrot.Mandel):
         border_size = 14*4*10    # add 5 large boxes in all directions
-        displayed_shape = self.displayed_mandel.shape
-        new_shape = tuples.ImageShape(displayed_shape.x + border_size*2,
-                                      displayed_shape.y + border_size*2)
-        self.new_mandel = self.displayed_mandel.lite_copy(
+        current_shape = mandel.shape
+        new_shape = tuples.ImageShape(current_shape.x + border_size*2,
+                                      current_shape.y + border_size*2)
+        self.new_mandel = mandel.lite_copy(
             shape=new_shape,
             has_border=True
         )
@@ -234,7 +226,7 @@ class Model:
         job = mandelbrot.MandelJob(
             compute_manager=self._compute_manager,
             new_mandel=self.new_mandel,
-            prev_mandel=self.displayed_mandel,
+            prev_mandel=mandel,
             offset=offset,
             display_progress=False,  # background job
             save_history=False
