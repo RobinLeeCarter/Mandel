@@ -320,6 +320,7 @@ class Frame:
 
         frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
         if np.all(mapped):
+            # twice as fast
             frame_rgba[:, :] = self._source_np[source_y, source_x, :]
         else:
             frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
