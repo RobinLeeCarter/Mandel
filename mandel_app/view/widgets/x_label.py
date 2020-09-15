@@ -15,10 +15,17 @@ class XLabel(QtWidgets.QLabel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._current_cursor_shape: Optional[QtCore.Qt.CursorShape] = None
         self._overlay: Optional[base_overlay.BaseOverlay] = None
 
     def set_overlay(self, overlay_: base_overlay.BaseOverlay):
         self._overlay = overlay_
+
+    def set_cursor_shape(self, new_cursor_shape: QtCore.Qt.CursorShape):
+        if self._current_cursor_shape is None or self._current_cursor_shape != new_cursor_shape:
+            new_cursor = QtGui.QCursor(new_cursor_shape)
+            self.setCursor(new_cursor)
+            self._current_cursor_shape = new_cursor_shape
     # endregion
 
     # region Overridden Events

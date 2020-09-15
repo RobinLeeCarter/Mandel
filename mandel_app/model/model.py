@@ -28,7 +28,8 @@ class Model:
 
     def build(self, frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
-        self.displayed_mandel = self._initial_mandel()
+        # self.displayed_mandel = self._initial_mandel()
+        self.displayed_mandel = self._sticky_mandel()
         # self.displayed_mandel = self._slow_mandel()
         # self.displayed_mandel = self._different_mandel()
         self.new_mandel = self.displayed_mandel.lite_copy()
@@ -260,6 +261,13 @@ class Model:
     def _slow_mandel(self) -> mandelbrot.Mandel:
         mandel = mandelbrot.Mandel(centre=complex(-0.35980129738448136, 0.6009829289455502),
                                    size=2.1609798031004707e-10,
+                                   shape=self._frame_shape
+                                   )
+        return mandel
+
+    def _sticky_mandel(self) -> mandelbrot.Mandel:
+        mandel = mandelbrot.Mandel(centre=complex(-0.3460641922563417, 0.6295454739652866),
+                                   size=0.00011102803738317759,
                                    shape=self._frame_shape
                                    )
         return mandel

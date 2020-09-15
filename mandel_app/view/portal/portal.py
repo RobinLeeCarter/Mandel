@@ -14,15 +14,17 @@ class Portal:
         self._canvas_frame: canvas_frame.CanvasFrame = canvas_frame.CanvasFrame()
         self._timer: utils.Timer = utils.Timer()
 
+        self._prev_pan: tuples.PixelPoint = tuples.PixelPoint(0, 0)
+
     @property
     def frame(self) -> frame.Frame:
         return self._frame
 
-    def set_drawable_source(self, drawable_: drawable.Drawable):
+    def set_source_drawable(self, drawable_: drawable.Drawable):
         self._canvas_source.set_drawable(drawable_)
         self._update_offset()
 
-    def set_drawable_frame(self, drawable_: drawable.Drawable):
+    def set_frame_drawable(self, drawable_: drawable.Drawable):
         self._canvas_frame.set_drawable(drawable_)
 
     def set_frame_shape(self, frame_shape: tuples.ImageShape):
@@ -64,11 +66,33 @@ class Portal:
         # print("display")
         self._frame.plain()
         self._draw_frame()
+        self._prev_pan = tuples.PixelPoint(0, 0)
 
     def pan_display(self, pan: tuples.PixelPoint):
+        max_pan: float = 30.0
+        pan_complete: bool = False
+
+        # while not pan_complete:
+        pan_diff = tuples.PixelPoint(
+            x=pan.x - self._prev_pan.x,
+            y=pan.y - self._prev_pan.y
+        )
+        pan_diff_dist = tuples.pixel_distance(pan_diff)
+        if pan_diff_dist > max_pan:
+            print(pan_diff_dist)
+            new_pan = tuples.PixelPoint(
+                x=self._prev_pan.x + (max_pan / pan_diff_dist) * pan_diff.x,
+                y=self._prev_pan.y + (max_pan / pan_diff_dist) * pan_diff.y
+            )
+            # new_pan = pan
+        else:
+            new_pan = pan
+            pan_complete = True
+        # print(pan)
         # self._timer.start()
-        self._frame.pan(pan)
+        self._frame.pan(new_pan)
         self._draw_frame()
+        self._prev_pan = new_pan
         # self._timer.stop(show=False)
         # fps = 1.0/self._timer.total
         # if fps < 50.0:

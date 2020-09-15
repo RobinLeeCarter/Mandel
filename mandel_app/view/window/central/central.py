@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 import thread
 from mandel_app import tuples
@@ -18,8 +18,8 @@ class Central:
         self._portal = portal.Portal(self.x_label)
         self._draw_mandel_source = draw_mandel_source.DrawMandelSource()
         self._draw_mandel_frame = draw_mandel_frame.DrawMandelFrame()
-        self._portal.set_drawable_source(self._draw_mandel_source)
-        self._portal.set_drawable_frame(self._draw_mandel_frame)
+        self._portal.set_source_drawable(self._draw_mandel_source)
+        self._portal.set_frame_drawable(self._draw_mandel_frame)
 
         self.overlay = overlay.Overlay(parent=self.x_label)
         self.x_label.set_overlay(self.overlay)
@@ -79,10 +79,4 @@ class Central:
         self._portal.display()
 
     def set_cursor(self, cursor_shape: QtCore.Qt.CursorShape):
-        cursor = QtGui.QCursor(cursor_shape)
-        self.x_label.setCursor(cursor)
-
-        # image_shape = self._portal.drawable_shape
-        # x_offset = min(int((new_image_shape.x - image_shape.x) / 2.0), 0)
-        # y_offset = min(int((new_image_shape.y - image_shape.y) / 2.0), 0)
-        # self._mandel_draw.mandel.set_offset(tuples.PixelPoint(x=x_offset, y=y_offset))
+        self.x_label.set_cursor_shape(cursor_shape)
