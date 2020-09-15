@@ -284,6 +284,10 @@ class Frame:
                  (source_x >= 0) & (source_x < source_x_shape)
 
         frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
+        # if cp.all(mapped):
+        #     frame_rgba[:, :] = self._source_cp[source_y, source_x, :]
+        # else:
+        #     frame_rgba[mapped, :] = self._source_cp[source_y[mapped], source_x[mapped], :]
         frame_rgba[mapped, :] = self._source_cp[source_y[mapped], source_x[mapped], :]
         # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
 
@@ -291,6 +295,7 @@ class Frame:
 
     def _apply_transform_np(self):
         # print("_apply_transform_np")
+        # self._timer.start()
 
         source_y_shape: np.int32 = np.int32(self._source_np.shape[0])
         source_x_shape: np.int32 = np.int32(self._source_np.shape[1])
@@ -304,13 +309,23 @@ class Frame:
         source_x = frame_to_source_int32[:, :, 0]  # 2D array of x pixel in source
         source_y = frame_to_source_int32[:, :, 1]  # 2D array of y pixel in source
 
+        # self._timer.lap("mapping")
+
         # boolean 2-D array of portal pixels that map to a pixel on the source
         # will be false if the pixel on source would fall outside of source
         mapped = (source_y >= 0) & (source_y < source_y_shape) & \
                  (source_x >= 0) & (source_x < source_x_shape)
 
+        # self._timer.lap("mapped")
+
         frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
-        frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
+        if np.all(mapped):
+            frame_rgba[:, :] = self._source_np[source_y, source_x, :]
+        else:
+            frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
+        # frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
+        # self._timer.lap("assignment")
+        # self._timer.stop()
         # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
 
         self._frame_rgba = frame_rgba

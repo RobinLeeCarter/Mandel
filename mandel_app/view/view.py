@@ -11,6 +11,7 @@ from mandel_app.view import window, state, settings, z_window, enums
 from mandel_app.view.common import icon, clipboard
 
 # import utils
+import cupy as cp
 
 
 class View:
@@ -106,6 +107,13 @@ class View:
         # self._timer.lap(f"{progress:.4f}", show=True)
 
     def stop_success(self):
+        # print("stopped")
+        # cp.cuda.get_current_stream().synchronize()
+        # stream_done = cp.cuda.get_current_stream().done
+        # worker_ready = not self._controller._model.calc_thread_state.worker_active
+        # print(f"Stream.done: {stream_done}")
+        # print(f"worker_ready: {worker_ready}")
+        # print(f"self._view_state.revert_on_stop: {self._view_state.revert_on_stop}")
         if self._view_state.revert_on_stop:
             # self.show_mandel(self._window.central.mandel)
             self.show_mandel(self._displayed_mandel)
