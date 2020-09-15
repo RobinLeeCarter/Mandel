@@ -272,6 +272,7 @@ class View:
         self._controller.redraw_z_trace(image_shape)
 
     def _on_close(self):
+        self._controller.stop_request()
         if self._z_window.q_main_window.isVisible():
             self._view_settings.write_z_window_settings(self._z_window.q_main_window)
         self._view_settings.write_window_settings(self._window.q_main_window)

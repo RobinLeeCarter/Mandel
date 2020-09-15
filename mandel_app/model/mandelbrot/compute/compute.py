@@ -13,11 +13,11 @@ class Compute:
 
         self.iterations_per_kernel: int = 0
 
-        # cupy mandel variables
-        # experimentally this gives the best results
-        # self.block_size: int = 32
-        # according to cuda occupancy calculator this should give 100% occupancy vs 50% above
+        # according to cuda occupancy calculator this should give 100% occupancy
         self._BLOCK_SIZE: int = 64
+        # vs 50% for 32 (but actual difference is slight)
+        # self._BLOCK_SIZE: int = 32
+        # self._BLOCK_SIZE: int = 1024
 
         self._request_size: int = 0
         self._total_blocks: int = 0
