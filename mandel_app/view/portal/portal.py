@@ -69,6 +69,7 @@ class Portal:
         self._prev_pan = tuples.PixelPoint(0, 0)
 
     def pan_display(self, pan: tuples.PixelPoint):
+        print(pan)
         # max_pan: float = 30.0
         # pan_complete: bool = False
         #
@@ -91,9 +92,11 @@ class Portal:
         # print(pan)
         # self._timer.start()
         self._frame.pan(pan)
+        # self._timer.lap("rgba")
         self._draw_frame()
+        # self._timer.lap("draw")
         # self._prev_pan = new_pan
-        # self._timer.stop(show=False)
+        # self._timer.stop()
         # fps = 1.0/self._timer.total
         # print(f"FPS: {1.0 / self._timer.total:.1f}")
         # if fps < 50.0:

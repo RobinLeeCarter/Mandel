@@ -326,11 +326,12 @@ class View:
             self._window.status_bar.display_point(z)
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
             view_state_.pan_end = self._mouse_frame_point(event)
-            stream_done = cp.cuda.get_current_stream().done
-            worker_ready = not self._controller._model.calc_thread_state.worker_active
-            print(view_state_.total_pan)
-            if stream_done and worker_ready:
-                central.pan_image(pan=view_state_.total_pan)
+            # stream_done = cp.cuda.get_current_stream().done
+            # worker_ready = not self._controller._model.calc_thread_state.worker_active
+            # print(view_state_.total_pan)
+            # if stream_done and worker_ready:
+            #     central.pan_image(pan=view_state_.total_pan)
+            central.pan_image(pan=view_state_.total_pan)
             self._update_cursor()
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
             view_state_.rotate_end = self._mouse_frame_point(event)

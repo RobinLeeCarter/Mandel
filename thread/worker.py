@@ -124,8 +124,9 @@ class Worker(QtCore.QObject):
         # add to (front) of doing queue
         self._doing_queue.insert(0, job_)
         job_.run()
-        # let the thread event-queue run so this job can be requested to be stopped
-        QtWidgets.QApplication.processEvents()
+        # if job is stopped early it will re-emerge here
+        # let the thread event-queue run so this job can be requested to be stopped - thought to not be required
+        # QtWidgets.QApplication.processEvents()
         # if the job was requested to be stopped then we don't want the actions associated with the job completing
         if not job_.stop_requested:
             self.jobComplete.emit(job_)
@@ -140,7 +141,4 @@ class Worker(QtCore.QObject):
     def _job_checkpoint(self, job_: job.Job, progress: float = 0.0):
         if job_.progress_estimator:
             self.progressUpdate.emit(job_, progress)
-        # let the thread event-queue run so this job can be requested to be stopped
-        QtWidgets.QApplication.processEvents()
-        # if it does stop execution will re-emerge in _do_job after job_.run()
     # endregion

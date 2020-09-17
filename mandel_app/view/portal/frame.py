@@ -104,11 +104,13 @@ class Frame:
     def get_frame(self):
         # print("get_frame")
         # print(f"get_frame frame.frame_shape:\t{self.frame_shape}")
+        # self._timer.start()
         self._calculate_transform()
+        # self._timer.lap("calc")
 
-        stream_done = cp.cuda.get_current_stream().done
-        worker_ready = not self._calc_thread_state.worker_active
-        either_ready = stream_done or worker_ready
+        # stream_done = cp.cuda.get_current_stream().done
+        # worker_ready = not self._calc_thread_state.worker_active
+        # either_ready = stream_done or worker_ready
 
         # if worker_ready and not stream_done:
         #     print("worker_ready and not stream_done")
@@ -125,16 +127,20 @@ class Frame:
 
         # self._apply_transform_cp()
 
+        self._slice_pan_np()
         # self._apply_transform_np()
+
+        # self._timer.lap("apply")
+        # self._timer.stop()
 
         # self._timer.start()
 
-        if either_ready:
-            # GPU ready so use that
-            self._apply_transform_cp()
-        else:
-            # GPU not ready so fall back to CPU
-            self._apply_transform_np()
+        # if either_ready:
+        #     # GPU ready so use that
+        #     self._apply_transform_cp()
+        # else:
+        #     # GPU not ready so fall back to CPU
+        #     self._apply_transform_np()
 
         # self._timer.stop(show=False)
         # either_fps = 1.0/self._timer.total
@@ -295,7 +301,7 @@ class Frame:
 
     def _apply_transform_np(self):
         # print("_apply_transform_np")
-        # self._timer.start()
+        self._timer.start()
 
         source_y_shape: np.int32 = np.int32(self._source_np.shape[0])
         source_x_shape: np.int32 = np.int32(self._source_np.shape[1])
@@ -309,14 +315,14 @@ class Frame:
         source_x = frame_to_source_int32[:, :, 0]  # 2D array of x pixel in source
         source_y = frame_to_source_int32[:, :, 1]  # 2D array of y pixel in source
 
-        # self._timer.lap("mapping")
+        self._timer.lap("mapping")
 
         # boolean 2-D array of portal pixels that map to a pixel on the source
         # will be false if the pixel on source would fall outside of source
         mapped = (source_y >= 0) & (source_y < source_y_shape) & \
                  (source_x >= 0) & (source_x < source_x_shape)
 
-        # self._timer.lap("mapped")
+        self._timer.lap("mapped")
 
         frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
         if np.all(mapped):
@@ -325,8 +331,31 @@ class Frame:
         else:
             frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
         # frame_rgba[mapped, :] = self._source_np[source_y[mapped], source_x[mapped], :]
-        # self._timer.lap("assignment")
-        # self._timer.stop()
+        self._timer.lap("assignment")
+        self._timer.stop()
+        # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
+
+        self._frame_rgba = frame_rgba
+
+    def _slice_pan_np(self):
+        # print("_apply_transform_np")
+        self._timer.start()
+
+        source_y_shape: np.int32 = np.int32(self._source_np.shape[0])
+        source_x_shape: np.int32 = np.int32(self._source_np.shape[1])
+        frame_y_size: np.int32 = np.int32(self.frame_shape.y)
+        frame_x_size: np.int32 = np.int32(self.frame_shape.x)
+
+        frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
+
+        self._timer.lap("init")
+
+        frame_rgba[self._pan.x:frame_x_size, self._pan.y:frame_y_size, :] = \
+            self._source_np[self._pan.x:frame_x_size, self._pan.y:frame_y_size, :]
+
+        self._timer.lap("slice")
+
+        self._timer.stop()
         # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
 
         self._frame_rgba = frame_rgba
