@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
@@ -76,7 +77,7 @@ class Frame:
         # self._reset_transform()
 
     def plain(self):
-        self.get_frame()
+        self._get_frame_from_transform()
 
     def pan(self, pan: tuples.PixelPoint):
         self._pan = pan
@@ -85,7 +86,8 @@ class Frame:
         #     print("Stream.done: False")
         # if self._calc_thread_state.worker_active:
         #     print(f"Worker active: {self._calc_thread_state.worker_active}")
-        self.get_frame()
+        self._get_frame_from_pan_slice()
+        # self._get_frame_from_transform()
 
     def rotate(self, rotation_degrees: float):
         self._rotation_degrees = rotation_degrees
@@ -94,16 +96,16 @@ class Frame:
         #     print("Stream.done: False")
         # if self._calc_thread_state.worker_active:
         #     print(f"Worker active: {self._calc_thread_state.worker_active}")
-        self.get_frame()
+        self._get_frame_from_transform()
 
     def scale(self, scale: float, scale_point: tuples.PixelPoint):
         self._scale = scale
         self._scale_point = scale_point
-        self.get_frame()
+        self._get_frame_from_transform()
 
-    def get_frame(self):
-        # print("get_frame")
-        # print(f"get_frame frame.frame_shape:\t{self.frame_shape}")
+    def _get_frame_from_transform(self):
+        # print("_get_frame_from_transform")
+        # print(f"_get_frame_from_transform frame.frame_shape:\t{self.frame_shape}")
         # self._timer.start()
         self._calculate_transform()
         # self._timer.lap("calc")
@@ -125,9 +127,9 @@ class Frame:
         # if not worker_ready:
         #     print(f"worker_ready: {worker_ready}")
 
-        # self._apply_transform_cp()
+        self._apply_transform_cp()
 
-        self._slice_pan_np()
+        # self._get_frame_from_pan_slice()
         # self._apply_transform_np()
 
         # self._timer.lap("apply")
@@ -270,10 +272,10 @@ class Frame:
         self._scale_point = tuples.PixelPoint(0, 0)
 
     def _apply_transform_cp(self):
-        source_y_shape: cp.int32 = cp.int32(self._source_cp.shape[0])
-        source_x_shape: cp.int32 = cp.int32(self._source_cp.shape[1])
-        frame_y_size: cp.int32 = cp.int32(self.frame_shape.y)
-        frame_x_size: cp.int32 = cp.int32(self.frame_shape.x)
+        source_shape_y: cp.int32 = cp.int32(self._source_cp.shape[0])
+        source_shape_x: cp.int32 = cp.int32(self._source_cp.shape[1])
+        frame_shape_y: cp.int32 = cp.int32(self.frame_shape.y)
+        frame_shape_x: cp.int32 = cp.int32(self.frame_shape.x)
 
         matrix = cp.asarray(self._matrix, dtype=cp.float32)
         vector = cp.asarray(self._vector, dtype=cp.float32)
@@ -286,10 +288,10 @@ class Frame:
 
         # boolean 2-D array of portal pixels that map to a pixel on the source
         # will be false if the pixel on source would fall outside of source
-        mapped = (source_y >= 0) & (source_y < source_y_shape) & \
-                 (source_x >= 0) & (source_x < source_x_shape)
+        mapped = (source_y >= 0) & (source_y < source_shape_y) & \
+                 (source_x >= 0) & (source_x < source_shape_x)
 
-        frame_rgba = cp.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=cp.uint8)
+        frame_rgba = cp.zeros(shape=(frame_shape_y, frame_shape_x, 4), dtype=cp.uint8)
         # if cp.all(mapped):
         #     frame_rgba[:, :] = self._source_cp[source_y, source_x, :]
         # else:
@@ -303,10 +305,10 @@ class Frame:
         # print("_apply_transform_np")
         self._timer.start()
 
-        source_y_shape: np.int32 = np.int32(self._source_np.shape[0])
-        source_x_shape: np.int32 = np.int32(self._source_np.shape[1])
-        frame_y_size: np.int32 = np.int32(self.frame_shape.y)
-        frame_x_size: np.int32 = np.int32(self.frame_shape.x)
+        source_shape_y: np.int32 = np.int32(self._source_np.shape[0])
+        source_shape_x: np.int32 = np.int32(self._source_np.shape[1])
+        frame_shape_y: np.int32 = np.int32(self.frame_shape.y)
+        frame_shape_x: np.int32 = np.int32(self.frame_shape.x)
 
         frame_to_source_fp32 = np.matmul(self._frame_pixels_np, self._matrix.T) + self._vector
         frame_to_source_int32 = np.rint(frame_to_source_fp32).astype(np.int32)
@@ -319,12 +321,12 @@ class Frame:
 
         # boolean 2-D array of portal pixels that map to a pixel on the source
         # will be false if the pixel on source would fall outside of source
-        mapped = (source_y >= 0) & (source_y < source_y_shape) & \
-                 (source_x >= 0) & (source_x < source_x_shape)
+        mapped = (source_y >= 0) & (source_y < source_shape_y) & \
+                 (source_x >= 0) & (source_x < source_shape_x)
 
         self._timer.lap("mapped")
 
-        frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
+        frame_rgba = np.zeros(shape=(frame_shape_y, frame_shape_x, 4), dtype=np.uint8)
         if np.all(mapped):
             # twice as fast
             frame_rgba[:, :] = self._source_np[source_y, source_x, :]
@@ -337,25 +339,92 @@ class Frame:
 
         self._frame_rgba = frame_rgba
 
-    def _slice_pan_np(self):
-        # print("_apply_transform_np")
-        self._timer.start()
+    def _get_frame_from_pan_slice(self):
+        # self._timer.start()
 
-        source_y_shape: np.int32 = np.int32(self._source_np.shape[0])
-        source_x_shape: np.int32 = np.int32(self._source_np.shape[1])
-        frame_y_size: np.int32 = np.int32(self.frame_shape.y)
-        frame_x_size: np.int32 = np.int32(self.frame_shape.x)
+        # inputs
+        source: VectorInt = VectorInt(
+            y=self._source_np.shape[0],
+            x=self._source_np.shape[1]
+        )
+        frame: VectorInt = VectorInt(
+            x=int(self.frame_shape.x),
+            y=int(self.frame_shape.y)
+        )
+        # cartesian total_offset
+        pan: VectorInt = VectorInt(
+            x=self.offset.x+self._pan.x,
+            y=self.offset.y+self._pan.y
+        )
+        # print(f"source : {source}")
+        # print(f"frame  : {frame}")
+        # print(f"pan    : {pan}")
+        # print()
 
-        frame_rgba = np.zeros(shape=(frame_y_size, frame_x_size, 4), dtype=np.uint8)
+        # default output (fully transparent because alpha = 0)
+        frame_rgba = np.zeros(shape=(frame.y, frame.x, 4), dtype=np.uint8)
 
-        self._timer.lap("init")
+        # overlap
+        overlap: bool = True
+        if pan.x > source.x or pan.y > source.y:
+            overlap = False
+        if -pan.x > frame.x or -pan.y > frame.y:
+            overlap = False
 
-        frame_rgba[self._pan.x:frame_x_size, self._pan.y:frame_y_size, :] = \
-            self._source_np[self._pan.x:frame_x_size, self._pan.y:frame_y_size, :]
+        # assumption: frame < source for x and y
+        if overlap:
+            frame_min: VectorInt = VectorInt(0, 0)
+            frame_max: VectorInt = VectorInt(frame.x, frame.y)
 
-        self._timer.lap("slice")
+            # x co-ordinates for cases with an overlap that diverge for default min and max
+            if pan.x >= 0:
+                frame_right = pan.x + frame.x
+                if source.x < frame_right:
+                    frame_max.x = frame.x - (frame_right - source.x)
+            else:
+                frame_min.x = -pan.x
 
-        self._timer.stop()
-        # self.image_rgba[~mapped, :] = self._zero_uint     probably slower than just zeroing everything first
+            # y co-ordinates for cases with an overlap that diverge for default min and max
+            if pan.y >= 0:
+                frame_top = pan.y + frame.y
+                if source.y < frame_top:
+                    frame_max.y = frame.y - (frame_top - source.y)
+            else:
+                frame_min.y = -pan.y
+
+            source_min = pan + frame_min
+            source_max = pan + frame_max
+
+            # print(f"frame_min : {frame_min}")
+            # print(f"frame_max : {frame_max}")
+            # print(f"source_min: {source_min}")
+            # print(f"source_max: {source_max}")
+
+            # flip from cartesian to image co-ordinates
+            frame_min.y = frame.y - frame_min.y
+            frame_max.y = frame.y - frame_max.y
+            source_min.y = source.y - source_min.y
+            source_max.y = source.y - source_max.y
+
+            # self._timer.lap("init")
+
+            frame_rgba[frame_max.y:frame_min.y, frame_min.x:frame_max.x, :] = \
+                self._source_np[source_max.y:source_min.y, source_min.x:source_max.x, :]
+
+            # self._timer.lap("slice")
+
+        # self._timer.stop()
 
         self._frame_rgba = frame_rgba
+
+
+@dataclass
+class VectorInt:
+    x: int = 0
+    y: int = 0
+
+    def __add__(self, other):
+        return type(self)(self.x+other.x, self.y+other.y)
+
+    def __sub__(self, other):
+        return type(self)(self.x-other.x, self.y-other.y)

@@ -69,7 +69,7 @@ class Portal:
         self._prev_pan = tuples.PixelPoint(0, 0)
 
     def pan_display(self, pan: tuples.PixelPoint):
-        print(pan)
+        # print(pan)
         # max_pan: float = 30.0
         # pan_complete: bool = False
         #

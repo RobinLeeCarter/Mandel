@@ -95,6 +95,6 @@ class Controller:
             # possibly pass an optional z0 in here
             self._view.show_mandel(self._model.new_mandel)
             self._model.new_is_displayed(save_history=save_history)
-            # if not self._model.displayed_mandel.has_border:
-            #     self._model.add_border(self._model.displayed_mandel)
+            if not self._model.displayed_mandel.has_border:
+                self._model.add_border(self._model.displayed_mandel)
     # endregion
