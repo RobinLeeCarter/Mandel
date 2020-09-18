@@ -71,11 +71,14 @@ class Portal:
 
     def display(self):
         # print("display")
+        if self._transform_q_timer.isActive():
+            self._transform_q_timer.stop()
         self._frame.plain()
         self._draw_frame()
         self._current_pan: tuples.VectorInt = tuples.VectorInt(0, 0)
 
     def pan_display(self, pan: tuples.PixelPoint, direct: bool = False):
+        direct = True
         # print("pan_display")
         self._request_pan = tuples.VectorInt.from_pixel_point(pan)
         # print(f"request_pan: {self._request_pan}")
@@ -89,11 +92,11 @@ class Portal:
             self._smooth_pan()
 
     def _on_transform_timeout(self):
-        print("_on_transform_timeout")
+        # print("_on_transform_timeout")
         self._smooth_pan()
 
     def _smooth_pan(self):
-        max_pan: float = 30.0
+        max_pan: float = 20.0
         extra_pan: tuples.VectorInt = self._request_pan - self._current_pan
         extra_pan_size: float = extra_pan.size
         # print(f"_smooth_pan extra_pan_size: {extra_pan_size}")
