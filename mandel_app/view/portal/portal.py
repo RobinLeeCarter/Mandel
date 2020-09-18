@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import utils
 from mandel_app import tuples
@@ -7,14 +7,21 @@ from mandel_app.view.portal import canvas_source, canvas_frame, frame, drawable
 
 
 class Portal:
+    TRANSFORM_TIMEOUT_MS: int = 20
+
     def __init__(self, q_label: QtWidgets.QLabel):
         self._q_label: QtWidgets.QLabel = q_label
         self._frame: frame.Frame = frame.Frame()
         self._canvas_source: canvas_source.CanvasSource = canvas_source.CanvasSource()
         self._canvas_frame: canvas_frame.CanvasFrame = canvas_frame.CanvasFrame()
-        self._timer: utils.Timer = utils.Timer()
 
-        self._prev_pan: tuples.PixelPoint = tuples.PixelPoint(0, 0)
+        self._current_pan: tuples.VectorInt = tuples.VectorInt(0, 0)
+        self._request_pan: tuples.VectorInt = tuples.VectorInt(0, 0)
+        self._transform_q_timer = QtCore.QTimer(parent=q_label)
+        self._transform_q_timer.setSingleShot(True)
+        self._transform_q_timer.timeout.connect(self._on_transform_timeout)
+
+        self._timer: utils.Timer = utils.Timer()
 
     @property
     def frame(self) -> frame.Frame:
@@ -66,10 +73,44 @@ class Portal:
         # print("display")
         self._frame.plain()
         self._draw_frame()
-        self._prev_pan = tuples.PixelPoint(0, 0)
+        self._current_pan: tuples.VectorInt = tuples.VectorInt(0, 0)
 
-    def pan_display(self, pan: tuples.PixelPoint):
-        # print(pan)
+    def pan_display(self, pan: tuples.PixelPoint, direct: bool = False):
+        # print("pan_display")
+        self._request_pan = tuples.VectorInt.from_pixel_point(pan)
+        # print(f"request_pan: {self._request_pan}")
+
+        if self._transform_q_timer.isActive():
+            self._transform_q_timer.stop()
+
+        if direct:
+            self._do_pan(self._request_pan)
+        else:
+            self._smooth_pan()
+
+    def _on_transform_timeout(self):
+        print("_on_transform_timeout")
+        self._smooth_pan()
+
+    def _smooth_pan(self):
+        max_pan: float = 30.0
+        extra_pan: tuples.VectorInt = self._request_pan - self._current_pan
+        extra_pan_size: float = extra_pan.size
+        # print(f"_smooth_pan extra_pan_size: {extra_pan_size}")
+        if extra_pan_size < max_pan:
+            self._do_pan(self._request_pan)
+        else:
+            scale = (max_pan / extra_pan_size)
+            # print(f"scale {scale}")
+            # print(f"extra_pan {extra_pan}")
+            additional: tuples.VectorInt = scale * extra_pan
+            # print(f"additional: {additional}")
+            # print(f"current_pan: {self._current_pan}")
+            smoothed_pan = self._current_pan + additional
+            # print(f"smoothed_pan: {smoothed_pan}")
+            self._do_pan(smoothed_pan)
+            self._transform_q_timer.start(Portal.TRANSFORM_TIMEOUT_MS)
+
         # max_pan: float = 30.0
         # pan_complete: bool = False
         #
@@ -91,9 +132,9 @@ class Portal:
         #     pan_complete = True
         # print(pan)
         # self._timer.start()
-        self._frame.pan(pan)
+
         # self._timer.lap("rgba")
-        self._draw_frame()
+
         # self._timer.lap("draw")
         # self._prev_pan = new_pan
         # self._timer.stop()
@@ -101,6 +142,13 @@ class Portal:
         # print(f"FPS: {1.0 / self._timer.total:.1f}")
         # if fps < 50.0:
         #     print(f"FPS: {1.0/self._timer.total:.1f}")
+
+    def _do_pan(self, pan: tuples.VectorInt):
+        # print(f"_do_pan: {pan}")
+        self._current_pan = pan
+        pan_pixel = tuples.PixelPoint(pan.x, pan.y)
+        self._frame.pan(pan_pixel)
+        self._draw_frame()
 
     def rotate_display(self, degrees: float):
         """Over 100fps at 1080p with border"""

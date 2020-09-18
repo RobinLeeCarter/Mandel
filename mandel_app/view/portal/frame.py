@@ -343,16 +343,16 @@ class Frame:
         # self._timer.start()
 
         # inputs
-        source: VectorInt = VectorInt(
+        source: tuples.VectorInt = tuples.VectorInt(
             y=self._source_np.shape[0],
             x=self._source_np.shape[1]
         )
-        frame: VectorInt = VectorInt(
+        frame: tuples.VectorInt = tuples.VectorInt(
             x=int(self.frame_shape.x),
             y=int(self.frame_shape.y)
         )
         # cartesian total_offset
-        pan: VectorInt = VectorInt(
+        pan: tuples.VectorInt = tuples.VectorInt(
             x=self.offset.x+self._pan.x,
             y=self.offset.y+self._pan.y
         )
@@ -373,8 +373,8 @@ class Frame:
 
         # assumption: frame < source for x and y
         if overlap:
-            frame_min: VectorInt = VectorInt(0, 0)
-            frame_max: VectorInt = VectorInt(frame.x, frame.y)
+            frame_min: tuples.VectorInt = tuples.VectorInt(0, 0)
+            frame_max: tuples.VectorInt = tuples.VectorInt(frame.x, frame.y)
 
             # x co-ordinates for cases with an overlap that diverge for default min and max
             if pan.x >= 0:
@@ -392,8 +392,8 @@ class Frame:
             else:
                 frame_min.y = -pan.y
 
-            source_min = pan + frame_min
-            source_max = pan + frame_max
+            source_min: tuples.VectorInt = pan + frame_min
+            source_max: tuples.VectorInt = pan + frame_max
 
             # print(f"frame_min : {frame_min}")
             # print(f"frame_max : {frame_max}")
@@ -416,15 +416,3 @@ class Frame:
         # self._timer.stop()
 
         self._frame_rgba = frame_rgba
-
-
-@dataclass
-class VectorInt:
-    x: int = 0
-    y: int = 0
-
-    def __add__(self, other):
-        return type(self)(self.x+other.x, self.y+other.y)
-
-    def __sub__(self, other):
-        return type(self)(self.x-other.x, self.y-other.y)

@@ -63,8 +63,8 @@ class Central:
             scaling = 1.0
         self._portal.scale_display(scaling, zoom_frame_point)
 
-    def pan_image(self, pan: tuples.PixelPoint):
-        self._portal.pan_display(pan)
+    def pan_image(self, pan: tuples.PixelPoint, direct: bool = False):
+        self._portal.pan_display(pan, direct)
 
     def show_z0_marker(self, source_point: tuples.PixelPoint):
         self.set_z0_marker(source_point)

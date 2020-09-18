@@ -13,9 +13,9 @@ class XMainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.resize_q_timer = QtCore.QTimer(parent=self)
-        self.resize_q_timer.setSingleShot(True)
-        self.resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
+        self._resize_q_timer = QtCore.QTimer(parent=self)
+        self._resize_q_timer.setSingleShot(True)
+        self._resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
 
     def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
         self.keyPressSignal.emit(key_event)
@@ -27,10 +27,10 @@ class XMainWindow(QtWidgets.QMainWindow):
         super().changeEvent(event)
 
     def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
-        if self.resize_enabled:
+        if self._resize_enabled:
             # NOTE: resize_event will be messed up by the resize delay code so we don't take a copy
-            self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
-        self.resize_enabled = True
+            self._resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
+        self._resize_enabled = True
         super().resizeEvent(resize_event)
 
     def closeEvent(self, close_event: QtGui.QCloseEvent) -> None:
@@ -45,7 +45,7 @@ class XMainWindow(QtWidgets.QMainWindow):
         self.activationChangeSignal.connect(on_active)
 
     def set_on_resize(self, on_resize: Callable[[], None]):
-        self.resize_q_timer.timeout.connect(on_resize)
+        self._resize_q_timer.timeout.connect(on_resize)
 
     def set_on_close(self, on_close: Callable[[], None]):
         self.closeSignal.connect(on_close)

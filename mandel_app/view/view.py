@@ -331,7 +331,7 @@ class View:
             # print(view_state_.total_pan)
             # if stream_done and worker_ready:
             #     central.pan_image(pan=view_state_.total_pan)
-            central.pan_image(pan=view_state_.total_pan)
+            central.pan_image(pan=view_state_.total_pan, direct=False)
             self._update_cursor()
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
             view_state_.rotate_end = self._mouse_frame_point(event)
@@ -340,6 +340,7 @@ class View:
     def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
         # print("_on_central_mouse_release")
         view_state_ = self._view_state
+        central = self._window.central
 
         # if event.button == backend_bases.MouseButton.LEFT:
         if view_state_.action_in_progress == enums.ImageAction.PANNING:
@@ -354,6 +355,7 @@ class View:
                     self._zoom(frame_point=view_state_.pan_start, scaling=0.5)
             else:
                 new_pan = view_state_.total_pan
+                central.pan_image(pan=new_pan, direct=False)
                 self._controller.pan_request(new_pan)
                 view_state_.released_pan_delta = new_pan
                 self._set_action(enums.ImageAction.PANNED)
