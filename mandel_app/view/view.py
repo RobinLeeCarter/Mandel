@@ -11,7 +11,6 @@ from mandel_app.view import window, state, settings, z_window, enums
 from mandel_app.view.common import icon, clipboard
 
 # import utils
-import cupy as cp
 
 
 class View:
@@ -107,7 +106,7 @@ class View:
         # self._timer.lap(f"{progress:.4f}", show=True)
 
     def stop_success(self):
-        print("stopped")
+        # print("stopped")
         # cp.cuda.get_current_stream().synchronize()
         # stream_done = cp.cuda.get_current_stream().done
         # worker_ready = not self._controller._model.calc_thread_state.worker_active
@@ -331,7 +330,7 @@ class View:
             # print(view_state_.total_pan)
             # if stream_done and worker_ready:
             #     central.pan_image(pan=view_state_.total_pan)
-            central.pan_image(pan=view_state_.total_pan, direct=False)
+            central.pan_image(pan=view_state_.total_pan)
             self._update_cursor()
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
             view_state_.rotate_end = self._mouse_frame_point(event)
@@ -355,7 +354,7 @@ class View:
                     self._zoom(frame_point=view_state_.pan_start, scaling=0.5)
             else:
                 new_pan = view_state_.total_pan
-                central.pan_image(pan=new_pan, direct=False)
+                central.pan_image(pan=new_pan)
                 self._controller.pan_request(new_pan)
                 view_state_.released_pan_delta = new_pan
                 self._set_action(enums.ImageAction.PANNED)
