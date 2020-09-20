@@ -28,8 +28,8 @@ class Model:
 
     def build(self, frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
-        # self.displayed_mandel = self._initial_mandel()
-        self.displayed_mandel = self._sticky_mandel()
+        self.displayed_mandel = self._initial_mandel()
+        # self.displayed_mandel = self._sticky_mandel()
         # self.displayed_mandel = self._slow_mandel()
         # self.displayed_mandel = self._different_mandel()
         self.new_mandel = self.displayed_mandel.lite_copy()
