@@ -10,11 +10,11 @@ class Lap:
     lap_name: str
 
     @property
-    def lap_time(self):
+    def lap_time(self) -> float:
         return self.lap_end - self.lap_start
 
     def print(self):
-        print(f"{self.lap_name}:\t{self.lap_time:.4f}")
+        print(f"{self.lap_name}:\t{self.lap_time:.3f}")
 
 
 class Timer:
@@ -23,6 +23,7 @@ class Timer:
         self.lap_start: float = self.start_time
         self.end_time: float = 0
         self.laps: List[Lap] = []
+        self.running: bool = False
 
     @property
     def total(self) -> float:
@@ -32,6 +33,7 @@ class Timer:
             return 0.0
 
     def start(self):
+        self.running = True
         self.laps.clear()
         self.start_time = time.perf_counter()
         self.lap_start = self.start_time
@@ -48,6 +50,7 @@ class Timer:
 
     def stop(self, name: str = "", show=True) -> float:
         self.end_time = time.perf_counter()
+        self.running = False
         if show:
             print("")
             for lap in self.laps:
@@ -65,6 +68,6 @@ class Timer:
 
     def print(self, name: str):
         if name:
-            print(f"{name} :\t{self.total:.4f}")
+            print(f"{name} :\t{self.total:.3f}")
         else:
-            print(f"Total time:\t{self.total:.4f}")
+            print(f"Total time:\t{self.total:.3f}")

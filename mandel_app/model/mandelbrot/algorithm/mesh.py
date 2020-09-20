@@ -12,9 +12,9 @@ from mandel_app.model.mandelbrot import server, mandel_progress_estimator
 class Mesh:
 
     def __init__(self, server_: server.Server, progress_estimator: mandel_progress_estimator.MandelProgressEstimator):
-        self.server = server_
-        self.progress_estimator = progress_estimator
-        self.shape = server_.shape
+        self.server: server.Server = server_
+        self.progress_estimator: mandel_progress_estimator.MandelProgressEstimator = progress_estimator
+        self.shape: tuples.ImageShape = server_.shape
         self.iteration: Optional[np.ndarray] = None
 
         self.mesh_step: int = 0
@@ -47,7 +47,7 @@ class Mesh:
         # self._timer.lap(f"start {self.mesh_step}\t")
         self.server.grid_lines_request(self.mesh_step)
         # self._timer.lap("request  \t")
-        yield from self.server.serve(early_stopping=True)
+        yield from self.server.serve()
         # self._timer.lap("serve    \t")
 
         self.iteration = self.server.iteration_cpu
@@ -64,7 +64,7 @@ class Mesh:
         # self._timer.lap(f"remainder\t")
         self.server.request_incomplete()
         # self._timer.lap("request  \t")
-        yield from self.server.serve(early_stopping=True)
+        yield from self.server.serve()
         # self._timer.lap("serve    \t")
         self.iteration = self.server.iteration_cpu
         # self._timer.lap("retrieve \t")

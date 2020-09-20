@@ -1,86 +1,82 @@
-from typing import Optional, Callable
+from typing import Optional
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
+import thread
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
-from mandel_app.view.window.central import canvas, overlay
+from mandel_app.view import widgets, portal
+from mandel_app.view.window.central import draw_mandel_source, draw_mandel_frame, overlay, scroll_area
 
 
 class Central:
+    # region Setup
     def __init__(self, q_main_window: QtWidgets.QMainWindow):
-        # scroll_area as central widget for main_window
-        # self.q_main_window = q_main_window
+        self._scroll_area = scroll_area.ScrollArea(q_main_window)
+        # self._area.build()
+        self.x_label: widgets.XLabel = self._scroll_area.portal_label
+        self._portal = portal.Portal(self.x_label)
+        self._draw_mandel_source = draw_mandel_source.DrawMandelSource()
+        self._draw_mandel_frame = draw_mandel_frame.DrawMandelFrame()
+        self._portal.set_source_drawable(self._draw_mandel_source)
+        self._portal.set_frame_drawable(self._draw_mandel_frame)
 
-        self.q_scroll_area = XScrollArea(q_main_window)
-        self.q_scroll_area.setAlignment(QtCore.Qt.AlignCenter)
-        self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.q_scroll_area.setStyleSheet("border: 0")
-        self.image_space: Optional[tuples.ImageShape] = None
+        self.overlay = overlay.Overlay(parent=self.x_label)
+        self.x_label.set_overlay(self.overlay)
 
-        # self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        # self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+    def build(self, cursor_shape: QtCore.Qt.CursorShape):
+        self._draw_mandel_frame.set_frame(self._portal.frame)
+        self.set_frame_shape()
+        self.set_cursor(cursor_shape)
 
-        self.q_main = QtWidgets.QWidget()
-        # self.q_main = QtWidgets.QWidget(q_main_window)
-        # self.q_main_layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.BottomToTop, self.q_main)
-        self.q_main_layout = QtWidgets.QVBoxLayout(self.q_main)
+    def set_calc_thread_state(self, calc_thread_state: thread.State):
+        self._portal.frame.set_calc_thread_state(calc_thread_state)
+    # endregion
 
-        # self.q_layout = QtWidgets.QStackedLayout(self.main)
-        self.q_main_layout.setSpacing(0)
-        self.q_main_layout.setContentsMargins(0, 0, 0, 0)
+    def on_resized(self):
+        self.set_frame_shape()
+        self._portal.display()
 
-        self.q_main.setLayout(self.q_main_layout)
-
-        self.canvas = canvas.Canvas()
-        q_figure_canvas = self.canvas.figure_canvas
-        self.overlay = overlay.Overlay(parent=q_figure_canvas)
-        q_figure_canvas.set_overlay(self.overlay)
-
-        self.q_main_layout.addWidget(q_figure_canvas)
-        # self.q_main_layout.setAlignment(Qt.AlignBottom)
-
-        # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
-
-        self.q_scroll_area.setWidget(self.q_main)
-
-        # self.q_scroll_area.setAlignment(Qt.AlignBottom)
-        # self.q_scroll_area.setWidget(self.canvas.mandel_canvas)
-
-        # q_main_window.setCentralWidget(self.q_main)
-        q_main_window.setCentralWidget(self.q_scroll_area)
-        self.q_main.setVisible(False)
-        # getting image shape at this point gives a false reading
+    def set_frame_shape(self):
+        frame_shape = self._scroll_area.get_shape()
+        # print(f"_scroll_area.shape:\t{shape}")
+        self._portal.set_frame_shape(frame_shape)
 
     def show_mandel(self, mandel: mandelbrot.Mandel):
-        self.canvas.draw_mandel(mandel)
-        # self.canvas.draw_mandel_test(mandel)
-        self.q_main.setVisible(True)
-        self.q_main.resize(mandel.shape.x, mandel.shape.y)
-        self.q_main_layout.update()
+        """assuming frame size is not changing"""
+        self._draw_mandel_source.set_mandel(mandel)
+        self._portal.prepare_source_and_frame()
+        self._portal.display()
 
-    def set_image_space(self):
-        self.image_space = self._get_image_space()
+    @property
+    def frame_shape(self) -> Optional[tuples.ImageShape]:
+        return self._portal.frame.frame_shape
 
-    def _get_image_space(self) -> tuples.ImageShape:
-        # self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        # self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+    def rotate_image(self, degrees: int):
+        # to rotate image is one direction we need to rotate the frame in the other
+        self._portal.rotate_display(-degrees)
 
-        x = self.q_scroll_area.viewport().width()
-        y = self.q_scroll_area.viewport().height()
+    def zoom_image(self,
+                   zoom_frame_point: tuples.PixelPoint,
+                   scaling: Optional[float] = None):
+        if scaling is None:
+            scaling = 1.0
+        self._portal.scale_display(scaling, zoom_frame_point)
 
-        # self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        # self.q_scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+    def pan_image(self, pan: tuples.PixelPoint):
+        self._portal.pan_display(pan)
 
-        return tuples.ImageShape(x, y)
+    def show_z0_marker(self, source_point: tuples.PixelPoint):
+        self.set_z0_marker(source_point)
+        # self._portal.prepare_source_and_frame()
+        self._portal.display()
 
+    def set_z0_marker(self, source_point: tuples.PixelPoint):
+        self._draw_mandel_frame.set_z0_source_point(source_point)
 
-# This disables the scroll-wheel since we are using it for zooming
-# plus the scrollbars are disabled
-# removing the QScrollArea altogether messed up the image rendering and it was so hard to get right the first time
-class XScrollArea(QtWidgets.QScrollArea):
+    def hide_z0_marker(self):
+        self._draw_mandel_frame.hide_z0()
+        self._portal.display()
 
-    def wheelEvent(self, wheel_event: QtGui.QWheelEvent) -> None:
-        wheel_event.ignore()
-
+    def set_cursor(self, cursor_shape: QtCore.Qt.CursorShape):
+        self.x_label.set_cursor_shape(cursor_shape)

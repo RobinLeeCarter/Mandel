@@ -2,27 +2,27 @@ from typing import List, Dict
 
 from PyQt5 import QtWidgets, QtCore
 
-from mandel_app.view.window import actions, dial, slider
+from mandel_app.view.window import actions, dial, iteration_slider
 
 
 class Toolbars:
     def __init__(self,
                  q_main_window: QtWidgets.QMainWindow,
                  action_dict: Dict[str, QtWidgets.QAction]):
-        self._q_main_window = q_main_window
-        self._action_dict = action_dict
+        self._q_main_window: QtWidgets.QMainWindow = q_main_window
+        self._action_dict: Dict[str, QtWidgets.QAction] = action_dict
         # self.tool_bars = List[QtWidgets.QToolBar]
-        self.tool_bars = []
+        self.tool_bars: list = []
         # self.previously_visible_tool_bars = List[QtWidgets.QToolBar]
-        self.previously_visible_tool_bars = []
+        self.previously_visible_tool_bars: list = []
 
         # self.file_tool_bar: QtWidgets.QToolBar = self._q_main_window.addToolBar("File")
         # self._add_actions(self.file_tool_bar, ["load", "save", "close"])
 
-        self.view_tool_bar = self._q_main_window.addToolBar("View")
+        self.view_tool_bar: QtWidgets.QToolBar = self._q_main_window.addToolBar("View")
         self._add_actions(self.view_tool_bar, ["full_screen", "z_mode"])
 
-        self.dial = dial.Dial(self._q_main_window, size=40)
+        self.dial: dial.Dial = dial.Dial(self._q_main_window, size=40)
         self.view_tool_bar.addWidget(self.dial.q_dial)
 
         self.view_tool_bar.addSeparator()
@@ -31,17 +31,18 @@ class Toolbars:
 
         self.power_label = QtWidgets.QLabel(" 2 to the power")
         self.power_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self._power_label_action = self.view_tool_bar.addWidget(self.power_label)
+        self._power_label_action: QtWidgets.QAction = self.view_tool_bar.addWidget(self.power_label)
 
-        self.iteration_slider = slider.Slider(self._q_main_window)
-        self._iteration_slider_action = self.view_tool_bar.addWidget(self.iteration_slider.labelled_slider)
+        self.iteration_slider: iteration_slider.IterationSlider = iteration_slider.IterationSlider(self._q_main_window)
+        self._iteration_slider_action: QtWidgets.QAction = \
+            self.view_tool_bar.addWidget(self.iteration_slider.x_labelled_slider)
 
         self.iterations_label = QtWidgets.QLabel("")
         self.iterations_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self._iterations_label_action = self.view_tool_bar.addWidget(self.iterations_label)
+        self._iterations_label_action: QtWidgets.QAction = self.view_tool_bar.addWidget(self.iterations_label)
 
-        initial_power = 20
-        self.iteration_slider.q_slider.setValue(initial_power)
+        initial_power: int = 20
+        self.iteration_slider.value = initial_power
         self.set_iterations_label(2**initial_power)
         self.slider_visibility(visible=False)
 

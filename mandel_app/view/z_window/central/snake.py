@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Iterable
 
 import math
 
 import numpy as np
-from matplotlib import animation, figure, lines, collections, colors, text
+from matplotlib import animation, figure, lines, collections, colors, text, artist
 
 from mandel_app.model.z_model import trace
 
@@ -20,7 +20,7 @@ class Snake:
         self._point_count: int = 0
         self._frames: int = 0
         self._snake_point_numbering: np.ndarray = np.arange(self._snake_length)
-        self._norm = colors.Normalize(-self._snake_length, self._snake_length)
+        self._norm: colors.Normalize = colors.Normalize(-self._snake_length, self._snake_length)
         self._ani: Optional[animation.FuncAnimation] = None
 
         # varying for each frame
@@ -41,11 +41,11 @@ class Snake:
         self._counter = counter
 
         # These functions have to be nested because FuncAnimation does not allow their allow signatures to include self
-        def _init():
+        def _init() -> Iterable[artist.Artist]:
             """initialize animation"""
             return self._draw_frame(0)
 
-        def _draw_frame(frame: int):
+        def _draw_frame(frame: int) -> Iterable[artist.Artist]:
             """perform animation frame"""
             return self._draw_frame(frame)
 
@@ -65,7 +65,7 @@ class Snake:
                                             blit=True
                                             )
 
-    def _draw_frame(self, frame: int):
+    def _draw_frame(self, frame: int) -> Iterable[artist.Artist]:
         self._get_frame_points(frame)
 
         # from: https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/multicolored_line.html

@@ -1,18 +1,17 @@
-from typing import Callable, Optional
-
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets
 
 from mandel_app import tuples
+from mandel_app.view import widgets
 from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
     def __init__(self, parent: QtWidgets.QMainWindow, z_window_settings: dict):
-        self.q_main_window = XMainWindow(parent=parent)
-        self.is_active = False
-        self.actions = actions.Actions(self.q_main_window)
-        image_shape = tuples.image_shape_from_q_size(z_window_settings["size"])
-        self.central = central.Central(self.q_main_window, image_shape)
+        self.q_main_window: widgets.XMainWindow = widgets.XMainWindow(parent=parent)
+        self.is_active: bool = False
+        self.actions: actions.Actions = actions.Actions(self.q_main_window)
+        image_shape: tuples.ImageShape = tuples.image_shape_from_q_size(z_window_settings["size"])
+        self.central: central.Central = central.Central(self.q_main_window, image_shape)
 
         self._build(z_window_settings)
 
@@ -24,7 +23,7 @@ class ZWindow:
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
         self.q_main_window.show()
-        self.central.set_image_space()
+        self.central.refresh_image_space()
         self.q_main_window.setVisible(False)
 
         # self.menu = menu.Menu(self.q_main_window, self.actions.action_dict)
@@ -48,55 +47,3 @@ class ZWindow:
     def show(self):
         self.q_main_window.setVisible(False)
         self.q_main_window.setVisible(True)
-
-    # region Connect Events
-    def set_on_key_pressed(self, on_key_pressed: Callable[[QtGui.QKeyEvent], None]):
-        self.q_main_window.keyPressSignal.connect(on_key_pressed)
-
-    def set_on_active(self, on_active: Callable[[], None]):
-        self.q_main_window.activationChangeSignal.connect(on_active)
-
-    def set_on_close(self, on_close: Callable[[], None]):
-        self.q_main_window.closeSignal.connect(on_close)
-
-    def set_on_resize(self, on_resize: Callable[[], None]):
-        self.q_main_window.resize_q_timer.timeout.connect(on_resize)
-    # endregion
-
-
-class XMainWindow(QtWidgets.QMainWindow):
-    # on my machine in Ubuntu 19.10 a shorter timeout results in artifacts as the window redraws
-    RESIZE_TIMEOUT_MS: int = 100
-
-    keyPressSignal = QtCore.pyqtSignal(QtGui.QKeyEvent)
-    activationChangeSignal = QtCore.pyqtSignal()
-    closeSignal = QtCore.pyqtSignal()
-
-    def __init__(self, parent=Optional[QtWidgets.QWidget]):
-        super().__init__(parent=parent)
-        self.resize_q_timer = QtCore.QTimer(parent=self)
-        self.resize_q_timer.setSingleShot(True)
-        self.resize_enabled: bool = False   # disable for the first time through as alpha on plot images gets set to 1
-
-    def keyPressEvent(self, key_event: QtGui.QKeyEvent) -> None:
-        self.keyPressSignal.emit(key_event)
-        super().keyPressEvent(key_event)
-
-    def changeEvent(self, event: QtCore.QEvent) -> None:
-        if event.type() == QtCore.QEvent.ActivationChange and self.isActiveWindow():
-            self.activationChangeSignal.emit()
-        super().changeEvent(event)
-
-    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
-        if event.spontaneous():
-            self.closeSignal.emit()
-        super().closeEvent(event)
-
-    # region delayed resize resize_event handler
-    def resizeEvent(self, resize_event: QtGui.QResizeEvent) -> None:
-        if self.resize_enabled:
-            # NOTE: resize_event will be messed up by the resize delay code so we don't take a copy
-            self.resize_q_timer.start(XMainWindow.RESIZE_TIMEOUT_MS)
-        self.resize_enabled = True
-        super().resizeEvent(resize_event)
-    # endregion

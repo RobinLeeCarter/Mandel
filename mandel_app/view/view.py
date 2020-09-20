@@ -2,26 +2,30 @@ from __future__ import annotations
 
 from typing import Optional
 
-from matplotlib import backend_bases
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import thread
 from mandel_app import controller, tuples
 from mandel_app.model import mandelbrot, z_model
-from mandel_app.view import window, enums, view_state, view_settings, icon, z_window, clipboard
+from mandel_app.view import window, state, settings, z_window, enums
+from mandel_app.view.common import icon, clipboard
+
+# import utils
 
 
 class View:
     # region Setup
     def __init__(self, application: QtWidgets.QApplication, application_name: str):
-        self._application = application
+        self._application: QtWidgets.QApplication = application
         self._application_name: str = application_name
-        self._clipboard = clipboard.Clipboard(application)
+        self._clipboard: clipboard.Clipboard = clipboard.Clipboard(application)
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
-        self._view_state = view_state.ViewState()
-        self._view_settings = view_settings.ViewSettings(reset=False)
+        self._view_state: state.State = state.State()
+        self._view_settings: settings.Settings = settings.Settings(reset=False)
+        # self._timer = utils.Timer()
+        # self._timer.start()
 
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
@@ -29,39 +33,58 @@ class View:
     def build(self):
         dock_icon = icon.Icon("mandel_icon.png")
         self._application.setWindowIcon(dock_icon.q_icon)
-        self._window = window.Window(self._application_name, self._view_settings.window_settings)
-        self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
+        self._window = window.Window(self._application_name)
+        self._window.build(self._view_settings.window_settings, self._view_state.cursor_shape)
+        self._view_state.set_central(self._window.central)
+        self._window.central.set_cursor(self._view_state.cursor_shape)
         self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
 
         self._connect_signals()
+
+    def set_calc_thread_state(self, calc_thread_state: thread.State):
+        self._window.central.set_calc_thread_state(calc_thread_state)
     # endregion
 
-    # region Controller Messages
-    def get_image_space(self) -> tuples.ImageShape:
-        return self._window.central.image_space
+    # region Properties
+    # properties exposing part of Model that View needs rather than View holding & updating it's own reference
+    @property
+    def _displayed_mandel(self) -> mandelbrot.Mandel:
+        return self._controller.get_displayed_mandel()
 
-    def show_z_graph(self, z_model_: z_model.ZModel):
-        self._z_window.central.show_graph(z_model_)
-        self._z_window.q_main_window.raise_()
+    @property
+    def _z0(self) -> complex:
+        return self._controller.get_z0()
 
-    def hide_z_graph(self):
-        self._z_window.central.hide_graph()
+    # other properties that are better calculated in one place
+    @property
+    def frame_shape(self) -> Optional[tuples.ImageShape]:
+        return self._window.central.frame_shape
 
-    def show_z0_on_mandel(self, z0: complex):
-        self._window.central.canvas.show_z0_marker(z0)
-
-    def hide_z0_on_mandel(self):
-        self._window.central.canvas.hide_z0_marker()
+    @property
+    def center_frame_point(self) -> Optional[tuples.ImageShape]:
+        frame_shape = self.frame_shape
+        if frame_shape is None:
+            return None
+        else:
+            center_frame_point = tuples.PixelPoint(
+                x=(self.frame_shape.x-1) * 0.5,
+                y=(self.frame_shape.y-1) * 0.5
+            )
+            return center_frame_point
 
     @property
     def ready_to_display_new_mandel(self) -> bool:
         return self._view_state.ready_to_display_new_mandel
+    # endregion
 
+    # region Controller Messages
     def show_mandel(self, mandel: mandelbrot.Mandel):
         self._set_action(enums.ImageAction.DRAWING)
         # print(f"show_mandel")
         # import time
         # time.sleep(5)
+        if self._view_state.is_z_mode:
+            self._set_z0_marker(self._z0, mandel)
         self._window.central.show_mandel(mandel)
         if not mandel.has_border:
             self._window.toolbars.dial.set_value(mandel.theta_degrees)
@@ -75,14 +98,42 @@ class View:
         # QtWidgets.QApplication.processEvents()
         self._set_action(enums.ImageAction.NONE)
         # self._window.central.canvas.save("mandel_icon.png")
+        # self._timer.stop()
+        # self._timer.start()
 
     def display_progress(self, progress: float):
         self._window.status_bar.display_progress(progress)
+        # self._timer.lap(f"{progress:.4f}", show=True)
 
     def stop_success(self):
-        self.show_mandel(self._window.central.canvas.mandel)
-        # self._window.status_bar.q_progress_bar.setVisible(False)
-        # self._set_action(enums.ImageAction.NONE)
+        # print("stopped")
+        # cp.cuda.get_current_stream().synchronize()
+        # stream_done = cp.cuda.get_current_stream().done
+        # worker_ready = not self._controller._model.calc_thread_state.worker_active
+        # print(f"Stream.done: {stream_done}")
+        # print(f"worker_ready: {worker_ready}")
+        # print(f"self._view_state.revert_on_stop: {self._view_state.revert_on_stop}")
+        if self._view_state.revert_on_stop:
+            # self.show_mandel(self._window.central.mandel)
+            self.show_mandel(self._displayed_mandel)
+
+    def show_z_graph(self, z_model_: z_model.ZModel):
+        self._z_window.central.show_graph(z_model_)
+        self._z_window.q_main_window.raise_()
+
+    def hide_z_graph(self):
+        self._z_window.central.hide_graph()
+
+    def show_z0_marker(self, z0: complex):
+        source_point = self._displayed_mandel.get_source_point_from_complex(z0)
+        self._window.central.show_z0_marker(source_point)
+
+    def _set_z0_marker(self, z0: complex, mandel: mandelbrot.Mandel):
+        source_point = mandel.get_source_point_from_complex(z0)
+        self._window.central.set_z0_marker(source_point)
+
+    def hide_z0_marker(self):
+        self._window.central.hide_z0_marker()
     # endregion
 
     # region Connect Events
@@ -91,18 +142,10 @@ class View:
         self._connect_full_screen()
         self._connect_z_mode()
         self._connect_dial_rotate()
-        self._connect_iteration()
-        self._connect_canvas()
-        self._window.set_on_key_pressed(self._on_key_pressed)
-        self._window.set_on_active(self._on_active)
-        self._z_window.set_on_active(self._on_z_active)
-        self._window.set_on_close(self._on_close)
-        self._z_window.set_on_close(self._on_z_close)
-        self._window.set_on_resize(self._on_resized)
-        self._z_window.set_on_resize(self._on_z_resized)
-        self._window.status_bar.copy_icon_image.set_on_mouse_press(self._on_copy_press)
-        self._window.status_bar.q_center_label.set_on_mouse_press(self._on_copy_press)
-        # self._window.status_bar.q_center_label.mousePressSignal.connect(self._on_copy_press)
+        self._connect_iteration_slider()
+        self._connect_central_label()
+        self._connect_window()
+        self._connect_z_window()
 
     def _connect_escape(self):
         self._window.actions.escape.set_on_triggered(on_triggered=self._on_escape)
@@ -117,20 +160,36 @@ class View:
 
     def _connect_dial_rotate(self):
         self._window.toolbars.dial.set_on_rotating(on_rotating=self._on_rotating)
-        self._window.toolbars.dial.set_on_rotated(on_rotated=self._controller.rotate_request)
+        # self._window.toolbars.dial.set_on_rotated(on_rotated=self._controller.rotate_request)
+        self._window.toolbars.dial.set_on_rotated(on_rotated=self._on_rotated)
 
-    def _connect_iteration(self):
+    def _connect_iteration_slider(self):
         self._window.actions.max_iterations.set_on_triggered(on_triggered=self._on_max_iteration)
-        q_slider = self._window.toolbars.iteration_slider.q_slider
-        q_slider.sliderMoved.connect(self._on_iteration_slider_moved)
-        q_slider.valueChanged.connect(self._on_iteration_slider_value_changed)
+        x_labelled_slider = self._window.toolbars.iteration_slider.x_labelled_slider
+        x_labelled_slider.set_on_slider_moved(self._on_iteration_slider_moved)
+        x_labelled_slider.set_on_value_changed(self._on_iteration_slider_value_changed)
 
-    def _connect_canvas(self):
-        canvas = self._window.central.canvas
-        canvas.add_connection("button_press_event", self._on_mandel_mouse_press)
-        canvas.add_connection("motion_notify_event", self._on_mandel_mouse_move)
-        canvas.add_connection("button_release_event", self._on_mandel_mouse_release)
-        canvas.add_connection("scroll_event", self._on_mandel_mouse_scroll)
+    def _connect_window(self):
+        q_main_window = self._window.q_main_window
+        q_main_window.set_on_key_pressed(self._on_key_pressed)
+        q_main_window.set_on_active(self._on_active)
+        q_main_window.set_on_resize(self._on_resized)
+        q_main_window.set_on_close(self._on_close)
+        self._window.status_bar.set_center_on_mouse_press(self._on_copy_press)
+
+    def _connect_z_window(self):
+        q_main_window = self._z_window.q_main_window
+        q_main_window.set_on_active(self._on_z_active)
+        q_main_window.set_on_resize(self._on_z_resized)
+        q_main_window.set_on_close(self._on_z_close)
+
+    def _connect_central_label(self):
+        x_label = self._window.central.x_label
+        x_label.set_on_mouse_press(self._on_central_mouse_press)
+        x_label.set_on_mouse_move(self._on_central_mouse_move)
+        x_label.set_on_mouse_release(self._on_central_mouse_release)
+        x_label.set_on_mouse_double_click(self._on_central_mouse_double_click)
+        x_label.set_on_wheel(self._on_central_mouse_wheel)
     # endregion
 
     # region General Slots
@@ -143,17 +202,23 @@ class View:
         self._window.actions.full_screen.q_action.trigger()
 
     def _on_rotating(self, theta_degrees: int):
-        canvas = self._window.central.canvas
+        central = self._window.central
         view_state_ = self._view_state
         if view_state_.ready_to_rotate:
-            canvas.rotate_mandel_frame(theta_degrees)
+            # central.rotate_mandel_frame(theta_degrees)
+            theta_delta = theta_degrees - self._displayed_mandel.theta_degrees
+            central.rotate_image(theta_delta)
             self._set_action(enums.ImageAction.ROTATED)
+
+    def _on_rotated(self, theta_degrees: int):
+        self._controller.rotate_request(theta_degrees)
+        self._set_action(enums.ImageAction.ROTATED)
 
     def _on_max_iteration(self, max_iterations_pressed: bool):
         if max_iterations_pressed:
             self._window.toolbars.slider_visibility(True)
-            q_slider = self._window.toolbars.iteration_slider.q_slider
-            self._on_iteration_slider_value_changed(q_slider.value())
+            value = self._window.toolbars.iteration_slider.value
+            self._on_iteration_slider_value_changed(value)
         else:
             self._window.toolbars.slider_visibility(False)
             self._controller.new_compute_parameters_request()
@@ -166,6 +231,7 @@ class View:
         self._controller.new_compute_parameters_request(max_iterations, early_stopping=False)
 
     def _on_escape(self, _: bool):
+        self._view_state.revert_on_stop = True
         self._controller.stop_request()
 
     def _on_key_pressed(self, key_event: QtGui.QKeyEvent):
@@ -192,28 +258,28 @@ class View:
         self._z_window.is_active = True
         self._window.is_active = False
 
-    def _on_z_close(self):
-        self._view_settings.write_z_window_settings(self._z_window.q_main_window)
-        q_action = self._window.actions.z_mode.q_action
-        if q_action.isChecked():
-            q_action.trigger()
-        # self._window.actions.z_mode.q_action.setChecked(False)
+    def _on_z_close(self, close_event: QtGui.QCloseEvent):
+        if close_event.spontaneous():
+            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
+            q_action = self._window.actions.z_mode.q_action
+            if q_action.isChecked():
+                q_action.trigger()
 
     def _on_resized(self):
-        central = self._window.central
-        central.set_image_space()
-        central.canvas.on_resized(central.image_space)
-
-        # have to zoom, ready or not
-        self._zoom(scaling=1.0)
+        self._window.central.on_resized()
+        # resize, ready or not
+        self._controller.on_resized()
+        self._set_action(enums.ImageAction.RESIZED)
+        # self._zoom(scaling=1.0)
 
     def _on_z_resized(self):
         z_central = self._z_window.central
-        z_central.set_image_space()
-        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_space)
+        z_central.refresh_image_space()
+        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_shape)
         self._controller.redraw_z_trace(image_shape)
 
     def _on_close(self):
+        self._controller.stop_request()
         if self._z_window.q_main_window.isVisible():
             self._view_settings.write_z_window_settings(self._z_window.q_main_window)
         self._view_settings.write_window_settings(self._window.q_main_window)
@@ -224,89 +290,122 @@ class View:
         self._window.central.overlay.show_copy_message()
     # endregion
 
-    # region Canvas Slots
-    def _on_mandel_mouse_press(self, event: backend_bases.MouseEvent):
-        canvas = self._window.central.canvas
+    # region Central Mouse Slots
+    def _on_central_mouse_press(self, event: QtGui.QMouseEvent):
+        # print("_on_central_mouse_press")
+        # add to always request a stop any current GPU work to free it up for scrolling
         view_state_ = self._view_state
-
-        if event.button == backend_bases.MouseButton.LEFT:
-            if event.dblclick and not view_state_.is_z_mode:
-                if view_state_.ready_to_zoom:
-                    self._zoom(view_state_.pan_start, scaling=0.1)
-            elif view_state_.ready_to_pan:
-                view_state_.pan_start = canvas.get_image_point(event)
+        button: QtCore.Qt.MouseButton = event.button()
+        if button == QtCore.Qt.LeftButton:
+            if view_state_.ready_to_pan:
+                self._controller.stop_request()
+                view_state_.pan_start = self._mouse_frame_point(event)
                 view_state_.pan_end = view_state_.pan_start
                 self._set_action(enums.ImageAction.PANNING)
-        elif event.button == backend_bases.MouseButton.MIDDLE:
+        elif button == QtCore.Qt.MiddleButton:
             if view_state_.ready_to_rotate:
-                view_state_.rotate_start = canvas.get_image_point(event)
-                view_state_.mandel_shape = canvas.mandel.shape
+                self._controller.stop_request()
+                view_state_.rotate_start = self._mouse_frame_point(event)
+                # view_state_.mandel_shape = self._window.central.mandel.shape change
                 self._set_action(enums.ImageAction.ROTATING)
-        elif event.button == backend_bases.MouseButton.RIGHT:
+        elif button == QtCore.Qt.RightButton:
             if view_state_.ready_to_zoom:
-                if event.dblclick:
-                    self._zoom(scaling=10.0)
-                else:
-                    self._zoom(scaling=2.0)
+                self._controller.stop_request()
+                self._zoom(scaling=2.0)
 
-    def _on_mandel_mouse_move(self, event: backend_bases.MouseEvent):
-        canvas = self._window.central.canvas
+    def _on_central_mouse_move(self, event: QtGui.QMouseEvent):
+        # print("_on_central_mouse_move")
         view_state_ = self._view_state
-        if view_state_.is_waiting:
-            image_point: tuples.PixelPoint = canvas.get_image_point(event)
-            z: complex = canvas.mandel.get_complex_from_pixel(image_point)
+        central = self._window.central
+        # if view_state_.is_waiting and central.mandel is not None:
+        if view_state_.is_waiting and self._displayed_mandel is not None:
+            frame_point: tuples.PixelPoint = self._mouse_frame_point(event)
+            # z: complex = central.mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
+            z: complex = self._displayed_mandel.get_complex_from_frame_point(self.frame_shape, frame_point)
             self._window.status_bar.display_point(z)
         elif view_state_.action_in_progress == enums.ImageAction.PANNING:
-            view_state_.pan_end = canvas.get_image_point(event)
-            canvas.pan_mandel(pan=view_state_.total_pan)
-            self._set_action(enums.ImageAction.PANNING)
+            view_state_.pan_end = self._mouse_frame_point(event)
+            # stream_done = cp.cuda.get_current_stream().done
+            # worker_ready = not self._controller._model.calc_thread_state.worker_active
+            # print(view_state_.total_pan)
+            # if stream_done and worker_ready:
+            #     central.pan_image(pan=view_state_.total_pan)
+            central.pan_image(pan=view_state_.total_pan)
+            self._update_cursor()
         elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
-            view_state_.rotate_end = canvas.get_image_point(event)
-            canvas.rotate_mandel_mouse(view_state_.total_theta_delta)
+            view_state_.rotate_end = self._mouse_frame_point(event)
+            central.rotate_image(view_state_.total_theta_delta)
 
-    def _on_mandel_mouse_release(self, event: backend_bases.MouseEvent):
-        canvas = self._window.central.canvas
+    def _on_central_mouse_release(self, event: QtGui.QMouseEvent):
+        # print("_on_central_mouse_release")
         view_state_ = self._view_state
+        central = self._window.central
 
-        if event.button == backend_bases.MouseButton.LEFT:
-            if view_state_.action_in_progress == enums.ImageAction.PANNING:
-                view_state_.pan_end = canvas.get_image_point(event)
-                if view_state_.tiny_pan:
-                    if view_state_.is_z_mode:
-                        # change z0 for z-tracing
-                        # print(f"clicked at: {view_state_.pan_start}")
-                        self._update_z0(pixel_point=view_state_.pan_start)
-                    else:
-                        # point zoom
-                        self._zoom(pixel_point=view_state_.pan_start, scaling=0.5)
+        # if event.button == backend_bases.MouseButton.LEFT:
+        if view_state_.action_in_progress == enums.ImageAction.PANNING:
+            view_state_.pan_end = self._mouse_frame_point(event)
+            if view_state_.tiny_pan:
+                if view_state_.is_z_mode:
+                    # change z0 for z-tracing
+                    # print(f"clicked at: {view_state_.pan_start}")
+                    self._update_z0(frame_point=view_state_.pan_start)
                 else:
-                    new_pan = view_state_.total_pan
-                    self._controller.pan_request(new_pan)
-                    view_state_.released_pan_delta = new_pan
-                    self._set_action(enums.ImageAction.PANNED)
+                    # point zoom
+                    self._zoom(frame_point=view_state_.pan_start, scaling=0.5)
+            else:
+                new_pan = view_state_.total_pan
+                central.pan_image(pan=new_pan)
+                self._controller.pan_request(new_pan)
+                view_state_.released_pan_delta = new_pan
+                self._set_action(enums.ImageAction.PANNED)
 
-        elif event.button == backend_bases.MouseButton.MIDDLE:
-            if view_state_.action_in_progress == enums.ImageAction.ROTATING:
-                view_state_.rotate_end = canvas.get_image_point(event)
-                mouse_theta_delta = view_state_.mouse_theta_delta
-                if mouse_theta_delta is not None and mouse_theta_delta != 0:
-                    new_theta = canvas.mandel.theta_degrees + \
-                                view_state_.released_theta_delta + \
-                                mouse_theta_delta
-                    self._controller.rotate_request(new_theta)
-                    view_state_.released_theta_delta = view_state_.released_theta_delta + mouse_theta_delta
+        # elif event.button == backend_bases.MouseButton.MIDDLE:
+        elif view_state_.action_in_progress == enums.ImageAction.ROTATING:
+            view_state_.rotate_end = self._mouse_frame_point(event)
+            mouse_theta_delta = view_state_.mouse_theta_delta
+            if mouse_theta_delta is not None and mouse_theta_delta != 0:
+                # new_theta = central.mandel.theta_degrees + \
+                new_theta = self._displayed_mandel.theta_degrees + \
+                            view_state_.released_theta_delta + \
+                            mouse_theta_delta
+                self._controller.rotate_request(new_theta)
+                view_state_.released_theta_delta = view_state_.released_theta_delta + mouse_theta_delta
                 self._set_action(enums.ImageAction.ROTATED)
+            else:
+                # nothing to do
+                self._set_action(enums.ImageAction.NONE)
 
-    def _on_mandel_mouse_scroll(self, event: backend_bases.MouseEvent):
-        canvas = self._window.central.canvas
+    def _on_central_mouse_double_click(self, event: QtGui.QMouseEvent):
+        """
+        This will trigger some 200-500ms after the mouse-press event.
+        Note that mouse_press and mouse_release will have triggered first and there's no way to avoid that.
+        The first click request will have been sent to the controller and model requesting a new mandel
+        This new request will interrupt that job. Waiting would slow down the single click noticeable.
+        """
+        # print("_on_central_mouse_double_click")
         view_state_ = self._view_state
-        # print("_on_mandel_mouse_scroll")
+        button: QtCore.Qt.MouseButton = event.button()
+        if button == QtCore.Qt.LeftButton:
+            if view_state_.ready_to_zoom and not view_state_.is_z_mode:
+                self._zoom(view_state_.pan_start, scaling=0.1)
+        elif button == QtCore.Qt.RightButton:
+            if view_state_.ready_to_zoom:
+                self._zoom(scaling=10.0)
+
+    def _on_central_mouse_wheel(self, event: QtGui.QWheelEvent):
+        # print("_on_central_mouse_wheel")
+        # add to always request a stop any current GPU work to free it up for scrolling
+        self._controller.stop_request()
+        view_state_ = self._view_state
+        steps: float = self._get_scroll_steps(event)
+        # print("_on_central_mouse_wheel")
 
         if view_state_.ready_to_zoom:
-            extra_scaling = 0.9 ** float(event.step)
+            extra_scaling = 0.9 ** steps
             view_state_.scaling_requested *= extra_scaling
-            if event.step > 0:  # zooming in
-                cursor = canvas.get_image_point(event)
+            if steps > 0:  # zooming in
+                pos = event.pos()
+                cursor = self._frame_image_to_frame_cartesian(x=pos.x(), y=pos.y())
                 zoom_point = self._get_zoom_point(cursor)
                 self._zoom(zoom_point)
             else:  # zooming out, always just go out, no movement
@@ -330,33 +429,31 @@ class View:
         # return zoom_point
 
     def _zoom(self,
-              pixel_point: Optional[tuples.PixelPoint] = None,
+              frame_point: Optional[tuples.PixelPoint] = None,
               scaling: Optional[float] = None):
-        canvas = self._window.central.canvas
+        central = self._window.central
         view_state_ = self._view_state
 
         if scaling is not None:
             view_state_.scaling_requested = scaling
 
         # if not yet set, then set, else ignore the new pixel point and adjust the zoom on the current point
-        if view_state_.scaling_pixel_point is None:
-            if pixel_point is None:
-                view_state_.scaling_pixel_point = canvas.center_pixel_point
+        if view_state_.scaling_frame_point is None:
+            if frame_point is None:
+                view_state_.scaling_frame_point = self.center_frame_point
             else:
-                view_state_.scaling_pixel_point = pixel_point
+                view_state_.scaling_frame_point = frame_point
 
-        pixel_point = view_state_.scaling_pixel_point
+        frame_point = view_state_.scaling_frame_point
         scaling = view_state_.scaling_requested
-        # print(f"zoom pixel_point={pixel_point} scaling={scaling:.2f}")
-        # import time
-        # time.sleep(5)
-
-        canvas.zoom_mandel_frame(pixel_point, scaling)
-        self._controller.point_zoom_request(pixel_point, scaling)
+        assert frame_point is not None, "View._zoom frame_point is None"
+        assert scaling is not None, "View._zoom scaling is None"
+        central.zoom_image(frame_point, scaling)
+        self._controller.point_zoom_request(frame_point, scaling)
         self._set_action(enums.ImageAction.ZOOMED)
 
-    def _update_z0(self, pixel_point: tuples.PixelPoint):
-        self._controller.update_z0_request(pixel_point)
+    def _update_z0(self, frame_point: tuples.PixelPoint):
+        self._controller.update_z0_request(frame_point)
         self._set_action(enums.ImageAction.NONE)
 
     def _set_action(self, action: enums.ImageAction):
@@ -364,5 +461,19 @@ class View:
         self._update_cursor()
 
     def _update_cursor(self):
-        self._window.central.canvas.set_cursor(self._view_state.cursor_shape)
+        self._window.central.set_cursor(self._view_state.cursor_shape)
+
+    def _mouse_frame_point(self, event: QtGui.QMouseEvent) -> tuples.PixelPoint:
+        return self._frame_image_to_frame_cartesian(event.x(), event.y())
+
+    def _frame_image_to_frame_cartesian(self, x: int, y: int) -> tuples.PixelPoint:
+        frame_y = self._view_state.frame_shape.y
+        frame_point = tuples.PixelPoint(x=x, y=frame_y-y)
+        return frame_point
+
+    def _get_scroll_steps(self, event: QtGui.QWheelEvent) -> float:
+        # see: https://doc.qt.io/qt-5/qwheelevent.html#globalPosition
+        degrees: float = float(event.angleDelta().y()) / 8.0
+        steps: float = degrees / 15.0
+        return steps
     # endregion

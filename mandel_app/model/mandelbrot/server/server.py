@@ -15,39 +15,59 @@ from mandel_app.model.mandelbrot.server import request
 # serves requests for mandel pixel calculations
 # compute does the actual calculation
 class Server:
+
+    # region Setup
     def __init__(self,
-                 mandel_: mandel.Mandel,
                  compute_manager_: compute.ComputeManager,
-                 early_stopping_iteration: Optional[int] = None
+                 new_mandel: mandel.Mandel,
+                 early_stopping_iteration: Optional[int] = None,
+                 prev_mandel: Optional[mandel.Mandel] = None,
+                 offset: Optional[tuples.PixelPoint] = None
                  ):
+        self._compute_manager: compute.ComputeManager = compute_manager_
+        self._new_mandel: mandel.Mandel = new_mandel
+        self._early_stopping_iteration: Optional[int] = early_stopping_iteration
+        self._prev_mandel: Optional[mandel.Mandel] = prev_mandel
+        # offset vector from prev_mandel origin to new_mandel origin (this already includes any pan)
+        self._offset: Optional[tuples.PixelPoint] = offset
 
-        self._mandel = mandel_
-        self._compute_manager = compute_manager_
-        self._early_stopping_iteration = early_stopping_iteration
+        # removed
+        # if self._mandel.pan is not None:
+        #     self._mandel.pan_centre()
 
-        if self._mandel.pan is not None:
-            self._mandel.pan_centre()
+        shape = (self._new_mandel.shape.y, self._new_mandel.shape.x)
 
-        self._c = self._generate_c()
+        # self._c: cp.ndarray = self._generate_c()
 
-        self._iteration = cp.zeros(shape=self._c.shape, dtype=cp.int32)
-        self._completed = cp.zeros(shape=self._c.shape, dtype=cp.bool)
-        if self._mandel.pan is not None:
-            self._copy_over_pan()
-        self._mandel.pan = None
+        self._iteration: cp.ndarray = cp.zeros(shape=shape, dtype=cp.int32)
+        self._completed: cp.ndarray = cp.zeros(shape=shape, dtype=cp.bool)
 
-        if self._mandel.has_border:
-            self._copy_over_centre()
-
-        self._requested = cp.zeros(shape=self._c.shape, dtype=cp.bool)
+        self._requested: cp.ndarray = cp.zeros(shape=shape, dtype=cp.bool)
         self._requests: List[request.Request] = []
 
         self._box_fills: bool = False
-        self._box_iter_cpu = np.zeros(shape=self._c.shape, dtype=np.int32)
-        self._box_fill_cpu = np.zeros(shape=self._c.shape, dtype=np.bool)
+        self._box_iter_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.int32)
+        self._box_fill_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.bool)
+
+        self._c: cp.ndarray = cp.zeros(shape=shape, dtype=cp.float64)
+
+        self._build()
+
+    def _build(self):
+        self._c: cp.ndarray = self._generate_c()
+
+        if self._prev_mandel is not None and self._offset is not None:
+            self._copy_over_prev()
+        # if self._new_mandel.pan is not None:
+        #     self._copy_over_pan()
+        # self._new_mandel.pan = None
+        #
+        # if self._new_mandel.has_border:
+        #     self._copy_over_center()
 
     def _generate_c(self) -> cp.ndarray:
-        m = self._mandel
+        """Found to be faster using numpy, ogrid presumably not possible to parallelize."""
+        m = self._new_mandel
         y, x = np.ogrid[-m.y_size/2.0: m.y_size/2.0: m.shape.y * 1j,
                         -m.x_size/2.0: m.x_size/2.0: m.shape.x * 1j]
 
@@ -71,74 +91,79 @@ class Server:
 
         return cp.asarray(c)
 
-    def _copy_over_pan(self):
-        new = self._mandel.shape
-        old = self._mandel.iteration_shape
-        offset = self._mandel.iteration_offset
-        pan = self._mandel.pan
+    def _copy_over_prev(self):
+        new = self._new_mandel.shape
+        prev = self._prev_mandel.shape
+        offset = self._offset
+        # print("\n")
+        # print(f"prev center: {self._prev_mandel.centre}")
+        # print(f"new center: {self._new_mandel.centre}")
+        # print(f"prev shape: {prev}")
+        # print(f"new shape : {new}")
+        # print(f"offset    : {offset}")
 
-        bottom_left: tuples.PixelPoint = tuples.PixelPoint(x=pan.x - offset.x,
-                                                           y=pan.y - offset.y)
-        top_right: tuples.PixelPoint = tuples.PixelPoint(x=bottom_left.x + new.x,
-                                                         y=bottom_left.y + new.y)
+        prev_slice_x: Optional[slice] = None
+        new_slice_x: Optional[slice] = None
+        prev_slice_y: Optional[slice] = None
+        new_slice_y: Optional[slice] = None
 
-        if bottom_left.x <= 0:      # outside to left
-            old_start_x = 0
-            new_start_x = -bottom_left.x
+        # x
+        prev_start_x = None
+        prev_stop_x = None
+        if offset.x >= 0:
+            # new to right of prev
+            if offset.x < prev.x:
+                # overlap
+                prev_start_x = offset.x
+                prev_stop_x = min(prev.x, new.x + offset.x)
         else:
-            old_start_x = bottom_left.x
-            new_start_x = 0
+            # new to left of prev
+            if -offset.x < new.x:
+                # overlap
+                prev_start_x = 0
+                prev_stop_x = min(prev.x, new.x + offset.x)
+        if prev_start_x is not None:
+            new_start_x = prev_start_x - offset.x
+            new_stop_x = prev_stop_x - offset.x
+            prev_slice_x = slice(prev_start_x, prev_stop_x)
+            new_slice_x = slice(new_start_x, new_stop_x)
 
-        if top_right.x >= old.x:    # outside to right
-            old_end_x = old.x
-            new_end_x = old.x - bottom_left.x
+        # y
+        prev_start_y = None
+        prev_stop_y = None
+        if offset.y >= 0:
+            # new above prev
+            if offset.y < prev.y:
+                # overlap
+                prev_start_y = offset.y
+                prev_stop_y = min(prev.y, new.y + offset.y)
         else:
-            old_end_x = top_right.x
-            new_end_x = new.x
-        x_old_slice = slice(old_start_x, old_end_x)
-        x_new_slice = slice(new_start_x, new_end_x)
+            # new below prev
+            if -offset.y < new.y:
+                # overlap
+                prev_start_y = 0
+                prev_stop_y = min(prev.y, new.y + offset.y)
+        if prev_start_y is not None:
+            new_start_y = prev_start_y - offset.y
+            new_stop_y = prev_stop_y - offset.y
+            prev_slice_y = slice(prev_start_y, prev_stop_y)
+            new_slice_y = slice(new_start_y, new_stop_y)
 
-        if bottom_left.y <= 0:      # outside below
-            old_start_y = 0
-            new_start_y = -bottom_left.y
-        else:
-            old_start_y = bottom_left.y
-            new_start_y = 0
+        if prev_start_x is not None and prev_start_y is not None:
+            # there is some overlap, so copy over and mark as completed
+            # print(f"prev_slice_x: {prev_slice_x}")
+            # print(f"prev_slice_y: {prev_slice_y}")
+            # print(f"new_slice_x : {new_slice_x}")
+            # print(f"new_slice_y : {new_slice_y}")
 
-        if top_right.y >= old.y:    # outside above
-            old_end_y = old.y
-            new_end_y = old.y - bottom_left.y
-        else:
-            old_end_y = top_right.y
-            new_end_y = new.y
-        y_old_slice = slice(old_start_y, old_end_y)
-        y_new_slice = slice(new_start_y, new_end_y)
-
-        old_iteration = cp.asarray(self._mandel.iteration)
-        self._iteration[y_new_slice, x_new_slice] = old_iteration[y_old_slice, x_old_slice]
-        self._completed[y_new_slice, x_new_slice] = True
-
-    def _copy_over_centre(self):
-        old = self._mandel.iteration_shape
-        offset = self._mandel.offset
-
-        bottom_left: tuples.PixelPoint = tuples.PixelPoint(x=-offset.x,
-                                                           y=-offset.y)
-        top_right: tuples.PixelPoint = tuples.PixelPoint(x=bottom_left.x + old.x,
-                                                         y=bottom_left.y + old.y)
-
-        x_old_slice = slice(0, old.x)
-        x_new_slice = slice(bottom_left.x, top_right.x)
-        y_old_slice = slice(0, old.y)
-        y_new_slice = slice(bottom_left.y, top_right.y)
-
-        old_iteration = cp.asarray(self._mandel.iteration)
-        self._iteration[y_new_slice, x_new_slice] = old_iteration[y_old_slice, x_old_slice]
-        self._completed[y_new_slice, x_new_slice] = True
+            prev_iteration = cp.asarray(self._prev_mandel.iteration)
+            self._iteration[new_slice_y, new_slice_x] = prev_iteration[prev_slice_y, prev_slice_x]
+            self._completed[new_slice_y, new_slice_x] = True
+    # endregion
 
     @property
     def shape(self) -> tuples.ImageShape:
-        return self._mandel.shape
+        return self._new_mandel.shape
 
     @property
     def complete(self) -> bool:
@@ -155,6 +180,14 @@ class Server:
     @property
     def iteration_cpu(self) -> np.ndarray:
         return cp.asnumpy(self._iteration)
+
+    @property
+    def c_cpu(self) -> np.ndarray:
+        return cp.asnumpy(self._c)
+
+    # TODO: implement for flatten
+    def compute_flat_array(self, gpu_c_flat: cp.ndarray) -> cp.ndarray:
+        raise NotImplementedError
 
     # requests are for pixels (inclusive). They know nothing of complex numbers
     def box_request(
@@ -193,10 +226,10 @@ class Server:
         if completed is not None:
             completed()
 
-    def serve(self, early_stopping: bool = False) -> Generator[float, None, None]:
+    def serve(self) -> Generator[float, None, None]:
         if self._box_fills:
             self._do_box_fills()
-        yield from self._compute_new_requests(early_stopping)
+        yield from self._compute_new_requests()
         self._respond_to_requests()
         self._reset()
 
@@ -207,7 +240,7 @@ class Server:
         self._completed[box_fill_gpu] = True
         self._iteration[box_fill_gpu] = box_iter_gpu[box_fill_gpu]
 
-    def _compute_new_requests(self, early_stopping: bool = False) -> Generator[float, None, None]:
+    def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
         new_requests = self._requested & ~self._completed  # ~ is logical_not
         request_count = cp.count_nonzero(new_requests)
@@ -219,7 +252,6 @@ class Server:
         # get the result as a flat array
         result_flat = yield from self._compute_manager.compute_flat_array(
             to_compute_flat,
-            # early_stopping,
             self._early_stopping_iteration
         )
         # early_stop_iteration = self._compute_manager.early_stop_iteration

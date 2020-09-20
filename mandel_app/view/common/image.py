@@ -3,14 +3,15 @@ from typing import Callable
 from PyQt5 import QtGui
 
 import utils
-from mandel_app.view import x_label
+from mandel_app.view import widgets
+
 _ICON_PATH = r"resources/icons/"
 
 
 class Image:
     def __init__(self, icon_filename: str):
-        self.q_pixmap = QtGui.QPixmap(utils.full_path(_ICON_PATH + icon_filename))
-        self.q_label = x_label.XLabel()
+        self.q_pixmap: QtGui.QPixmap = QtGui.QPixmap(utils.full_path(_ICON_PATH + icon_filename))
+        self.q_label: widgets.XLabel = widgets.XLabel()
         self.q_label.setPixmap(self.q_pixmap)
 
     def set_visible(self, visible: bool):

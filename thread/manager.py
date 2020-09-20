@@ -2,7 +2,7 @@ from typing import Optional, Callable
 
 from PyQt5 import QtWidgets, QtCore
 
-from thread import worker, job, enums
+from thread import worker, job, enums, state
 
 
 class Manager(QtCore.QObject):
@@ -11,18 +11,30 @@ class Manager(QtCore.QObject):
 
     # region Setup
     def __init__(self,
-                 on_progress_update: Optional[Callable[[float, int], None]] = None,
+                 on_progress_update: Optional[Callable[[job.Job, int], None]] = None,
+                 # on_active_change: Optional[Callable[[bool], None]] = None,
                  on_stop_success: Optional[Callable[[], None]] = None,
                  on_job_complete: Optional[Callable[[job.Job], None]] = None
                  ):
         super().__init__()
-        self._thread = QtCore.QThread()
-        self._worker = worker.Worker()
-        self._on_progress_update = on_progress_update
-        self._on_stop_success = on_stop_success
-        self._on_job_complete = on_job_complete
+        self._thread: QtCore.QThread = QtCore.QThread()
+        self._worker: worker.Worker = worker.Worker()
+        self._state: state.State = state.State()
+        # self._worker_active: bool = False
+        self._on_progress_update: Optional[Callable[[float, int], None]] = on_progress_update
+        # self._on_active_change: Optional[Callable[[bool], None]] = on_active_change
+        self._on_stop_success: Optional[Callable[[], None]] = on_stop_success
+        self._on_job_complete: Optional[Callable[[job.Job], None]] = on_job_complete
 
         self._singular_job: Optional[job.Job] = None
+
+    # @property
+    # def worker_active(self) -> bool:
+    #     return self._state.worker_active
+
+    @property
+    def state(self) -> state.State:
+        return self._state
     # endregion
 
     # region Requests from main thread
@@ -37,6 +49,7 @@ class Manager(QtCore.QObject):
         self._request_stop.connect(self._worker.request_stop)
         # worker -> gui
         self._worker.progressUpdate.connect(self.progress_update_slot)
+        self._worker.activeChange.connect(self.active_change_slot)
         self._worker.stopSuccess.connect(self.stop_success_slot)
         self._worker.jobComplete.connect(self.job_complete_slot)
         self._worker.debugMessage.connect(self.debug_message)
@@ -56,9 +69,14 @@ class Manager(QtCore.QObject):
     # endregion
 
     # region Slots for Worker
-    def progress_update_slot(self, progress: float, job_number: int):
+    def progress_update_slot(self, job_: job.Job,  progress: float):
         if self._on_progress_update is not None:
-            self._on_progress_update(progress, job_number)
+            self._on_progress_update(job_, progress)
+
+    def active_change_slot(self, active: bool):
+        self._state.worker_active = active
+        # if self._on_active_change is not None:
+        #     self._on_active_change(active_change)
 
     def stop_success_slot(self):
         if self._on_stop_success is not None:

@@ -1,9 +1,9 @@
 import math
-from typing import Optional
+from typing import Optional, Callable
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
-from mandel_app.view import image, x_label
+from mandel_app.view import widgets, common
 from mandel_app.model.mandelbrot import mandel
 
 
@@ -15,38 +15,38 @@ class StatusBar:
         q_main_window.setStatusBar(self.q_status_bar)
 
         # q_layout widgets
-        self.q_widget = QtWidgets.QWidget(self.q_status_bar)
-        self.q_status_bar.addWidget(self.q_widget, 1)
+        self._q_widget = QtWidgets.QWidget(self.q_status_bar)
+        self.q_status_bar.addWidget(self._q_widget, 1)
 
-        self.q_layout = QtWidgets.QHBoxLayout()
-        self.q_layout.setSpacing(0)
-        self.q_layout.setContentsMargins(0, 0, 0, 0)
-        self.q_widget.setLayout(self.q_layout)
+        self._q_layout = QtWidgets.QHBoxLayout()
+        self._q_layout.setSpacing(0)
+        self._q_layout.setContentsMargins(0, 0, 0, 0)
+        self._q_widget.setLayout(self._q_layout)
 
-        # build up components
-        self.q_left_label = self._build_label()
+        # build up common
+        self._q_left_label: widgets.XLabel = self._build_label()
 
-        self.q_center_label = self._build_label(align=QtCore.Qt.AlignCenter)
-        self.copy_icon_image = image.Image("document-copy.png")
-        self.copy_icon_image.set_visible(False)
-        self.q_center_widget = self._build_center_widget()
+        self._q_center_label: widgets.XLabel = self._build_label(align=QtCore.Qt.AlignCenter)
+        self._copy_icon_image: common.Image = common.Image("document-copy.png")
+        self._copy_icon_image.set_visible(False)
+        self._q_center_widget: QtWidgets.QWidget = self._build_center_widget()
 
-        self.q_right_label = self._build_label(visible=False)
-        self.q_progress_bar = self._build_progress_bar()
-        self.q_right_widget = self._build_right_widget()
+        self._q_right_label: widgets.XLabel = self._build_label(visible=False)
+        self._q_progress_bar: QtWidgets.QProgressBar = self._build_progress_bar()
+        self._q_right_widget: QtWidgets.QWidget = self._build_right_widget()
 
-        self.q_layout.addWidget(self.q_left_label, stretch=1)
-        self.q_layout.addWidget(self.q_center_widget, stretch=1)
-        self.q_layout.addWidget(self.q_right_widget, stretch=1)
+        self._q_layout.addWidget(self._q_left_label, stretch=1)
+        self._q_layout.addWidget(self._q_center_widget, stretch=1)
+        self._q_layout.addWidget(self._q_right_widget, stretch=1)
 
         self._zoom_digits: int = 0
         self._dp: int = 2
-        self.verbose_mandel_statistics = ""
+        self.verbose_mandel_statistics: str = ""
 
     def _build_label(self,
                      align: QtCore.Qt.AlignmentFlag = QtCore.Qt.AlignLeft,
-                     visible: bool = True) -> x_label.XLabel:
-        q_label = x_label.XLabel("")
+                     visible: bool = True) -> widgets.XLabel:
+        q_label = widgets.XLabel("")
         q_label.setAlignment(align)
         if not visible:
             q_label.setVisible(visible)
@@ -60,9 +60,9 @@ class StatusBar:
         q_layout.setSpacing(0)
         q_layout.setContentsMargins(0, 0, 0, 0)
         q_layout.addStretch()   # stretch will fill any empty space
-        q_layout.addWidget(self.q_center_label)
+        q_layout.addWidget(self._q_center_label)
         q_layout.addSpacing(5)
-        q_layout.addWidget(self.copy_icon_image.q_label)
+        q_layout.addWidget(self._copy_icon_image.q_label)
         q_layout.addStretch()
 
         # return q_right_label
@@ -75,8 +75,8 @@ class StatusBar:
         q_layout.setSpacing(0)
         q_layout.setContentsMargins(0, 0, 0, 0)
         q_layout.addStretch()   # stretch will fill any empty space
-        q_layout.addWidget(self.q_right_label)
-        q_layout.addWidget(self.q_progress_bar)
+        q_layout.addWidget(self._q_right_label)
+        q_layout.addWidget(self._q_progress_bar)
 
         # return q_right_label
         return q_widget
@@ -94,17 +94,21 @@ class StatusBar:
     # endregion
 
     # region display requests from View
+    def set_center_on_mouse_press(self, on_mouse_press: Callable[[QtGui.QMouseEvent], None]):
+        self._copy_icon_image.set_on_mouse_press(on_mouse_press)
+        self._q_center_label.set_on_mouse_press(on_mouse_press)
+
     def display_progress(self, progress: float):
         # pass
         progress_int_percentage = round(100*progress)
-        self.q_progress_bar.setValue(progress_int_percentage)
-        self.q_right_label.setVisible(False)
-        self.q_progress_bar.setVisible(True)
+        self._q_progress_bar.setValue(progress_int_percentage)
+        self._q_right_label.setVisible(False)
+        self._q_progress_bar.setVisible(True)
 
     def refresh_mandel_statistics(self, mandel_: mandel.Mandel):
         message = self._get_mandel_statistics(mandel_)
-        self.q_center_label.setText(message)
-        self.copy_icon_image.set_visible(True)
+        self._q_center_label.setText(message)
+        self._copy_icon_image.set_visible(True)
         self.verbose_mandel_statistics = self._get_mandel_statistics(mandel_, verbose=True)
 
     def display_time_taken(self, total_time):
@@ -113,13 +117,13 @@ class StatusBar:
             message = f"Completed in {total_time:.2f} seconds"
         else:
             message = "Complete..."
-        self.q_right_label.setText(message)
-        self.q_progress_bar.setVisible(False)
-        self.q_right_label.setVisible(True)
+        self._q_right_label.setText(message)
+        self._q_progress_bar.setVisible(False)
+        self._q_right_label.setVisible(True)
 
     def display_point(self, z: complex):
         message = "point: " + self._complex_to_display_text(z, self._dp)
-        self.q_left_label.setText(message)
+        self._q_left_label.setText(message)
 
     def _get_mandel_statistics(self, mandel_: mandel.Mandel, verbose: bool = False) -> str:
         if verbose:

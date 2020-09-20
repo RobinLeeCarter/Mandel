@@ -3,12 +3,11 @@ extern "C" __global__
 void mandel_pixel(const complex<double>* c,
                   complex<double>* z,
                   int* iterations,
-                  const int start_iter,
                   const int end_iter
                  )
 {
     int tid = blockDim.x * blockIdx.x + threadIdx.x;
-    int k = start_iter;
+    int k;
     const double cx = c[tid].real();
     const double cy = c[tid].imag();
     double x;
@@ -20,10 +19,11 @@ void mandel_pixel(const complex<double>* c,
 
     x = z[tid].real();
     y = z[tid].imag();
+    k = iterations[tid];
 
     xx = x * x;
     yy = y * y;
-    cont = (xx + yy < 4.0);
+    cont = (k < end_iter && xx + yy < 4.0);
 
     while (cont)
     {
@@ -36,7 +36,6 @@ void mandel_pixel(const complex<double>* c,
         if (k == end_iter)
         {
             cont = false;
-            z[tid] = complex<double>(x, y);
         }
         else
         {
@@ -45,5 +44,6 @@ void mandel_pixel(const complex<double>* c,
             cont = (xx + yy < 4.0);
         }
     }
+    z[tid] = complex<double>(x, y);
     iterations[tid] = k;
 }

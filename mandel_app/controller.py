@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional
 
 from mandel_app import model, view, tuples
+from mandel_app.model import mandelbrot
 
 
 class Controller:
@@ -12,33 +13,26 @@ class Controller:
 
     def build(self):
         self._view.build()
-        image_space: tuples.ImageShape = self._view.get_image_space()
-        self._model.build(image_space)
+        self._model.build(self._view.frame_shape)
+        self._view.set_calc_thread_state(self._model.calc_thread_state)
         # self._model.start_test_mandel()
         self._model.calc_new_mandel(save_history=True)
     # endregion
 
-    # region Model notifications
-    def progress_update(self, progress: float):
-        self._view.display_progress(progress)
+    # region Requests from View
+    def get_displayed_mandel(self) -> mandelbrot.Mandel:
+        return self._model.displayed_mandel
 
-    def stop_success(self):
-        self._view.stop_success()
+    def get_z0(self) -> complex:
+        return self._model.z_model.z0
 
-    def new_is_ready(self, save_history: bool = False):
-        if self._view.ready_to_display_new_mandel:
-            self._view.show_mandel(self._model.new_mandel)
-            self._model.new_is_displayed(save_history=save_history)
-        else:
-            self._model.revert_to_displayed_as_new()
-    # endregion
+    def on_resized(self):
+        self._model.on_resized(self._view.frame_shape)
 
-    # region View requests
     def point_zoom_request(self,
                            pixel_point: Optional[tuples.PixelPoint] = None,
                            scaling: float = 1.0):
-        image_space: tuples.ImageShape = self._view.get_image_space()
-        self._model.zoom_and_calc(image_space, pixel_point, scaling)
+        self._model.zoom_and_calc(pixel_point, scaling)
 
     def back_request(self):
         self._model.restore_previous_as_new()
@@ -52,29 +46,30 @@ class Controller:
 
     def stop_request(self):
         self._model.request_stop()
-        self._model.revert_to_displayed_as_new()
+        # self._model.revert_to_displayed_as_new()
 
     def new_compute_parameters_request(self, max_iterations: Optional[int] = None, early_stopping: bool = True):
         self._model.request_stop()
-        self._model.revert_to_displayed_as_new()
+        # self._model.revert_to_displayed_as_new()
         # could be mid-way but should just stop at next yield
         self._model.set_compute_parameters(max_iterations, early_stopping)
-        if self._model.new_mandel.has_border:
-            self._model.new_mandel.remove_border()
-        # Save history in case press back don't want to lose the work
-        self._model.calc_new_mandel(save_history=True)
+        self._model.no_border_and_calc()
+        # if self._model.new_mandel.has_border:
+        #     self._model.new_mandel.remove_border()
+        # # Save history in case press back don't want to lose the work
+        # self._model.calc_new_mandel(save_history=True)
 
     def perform_default_z_trace(self):
         z0 = self._model.displayed_mandel.centre
         self.perform_z_trace(z0)
 
-    def update_z0_request(self, pixel_point: tuples.PixelPoint):
+    def update_z0_request(self, frame_point: tuples.PixelPoint):
         self._view.hide_z_graph()
-        z0 = self._model.displayed_mandel.get_complex_from_pixel(pixel_point)
+        z0 = self._model.displayed_mandel.get_complex_from_frame_point(self._view.frame_shape, frame_point)
         self.perform_z_trace(z0)
 
     def perform_z_trace(self, z0: complex):
-        self._view.show_z0_on_mandel(z0)
+        self._view.show_z0_marker(z0)
         self._model.z_model.build(z0=z0)
         self._view.show_z_graph(self._model.z_model)
 
@@ -84,6 +79,22 @@ class Controller:
         self._view.show_z_graph(self._model.z_model)
 
     def hide_z_trace(self):
-        self._view.hide_z0_on_mandel()
+        self._view.hide_z0_marker()
         self._view.hide_z_graph()
+    # endregion
+
+    # region Notifications from Model
+    def progress_update(self, progress: float):
+        self._view.display_progress(progress)
+
+    def stop_success(self):
+        self._view.stop_success()
+
+    def new_is_ready(self, save_history: bool = False):
+        if self._view.ready_to_display_new_mandel:
+            # possibly pass an optional z0 in here
+            self._view.show_mandel(self._model.new_mandel)
+            self._model.new_is_displayed(save_history=save_history)
+            if not self._model.displayed_mandel.has_border:
+                self._model.add_border(self._model.displayed_mandel)
     # endregion
