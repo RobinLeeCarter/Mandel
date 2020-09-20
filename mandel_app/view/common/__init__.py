@@ -3,3 +3,4 @@ from mandel_app.view.common.actions import Actions
 from mandel_app.view.common.clipboard import Clipboard
 from mandel_app.view.common.icon import Icon
 from mandel_app.view.common.image import Image
+from mandel_app.view.common.base_overlay import BaseOverlay
