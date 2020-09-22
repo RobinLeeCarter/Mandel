@@ -54,7 +54,7 @@ class Server:
         self._build()
 
     def _build(self):
-        self._c: cp.ndarray = self._generate_c()
+        self._c = self._generate_c()
 
         if self._prev_mandel is not None and self._offset is not None:
             self._copy_over_prev()
@@ -71,24 +71,7 @@ class Server:
         y, x = np.ogrid[-m.y_size/2.0: m.y_size/2.0: m.shape.y * 1j,
                         -m.x_size/2.0: m.x_size/2.0: m.shape.x * 1j]
 
-        # y, x = np.ogrid[0: m.y_size: m.shape.y * 1j,
-        #                 0: m.x_size: m.shape.x * 1j]
-
-        # print("m.shape.y", m.shape.y)
-        # print("m.y_size", m.y_size)
-        # print("m.size_per_gap", m.size_per_gap)
-
-        # print("self._mandel.size", self._mandel.size)
-        # print("self._mandel.size_per_thousand", self._mandel.size_per_thousand)
-        # if not self._mandel.has_border:
-        #     print("y[0] = ", y[0])
-        # else:
-        #     print("y[56] = ", y[56])
-        #     estimate = ((m.y_size / 1019) * 56) - (m.y_size/2.0)
-        #     print("est   = ", estimate)
-
         c = m.centre + x*m.x_unit + y*m.y_unit
-
         return cp.asarray(c)
 
     def _copy_over_prev(self):
@@ -171,11 +154,8 @@ class Server:
 
     @property
     def new_request_count(self) -> int:
-        return int(cp.count_nonzero(self._requested & ~self._completed))
-
-    @property
-    def iteration(self) -> cp.ndarray:
-        return self._iteration
+        xp = cp.get_array_module(self._requested)
+        return int(xp.count_nonzero(self._requested & ~self._completed))
 
     @property
     def iteration_cpu(self) -> np.ndarray:
