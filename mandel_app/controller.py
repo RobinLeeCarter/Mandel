@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional
 
-from mandel_app import model, view, tuples
+from mandel_app import application, model, view, tuples
 from mandel_app.model import mandelbrot
 
 
@@ -14,8 +14,8 @@ class Controller:
     def build(self):
         self._view.build()
         self._model.build(self._view.frame_shape)
-        self._view.set_calc_thread_state(self._model.calc_thread_state)
-        # self._model.start_test_mandel()
+        # thread state is needed by the application._gpu object to optimally determine if the gpu is available
+        application.Application.instance().set_thread_state(self._model.calc_thread_state)
         self._model.calc_new_mandel(save_history=True)
     # endregion
 

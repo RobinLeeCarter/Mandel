@@ -40,9 +40,6 @@ class View:
         self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
 
         self._connect_signals()
-
-    def set_calc_thread_state(self, calc_thread_state: thread.State):
-        self._window.central.set_calc_thread_state(calc_thread_state)
     # endregion
 
     # region Properties
