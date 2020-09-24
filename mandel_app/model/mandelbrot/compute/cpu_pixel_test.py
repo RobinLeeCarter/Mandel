@@ -10,7 +10,7 @@ import utils
 class CpuPixelTest:
     def __init__(self):
         self.calls = 2000000
-        self.end_iter = 100
+        self.end_iter = 10000
         self.timer = utils.Timer()
 
         self.c = np.zeros(shape=(self.calls,), dtype=complex)

@@ -50,11 +50,12 @@ class ComputeManager:
         if self._has_cuda:
             self._compute.iterations_per_kernel = 1000
             kernels_per_loop = 10
+            early_stop_tolerance: float = 0.0001
         else:
-            self._compute.iterations_per_kernel = 10000
+            self._compute.iterations_per_kernel = 1000
             kernels_per_loop = 1
+            early_stop_tolerance: float = 0.0001
         iterations_per_loop = self._compute.iterations_per_kernel * kernels_per_loop
-        early_stop_tolerance: float = 0.0001
 
         total_pixels = c.size
         pixel_tolerance = math.floor(early_stop_tolerance * total_pixels)
@@ -62,15 +63,17 @@ class ComputeManager:
         # first iteration different
         start_iter = 0
         end_iter = iterations_per_loop
-        # print(f"{c.shape}")
-        # print(f"{start_iter}->{end_iter}")
-        # print(f"iteration_max = {xp.amax(iteration)}")
+        print(f"c.shape {c.shape}")
+        print(f"{start_iter}->{end_iter}")
+        print(f"iteration_max = {self.max_iterations}")
         # print(f"loop=0\t{start_iter}->{end_iter}")
-        # print(f"all:\t{c.size}")
+        print(f"all:\t{c.size}")
         yield from self._compute.compute_iterations(c, z, iteration, start_iter, end_iter)
 
         continuing = (iteration == end_iter)
         if not xp.any(continuing):
+            iteration[iteration == -1] = self.max_iterations
+            self.final_iteration = end_iter
             return iteration
 
         continuing_c = c[continuing]
@@ -85,13 +88,18 @@ class ComputeManager:
             # end_iter = min(start_iter + iterations_per_loop, self._max_iterations)
             start_iter = end_iter
             end_iter = min(start_iter + iterations_per_loop, self.max_iterations)
-            # print(f"loop={loop}\t{start_iter}->{end_iter}")
-            # count_continuing = xp.count_nonzero(continuing)
-            # print(f"cont:\t{count_continuing}")
+            print(f"{start_iter}->{end_iter}")
+            count_continuing = xp.count_nonzero(continuing)
+            print(f"count_continuing:\t{count_continuing}")
 
             # print(f"continuing_c.shape: {continuing_c.shape}")
             # print(f"continuing_z.shape: {continuing_z.shape}")
             # print(f"continuing_iteration.shape: {continuing_iteration.shape}")
+            # print(f"continuing_c[0]: {continuing_c[100]}")
+            # print(f"continuing_z[0]: {continuing_z[100]}")
+            # next_z = continuing_z[100] * continuing_z[100] + continuing_c[100]
+            # print(f"next z: {next_z}")
+            # print(f"continuing_iteration[0]: {continuing_iteration[0]}")
 
             yield from self._compute.compute_iterations(
                 continuing_c,
@@ -100,6 +108,13 @@ class ComputeManager:
                 start_iter,
                 end_iter
             )
+
+            # print(f"continuing_c[0]: {continuing_c[100]}")
+            # print(f"continuing_z[0]: {continuing_z[100]}")
+            # next_z = continuing_z[100] * continuing_z[100] + continuing_c[100]
+            # print(f"next z: {next_z}")
+            # print(f"continuing_iteration[0]: {continuing_iteration[0]}")
+
             # print(f"xp.sum(continuing) after compute: {xp.sum(continuing)}")
             # print(f"z.shape: {z.shape}")
             # print(f"continuing.shape: {continuing.shape}")
@@ -110,8 +125,8 @@ class ComputeManager:
             still_continuing: xp.ndarray = (continuing_iteration == end_iter)
             count_still_continuing: int = xp.count_nonzero(still_continuing)
             count_stopped: int = xp.count_nonzero(xp.invert(still_continuing))
-            # print(f"still:\t{count_still_continuing}")
-            # print(f"stop:\t{count_stopped}")
+            print(f"count_still_continuing:\t{count_still_continuing}")
+            print(f"count_stopped:\t{count_stopped}")
 
             # print(f"loop={loop} has {xp.count_nonzero(still_continuing)} pixels continuing")
 
@@ -119,15 +134,19 @@ class ComputeManager:
             # added check that this isn't because all pixels are continuing as this indicates high base iteration space
             iteration[continuing] = continuing_iteration
             if count_still_continuing == 0 or end_iter == self.max_iterations:
+                if count_still_continuing == 0:
+                    print("0 continuing")
+                else:
+                    print("max iterations")
                 break
 
             if self.early_stopping:
-                # print(early_stopping_iteration)
                 if ((early_stopping_iteration is not None and
                      end_iter >= early_stopping_iteration)
                         or (early_stopping_iteration is None and
                             count_stopped <= pixel_tolerance and
                             count_still_continuing < total_pixels)):
+                    print("early_stopping")
                     continuing[continuing] = still_continuing
                     iteration[continuing] = self.max_iterations
                     break
@@ -138,6 +157,11 @@ class ComputeManager:
             # print(f"xp.sum(continuing) before: {xp.sum(continuing)}")
             continuing[continuing] = still_continuing
             # loop += 1
+
+        trapped = (iteration == -1)
+        trapped_count = xp.count_nonzero(trapped)
+        print(f"trapped: {trapped_count}")
+        iteration[iteration == -1] = self.max_iterations
 
         # yield 1.0
         self.final_iteration = end_iter
