@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import math
-from typing import Generator, Optional
+from typing import Generator, Optional, Union
 
+import numpy as np
 import cupy as cp
 
-from mandel_app.model.mandelbrot.compute import compute_gpu
+from mandel_app import application
+from mandel_app.model.mandelbrot.compute import compute_xpu, compute_gpu, compute_cpu
+
+xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 # manager controls the calls to compute
@@ -15,21 +19,31 @@ class ComputeManager:
     def __init__(self, max_iterations: int, early_stopping: bool = True):
         self.max_iterations: int = max_iterations
         self.early_stopping: bool = early_stopping
-        self._compute: compute_gpu.ComputeGpu = compute_gpu.ComputeGpu()
         self.final_iteration: int = 0
+        self._compute: compute_xpu.ComputeXpu
+        self._has_cuda = application.Application.instance().has_cuda
+        if self._has_cuda:
+            self._compute = compute_gpu.ComputeGpu()
+        else:
+            self._compute = compute_cpu.ComputeCpu()
+
+    @property
+    def has_cuda(self) -> bool:
+        return self._has_cuda
 
     # input: a flat gpu array of c's to be calculated
     # output: a flat gpu array of the resulting iterations found
     # early_stopping: if no pixels have stopped in the latest loop then stop
     def compute_flat_array(
             self,
-            c: cp.ndarray,
+            c: xp_ndarray,
             early_stopping_iteration: Optional[int] = None
-    ) -> Generator[float, None, cp.ndarray]:
-        z = cp.copy(c)
-        # z = cp.zeros(shape=c.shape, dtype=cp.complex)
-        iteration = cp.zeros(shape=c.shape, dtype=cp.int32)
-        # early_stop = cp.zeros(shape=c.shape, dtype=cp.bool)
+    ) -> Generator[float, None, xp_ndarray]:
+        xp = cp.get_array_module(c)
+        z = xp.copy(c)
+        # z = xp.zeros(shape=c.shape, dtype=xp.complex)
+        iteration = xp.zeros(shape=c.shape, dtype=xp.int32)
+        # early_stop = xp.zeros(shape=c.shape, dtype=xp.bool)
 
         # print(early_stopping_iteration)
 
@@ -46,13 +60,13 @@ class ComputeManager:
         end_iter = iterations_per_loop
         # print(f"{c.shape}")
         # print(f"{start_iter}->{end_iter}")
-        # print(f"iteration_max = {cp.amax(iteration)}")
+        # print(f"iteration_max = {xp.amax(iteration)}")
         # print(f"loop=0\t{start_iter}->{end_iter}")
         # print(f"all:\t{c.size}")
         yield from self._compute.compute_iterations(c, z, iteration, start_iter, end_iter)
 
         continuing = (iteration == end_iter)
-        if not cp.any(continuing):
+        if not xp.any(continuing):
             return iteration
 
         continuing_c = c[continuing]
@@ -68,7 +82,7 @@ class ComputeManager:
             start_iter = end_iter
             end_iter = min(start_iter + iterations_per_loop, self.max_iterations)
             # print(f"loop={loop}\t{start_iter}->{end_iter}")
-            # count_continuing = cp.count_nonzero(continuing)
+            # count_continuing = xp.count_nonzero(continuing)
             # print(f"cont:\t{count_continuing}")
 
             # print(f"continuing_c.shape: {continuing_c.shape}")
@@ -82,20 +96,20 @@ class ComputeManager:
                 start_iter,
                 end_iter
             )
-            # print(f"cp.sum(continuing) after compute: {cp.sum(continuing)}")
+            # print(f"xp.sum(continuing) after compute: {xp.sum(continuing)}")
             # print(f"z.shape: {z.shape}")
             # print(f"continuing.shape: {continuing.shape}")
 
             # update main values
             z[continuing] = continuing_z   # may not need this but almost instant
             # noinspection PyTypeChecker
-            still_continuing: cp.ndarray = (continuing_iteration == end_iter)
-            count_still_continuing: int = cp.count_nonzero(still_continuing)
-            count_stopped: int = cp.count_nonzero(cp.invert(still_continuing))
+            still_continuing: xp.ndarray = (continuing_iteration == end_iter)
+            count_still_continuing: int = xp.count_nonzero(still_continuing)
+            count_stopped: int = xp.count_nonzero(xp.invert(still_continuing))
             # print(f"still:\t{count_still_continuing}")
             # print(f"stop:\t{count_stopped}")
 
-            # print(f"loop={loop} has {cp.count_nonzero(still_continuing)} pixels continuing")
+            # print(f"loop={loop} has {xp.count_nonzero(still_continuing)} pixels continuing")
 
             # good time to stop if no more were eliminated, assume the rest run to max_iterations
             # added check that this isn't because all pixels are continuing as this indicates high base iteration space
@@ -117,7 +131,7 @@ class ComputeManager:
             continuing_c = continuing_c[still_continuing]
             continuing_z = continuing_z[still_continuing]
             continuing_iteration = continuing_iteration[still_continuing]
-            # print(f"cp.sum(continuing) before: {cp.sum(continuing)}")
+            # print(f"xp.sum(continuing) before: {xp.sum(continuing)}")
             continuing[continuing] = still_continuing
             # loop += 1
 

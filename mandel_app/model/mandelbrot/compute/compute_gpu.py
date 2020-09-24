@@ -5,13 +5,19 @@ from typing import Generator
 
 import cupy as cp
 
+from mandel_app.model.mandelbrot.compute import compute_xpu
+
 
 # all gpu
-class ComputeGpu:
+class ComputeGpu(compute_xpu.ComputeXpu):
     def __init__(self):  # high_precision=True)
-        self._mandel_kernel: cp.RawKernel = self._load_mandel_kernel()
+        super().__init__()
 
-        self.iterations_per_kernel: int = 0
+        self._c: cp.ndarray = cp.array([], dtype=cp.complex)
+        self._z: cp.ndarray = cp.array([], dtype=cp.complex)
+        self._iteration: cp.ndarray = cp.array([], dtype=cp.int32)
+
+        self._mandel_kernel: cp.RawKernel = self._load_mandel_kernel()
 
         # according to cuda occupancy calculator this should give 100% occupancy
         self._BLOCK_SIZE: int = 64
@@ -19,15 +25,8 @@ class ComputeGpu:
         # self._BLOCK_SIZE: int = 32
         # self._BLOCK_SIZE: int = 1024
 
-        self._request_size: int = 0
         self._total_blocks: int = 0
         self._correct_size: int = 0
-
-        self._c: cp.ndarray = cp.array([], dtype=cp.complex)
-        self._z: cp.ndarray = cp.array([], dtype=cp.complex)
-        self._iteration: cp.ndarray = cp.array([], dtype=cp.int32)
-
-        self._prev_total_iterations: int = 0
 
     def _load_mandel_kernel(self) -> cp.RawKernel:
         file_name = r"mandel_app/model/mandelbrot/compute/gpu_pixel.cu"
@@ -92,18 +91,18 @@ class ComputeGpu:
                            end_iter+1,
                            self.iterations_per_kernel)
         for end_point in end_points:
-            iterations_done = self.calculate_to(end_point)
+            iterations_done = self._calculate_to(end_point)
             yield float(iterations_done)
 
         # end = cp.int32(end_iter)
         # print(end)
-        # iterations_done = self.calculate_to(end_iter)
+        # iterations_done = self._calculate_to(end_iter)
         # yield float(iterations_done)
 
         z_in[:] = self._z[:self._request_size]
         iteration_in[:] = self._iteration[:self._request_size]
 
-    def calculate_to(self, end_point: int) -> int:
+    def _calculate_to(self, end_point: int) -> int:
         end = cp.int32(end_point)
         self._mandel_kernel((self._total_blocks,), (self._BLOCK_SIZE,), (self._c, self._z, self._iteration, end))
         # approximation to the work done

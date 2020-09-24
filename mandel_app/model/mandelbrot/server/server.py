@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Callable, List, Generator
+from typing import Optional, Callable, List, Generator, Union
 
 import numpy as np
 import cupy as cp
@@ -9,6 +9,8 @@ from mandel_app import tuples
 
 from mandel_app.model.mandelbrot import mandel, compute  # mandel_progress_estimator
 from mandel_app.model.mandelbrot.server import request
+
+xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 # generate one for each mandel calculation
@@ -37,19 +39,26 @@ class Server:
 
         shape = (self._new_mandel.shape.y, self._new_mandel.shape.x)
 
-        # self._c: cp.ndarray = self._generate_c()
+        self._iteration: xp_ndarray
+        self._completed: xp_ndarray
+        self._requested: xp_ndarray
+        self._c: xp_ndarray
+        if self._compute_manager.has_cuda:
+            self._iteration = cp.zeros(shape=shape, dtype=cp.int32)
+            self._completed = cp.zeros(shape=shape, dtype=cp.bool)
+            self._requested = cp.zeros(shape=shape, dtype=cp.bool)
+            self._c = cp.zeros(shape=shape, dtype=cp.float64)
+        else:
+            self._iteration = np.zeros(shape=shape, dtype=np.int32)
+            self._completed = np.zeros(shape=shape, dtype=np.bool)
+            self._requested = np.zeros(shape=shape, dtype=np.bool)
+            self._c = np.zeros(shape=shape, dtype=np.float64)
 
-        self._iteration: cp.ndarray = cp.zeros(shape=shape, dtype=cp.int32)
-        self._completed: cp.ndarray = cp.zeros(shape=shape, dtype=cp.bool)
-
-        self._requested: cp.ndarray = cp.zeros(shape=shape, dtype=cp.bool)
         self._requests: List[request.Request] = []
 
         self._box_fills: bool = False
         self._box_iter_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.int32)
         self._box_fill_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.bool)
-
-        self._c: cp.ndarray = cp.zeros(shape=shape, dtype=cp.float64)
 
         self._build()
 
@@ -65,14 +74,16 @@ class Server:
         # if self._new_mandel.has_border:
         #     self._copy_over_center()
 
-    def _generate_c(self) -> cp.ndarray:
+    def _generate_c(self) -> xp_ndarray:
         """Found to be faster using numpy, ogrid presumably not possible to parallelize."""
         m = self._new_mandel
         y, x = np.ogrid[-m.y_size/2.0: m.y_size/2.0: m.shape.y * 1j,
                         -m.x_size/2.0: m.x_size/2.0: m.shape.x * 1j]
-
         c = m.centre + x*m.x_unit + y*m.y_unit
-        return cp.asarray(c)
+        if self._compute_manager.has_cuda:
+            return cp.asarray(c)
+        else:
+            return c
 
     def _copy_over_prev(self):
         new = self._new_mandel.shape
@@ -139,7 +150,11 @@ class Server:
             # print(f"new_slice_x : {new_slice_x}")
             # print(f"new_slice_y : {new_slice_y}")
 
-            prev_iteration = cp.asarray(self._prev_mandel.iteration)
+            if self._compute_manager.has_cuda:
+                prev_iteration = cp.asarray(self._prev_mandel.iteration)
+            else:
+                prev_iteration = self._prev_mandel.iteration
+
             self._iteration[new_slice_y, new_slice_x] = prev_iteration[prev_slice_y, prev_slice_x]
             self._completed[new_slice_y, new_slice_x] = True
     # endregion
@@ -159,11 +174,17 @@ class Server:
 
     @property
     def iteration_cpu(self) -> np.ndarray:
-        return cp.asnumpy(self._iteration)
+        if self._compute_manager.has_cuda:
+            return cp.asnumpy(self._iteration)
+        else:
+            return self._iteration
 
     @property
     def c_cpu(self) -> np.ndarray:
-        return cp.asnumpy(self._c)
+        if self._compute_manager.has_cuda:
+            return cp.asnumpy(self._c)
+        else:
+            return self._iteration
 
     # TODO: implement for flatten
     def compute_flat_array(self, gpu_c_flat: cp.ndarray) -> cp.ndarray:
@@ -214,16 +235,21 @@ class Server:
         self._reset()
 
     def _do_box_fills(self):
-        box_fill_gpu = cp.asarray(self._box_fill_cpu)
-        box_iter_gpu = cp.asarray(self._box_iter_cpu)
+        if self._compute_manager.has_cuda:
+            box_fill_gpu = cp.asarray(self._box_fill_cpu)
+            box_iter_gpu = cp.asarray(self._box_iter_cpu)
 
-        self._completed[box_fill_gpu] = True
-        self._iteration[box_fill_gpu] = box_iter_gpu[box_fill_gpu]
+            self._completed[box_fill_gpu] = True
+            self._iteration[box_fill_gpu] = box_iter_gpu[box_fill_gpu]
+        else:
+            self._completed[self._box_fill_cpu] = True
+            self._iteration[self._box_fill_cpu] = self._box_iter_cpu[self._box_fill_cpu]
 
     def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
         new_requests = self._requested & ~self._completed  # ~ is logical_not
-        request_count = cp.count_nonzero(new_requests)
+        xp = cp.get_array_module(new_requests)
+        request_count = xp.count_nonzero(new_requests)
         if request_count == 0:
             return
         # print(f"\n# requests = \t{request_count}")
