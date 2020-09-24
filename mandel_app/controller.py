@@ -10,13 +10,15 @@ class Controller:
     def __init__(self, model_: model.Model, view_: view.View):
         self._model: model.Model = model_
         self._view: view.View = view_
-        self._has_cuda: bool = application.Application.instance().has_cuda
+        self._has_cuda: bool = False
 
     def build(self):
         self._view.build()
         self._model.build(self._view.frame_shape)
+        app = application.Application.instance()
+        self._has_cuda = app.has_cuda
         # thread state is needed by the application._gpu object to optimally determine if the gpu is available
-        application.Application.instance().set_thread_state(self._model.calc_thread_state)
+        app.set_thread_state(self._model.calc_thread_state)
         self._model.calc_new_mandel(save_history=True)
     # endregion
 

@@ -9,8 +9,8 @@ import utils
 
 class CpuPixelTest:
     def __init__(self):
-        self.calls = 2_000
-        self.end_iter = 100_000
+        self.calls = 2000000
+        self.end_iter = 100
         self.timer = utils.Timer()
 
         self.c = np.zeros(shape=(self.calls,), dtype=complex)
@@ -21,14 +21,24 @@ class CpuPixelTest:
 
     def do_pixels(self):
         self.timer.start()
+        zipped = list(zip(self.c,
+                          self.z,
+                          self.iterations,
+                          itertools.repeat(self.end_iter)
+                          ))
+        self.timer.lap("zip to list")
+
         with multiprocessing.Pool() as pool:
             results = pool.starmap(cpu_pixel.do_pixel,
-                                   zip(self.c,
-                                       self.z,
-                                       self.iterations,
-                                       itertools.repeat(self.end_iter)
-                                       )
+                                   zipped
                                    )
+            # results = pool.starmap(cpu_pixel.do_pixel,
+            #                        zip(self.c,
+            #                            self.z,
+            #                            self.iterations,
+            #                            itertools.repeat(self.end_iter)
+            #                            )
+            #                        )
         self.timer.lap("calc")
         # z_list, i_list = zip(*results)
         # self.z = np.array(z_list)

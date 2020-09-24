@@ -47,8 +47,12 @@ class ComputeManager:
 
         # print(early_stopping_iteration)
 
-        self._compute.iterations_per_kernel = 1000
-        kernels_per_loop = 10
+        if self._has_cuda:
+            self._compute.iterations_per_kernel = 1000
+            kernels_per_loop = 10
+        else:
+            self._compute.iterations_per_kernel = 10000
+            kernels_per_loop = 1
         iterations_per_loop = self._compute.iterations_per_kernel * kernels_per_loop
         early_stop_tolerance: float = 0.0001
 
