@@ -10,6 +10,7 @@ class Controller:
     def __init__(self, model_: model.Model, view_: view.View):
         self._model: model.Model = model_
         self._view: view.View = view_
+        self._has_cuda: bool = application.Application.instance().has_cuda
 
     def build(self):
         self._view.build()
@@ -95,6 +96,6 @@ class Controller:
             # possibly pass an optional z0 in here
             self._view.show_mandel(self._model.new_mandel)
             self._model.new_is_displayed(save_history=save_history)
-            if not self._model.displayed_mandel.has_border:
+            if self._has_cuda and not self._model.displayed_mandel.has_border:
                 self._model.add_border(self._model.displayed_mandel)
     # endregion

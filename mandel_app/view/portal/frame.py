@@ -3,7 +3,6 @@ from typing import Optional
 import numpy as np
 import cupy as cp
 
-import thread
 import utils
 from mandel_app import application, tuples
 from mandel_app.view.portal import transform
