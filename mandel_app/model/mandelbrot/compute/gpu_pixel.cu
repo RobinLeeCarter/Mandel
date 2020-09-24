@@ -1,6 +1,6 @@
 #include <cupy/complex.cuh>
 extern "C" __global__
-void mandel_pixel(const complex<double>* c,
+void do_pixel(const complex<double>* c,
                   complex<double>* z,
                   int* iterations,
                   const int end_iter

@@ -7,7 +7,7 @@ import cupy as cp
 
 
 # all gpu
-class Compute:
+class ComputeGpu:
     def __init__(self):  # high_precision=True)
         self._mandel_kernel: cp.RawKernel = self._load_mandel_kernel()
 
@@ -30,10 +30,10 @@ class Compute:
         self._prev_total_iterations: int = 0
 
     def _load_mandel_kernel(self) -> cp.RawKernel:
-        file_name = r"mandel_app/model/mandelbrot/compute/compute_pixel.cu"
+        file_name = r"mandel_app/model/mandelbrot/compute/gpu_pixel.cu"
         with open(file_name, "r") as file:
             code = file.read()
-        return cp.RawKernel(code, 'mandel_pixel')
+        return cp.RawKernel(code, 'do_pixel')
 
     # calculates iterations in parallel between start_iter and end_iter
     # inputs: a flat c gpu array and z starting values

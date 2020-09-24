@@ -5,7 +5,7 @@ from typing import Generator, Optional
 
 import cupy as cp
 
-from mandel_app.model.mandelbrot.compute import compute
+from mandel_app.model.mandelbrot.compute import compute_gpu
 
 
 # manager controls the calls to compute
@@ -15,7 +15,7 @@ class ComputeManager:
     def __init__(self, max_iterations: int, early_stopping: bool = True):
         self.max_iterations: int = max_iterations
         self.early_stopping: bool = early_stopping
-        self._compute: compute.Compute = compute.Compute()
+        self._compute: compute_gpu.ComputeGpu = compute_gpu.ComputeGpu()
         self.final_iteration: int = 0
 
     # input: a flat gpu array of c's to be calculated
