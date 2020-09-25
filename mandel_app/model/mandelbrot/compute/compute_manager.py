@@ -123,10 +123,15 @@ class ComputeManager:
             z[continuing] = continuing_z   # may not need this but almost instant
             # noinspection PyTypeChecker
             still_continuing: xp.ndarray = (continuing_iteration == end_iter)
+            trapped: xp.ndarray = (continuing_iteration == -1)
             count_still_continuing: int = xp.count_nonzero(still_continuing)
             count_stopped: int = xp.count_nonzero(xp.invert(still_continuing))
+            count_trapped: int = xp.count_nonzero(trapped)
+            count_escaped: int = count_stopped - count_trapped
             print(f"count_still_continuing:\t{count_still_continuing}")
             print(f"count_stopped:\t{count_stopped}")
+            print(f"count_trapped:\t{count_trapped}")
+            print(f"count_escaped:\t{count_escaped}")
 
             # print(f"loop={loop} has {xp.count_nonzero(still_continuing)} pixels continuing")
 
@@ -144,7 +149,7 @@ class ComputeManager:
                 if ((early_stopping_iteration is not None and
                      end_iter >= early_stopping_iteration)
                         or (early_stopping_iteration is None and
-                            count_stopped <= pixel_tolerance and
+                            count_escaped <= pixel_tolerance and
                             count_still_continuing < total_pixels)):
                     print("early_stopping")
                     continuing[continuing] = still_continuing

@@ -5,8 +5,9 @@ def do_pixel(c: complex,
              z: complex,
              iterations: int,
              end_iter: int):
-    # prev_x: List[float] = [0.0 for _ in range(10)]
-    # prev_y: List[float] = [0.0 for _ in range(10)]
+    prev_x: List[float] = []
+    prev_y: List[float] = []
+    store_from: int = end_iter - 50
 
     k: int = iterations
     cx: float = c.real
@@ -16,17 +17,18 @@ def do_pixel(c: complex,
     xx: float = x * x
     yy: float = y * y
     # x2: float # x * 2.0
-    cont: bool = k < end_iter and xx + yy < 4.0
-    # cont: bool = \
-    #     k != -1 and \
-    #     k < end_iter and \
-    #     xx + yy < 4.0
+    # cont: bool = k < end_iter and xx + yy < 4.0
+    cont: bool = \
+        k != -1 and \
+        k < end_iter and \
+        xx + yy < 4.0
 
     while cont:
         # slot = (k - iterations) % 10
         # # print(slot)
-        # prev_x[slot] = x
-        # prev_y[slot] = y
+        # if k >= store_from:
+        prev_x.append(x)
+        prev_y.append(y)
 
         y = 2*x*y + cy
         # x2 = x * 2.0
@@ -44,6 +46,10 @@ def do_pixel(c: complex,
             xx = x * x
             yy = y * y
             cont = xx + yy < 4.0
+
+    if x in prev_x:
+        if (x, y) in zip(prev_x, prev_y):
+            k = -1
 
     z = complex(x, y)
     iterations = k
