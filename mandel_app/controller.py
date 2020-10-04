@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional
 
-from mandel_app import model, view, tuples
+from mandel_app import application, model, view, tuples
 from mandel_app.model import mandelbrot
 
 
@@ -10,12 +10,15 @@ class Controller:
     def __init__(self, model_: model.Model, view_: view.View):
         self._model: model.Model = model_
         self._view: view.View = view_
+        self._has_cuda: bool = False
 
     def build(self):
         self._view.build()
         self._model.build(self._view.frame_shape)
-        self._view.set_calc_thread_state(self._model.calc_thread_state)
-        # self._model.start_test_mandel()
+        app = application.Application.instance()
+        self._has_cuda = app.has_cuda
+        # thread state is needed by the application._gpu object to optimally determine if the gpu is available
+        app.set_thread_state(self._model.calc_thread_state)
         self._model.calc_new_mandel(save_history=True)
     # endregion
 
@@ -95,6 +98,6 @@ class Controller:
             # possibly pass an optional z0 in here
             self._view.show_mandel(self._model.new_mandel)
             self._model.new_is_displayed(save_history=save_history)
-            if not self._model.displayed_mandel.has_border:
+            if self._has_cuda and not self._model.displayed_mandel.has_border:
                 self._model.add_border(self._model.displayed_mandel)
     # endregion

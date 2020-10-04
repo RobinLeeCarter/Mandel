@@ -28,9 +28,6 @@ class Central:
         self._draw_mandel_frame.set_frame(self._portal.frame)
         self.set_frame_shape()
         self.set_cursor(cursor_shape)
-
-    def set_calc_thread_state(self, calc_thread_state: thread.State):
-        self._portal.frame.set_calc_thread_state(calc_thread_state)
     # endregion
 
     def on_resized(self):

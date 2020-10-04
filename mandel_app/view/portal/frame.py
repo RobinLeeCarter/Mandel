@@ -3,16 +3,15 @@ from typing import Optional
 import numpy as np
 import cupy as cp
 
-import thread
 import utils
-from mandel_app import tuples
+from mandel_app import application, tuples
 from mandel_app.view.portal import transform
 
 
 class Frame:
     def __init__(self):
         self._timer: utils.Timer = utils.Timer()
-        self._calc_thread_state: Optional[thread.State] = None
+        self._application: application.Application = application.Application.instance()
 
         self._source_np: Optional[np.ndarray] = None
         self._source_cp: Optional[cp.ndarray] = None
@@ -44,9 +43,6 @@ class Frame:
     def rgba(self) -> np.ndarray:
         return self._frame_rgba
 
-    def set_calc_thread_state(self, calc_thread_state: thread.State):
-        self._calc_thread_state = calc_thread_state
-
     def set_frame_shape(self, frame_shape: tuples.ImageShape):
         """call when resize window"""
         # print("set_frame_shape", image_shape)
@@ -62,12 +58,14 @@ class Frame:
         # for 3D array: 0 is x, 1 is y
         # noinspection PyTypeChecker
         self._frame_pixels_np[:, :, 1], self._frame_pixels_np[:, :, 0] = np.meshgrid(y_range, x_range, indexing='ij')
-        self._frame_pixels_cp = cp.asarray(self._frame_pixels_np)
+        if self._application.has_cuda:
+            self._frame_pixels_cp = cp.asarray(self._frame_pixels_np)
 
     def set_source(self, source: np.ndarray):
         """call when change the source"""
         self._source_np = source
-        self._source_cp = cp.asarray(self._source_np)
+        if self._application.has_cuda:
+            self._source_cp = cp.asarray(self._source_np)
         self._reset_transform()
 
     def set_offset(self, offset: Optional[tuples.PixelPoint]):
@@ -109,9 +107,9 @@ class Frame:
         self._calculate_transform()
         # self._timer.lap("calc")
 
-        stream_done = cp.cuda.get_current_stream().done
-        worker_ready = not self._calc_thread_state.worker_active
-        either_ready = stream_done or worker_ready
+        # stream_done = cp.cuda.get_current_stream().done
+        # worker_ready = not self._calc_thread_state.worker_active
+        # either_ready = stream_done or worker_ready
 
         # if worker_ready and not stream_done:
         #     print("worker_ready and not stream_done")
@@ -136,7 +134,10 @@ class Frame:
 
         # self._timer.start()
 
-        if either_ready:
+        # if gpu.Gpu.ready():
+        #     pass
+
+        if self._application.gpu_ready:
             # GPU ready so use that
             self._apply_transform_cp()
         else:
