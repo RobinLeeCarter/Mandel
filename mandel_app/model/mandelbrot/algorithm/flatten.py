@@ -22,7 +22,7 @@ class Flatten:
         cpu_c_flat = self._cpu_c.flatten()  # 0.004s
         cpu_iteration_flat = self._calc_array(cpu_c_flat)
         # gpu_c_flat = cp.asarray(cpu_c_flat)
-        # gpu_iteration_flat = compute_array.Compute.compute(gpu_c_flat)
+        # gpu_iteration_flat = compute_array.ComputeGpu.compute(gpu_c_flat)
         # cpu_iteration_flat = cp.asnumpy(gpu_iteration_flat)
         cpu_iteration = cpu_iteration_flat.reshape(self._cpu_c.shape)  # 0s time
         return cpu_iteration
@@ -56,5 +56,5 @@ class Flatten:
         gpu_c_flat = cp.asarray(cpu_c_flat)
         gpu_iteration_flat = self.server.compute_flat_array(gpu_c_flat)
         cpu_iteration_flat = cp.asnumpy(gpu_iteration_flat)
-        # cpu_iteration_flat = compute_array.Compute.compute(cpu_c_flat)
+        # cpu_iteration_flat = compute_array.ComputeGpu.compute(cpu_c_flat)
         return cpu_iteration_flat
