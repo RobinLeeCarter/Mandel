@@ -39,9 +39,9 @@ class ComputeCpu(compute_xpu.ComputeXpu):
                            end_iter+1,
                            self.iterations_per_kernel)
         for end_point in end_points:
-            print(f"end_point: {end_point}")
+            # print(f"end_point: {end_point}")
             iterations_done = self._calculate_to(end_point)
-            print(f"iterations_done: {iterations_done}")
+            # print(f"iterations_done: {iterations_done}")
             yield float(iterations_done)
         # print(self._z[100])
 

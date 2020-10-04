@@ -63,11 +63,10 @@ class ComputeManager:
         # first iteration different
         start_iter = 0
         end_iter = iterations_per_loop
-        print(f"c.shape {c.shape}")
-        print(f"{start_iter}->{end_iter}")
-        print(f"iteration_max = {self.max_iterations}")
-        # print(f"loop=0\t{start_iter}->{end_iter}")
-        print(f"all:\t{c.size}")
+        # print(f"c.shape {c.shape}")
+        # print(f"{start_iter}->{end_iter}")
+        # print(f"iteration_max = {self.max_iterations}")
+        # print(f"all:\t{c.size}")
         yield from self._compute.compute_iterations(c, z, iteration, start_iter, end_iter)
 
         continuing = (iteration == end_iter)
@@ -88,9 +87,9 @@ class ComputeManager:
             # end_iter = min(start_iter + iterations_per_loop, self._max_iterations)
             start_iter = end_iter
             end_iter = min(start_iter + iterations_per_loop, self.max_iterations)
-            print(f"{start_iter}->{end_iter}")
+            # print(f"{start_iter}->{end_iter}")
             count_continuing = xp.count_nonzero(continuing)
-            print(f"count_continuing:\t{count_continuing}")
+            # print(f"count_continuing:\t{count_continuing}")
 
             # print(f"continuing_c.shape: {continuing_c.shape}")
             # print(f"continuing_z.shape: {continuing_z.shape}")
@@ -128,22 +127,22 @@ class ComputeManager:
             count_stopped: int = xp.count_nonzero(xp.invert(still_continuing))
             count_trapped: int = xp.count_nonzero(trapped)
             count_escaped: int = count_stopped - count_trapped
-            print(f"count_still_continuing:\t{count_still_continuing}")
-            print(f"count_stopped:\t{count_stopped}")
-            print(f"count_trapped:\t{count_trapped}")
-            print(f"count_escaped:\t{count_escaped}")
+            # print(f"count_still_continuing:\t{count_still_continuing}")
+            # print(f"count_stopped:\t{count_stopped}")
+            # print(f"count_trapped:\t{count_trapped}")
+            # print(f"count_escaped:\t{count_escaped}")
 
             # print(f"loop={loop} has {xp.count_nonzero(still_continuing)} pixels continuing")
 
             # good time to stop if no more were eliminated, assume the rest run to max_iterations
             # added check that this isn't because all pixels are continuing as this indicates high base iteration space
             iteration[continuing] = continuing_iteration
-            if count_still_continuing == 0 or end_iter == self.max_iterations:
-                if count_still_continuing == 0:
-                    print("0 continuing")
-                else:
-                    print("max iterations")
-                break
+            # if count_still_continuing == 0 or end_iter == self.max_iterations:
+            #     if count_still_continuing == 0:
+            #         print("0 continuing")
+            #     else:
+            #         print("max iterations")
+            #     break
 
             if self.early_stopping:
                 if ((early_stopping_iteration is not None and
@@ -151,7 +150,7 @@ class ComputeManager:
                         or (early_stopping_iteration is None and
                             count_escaped <= pixel_tolerance and
                             count_still_continuing < total_pixels)):
-                    print("early_stopping")
+                    # print("early_stopping")
                     continuing[continuing] = still_continuing
                     iteration[continuing] = self.max_iterations
                     break
@@ -165,7 +164,7 @@ class ComputeManager:
 
         trapped = (iteration == -1)
         trapped_count = xp.count_nonzero(trapped)
-        print(f"trapped: {trapped_count}")
+        # print(f"trapped: {trapped_count}")
         iteration[iteration == -1] = self.max_iterations
 
         # yield 1.0
