@@ -7,7 +7,7 @@ def do_pixel(c: complex,
              end_iter: int):
     prev_x: List[float] = []
     prev_y: List[float] = []
-    store_from: int = end_iter - 50
+    # store_from: int = end_iter - 50
 
     k: int = iterations
     cx: float = c.real
