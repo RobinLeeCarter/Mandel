@@ -5,8 +5,9 @@ from mandel_app.view.window import actions, menu, toolbars, status_bar, central
 
 
 class Window:
-    def __init__(self, application_name: str):
+    def __init__(self, application_name: str, color_theme: str):
         self._application_name: str = application_name
+        self._color_theme: str = color_theme
 
         self.q_main_window: widgets.XMainWindow = widgets.XMainWindow()
         # modes
@@ -33,9 +34,11 @@ class Window:
         self.central.build(cursor_shape)
 
     def _get_stylesheet(self):
-        stylesheet = """
-            background-color: darkGray
-        """
+        stylesheet = ""
+        if self._color_theme == "darkGray":
+            stylesheet += """
+                background-color: darkGray
+            """
         return stylesheet
 
     def get_dpi(self) -> int:

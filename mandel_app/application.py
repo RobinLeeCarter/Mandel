@@ -1,5 +1,7 @@
 from __future__ import annotations
 import sys
+import platform
+
 # import gc
 from typing import Optional
 
@@ -25,6 +27,7 @@ class Application:
     def __init__(self):
         self.application_name: str = "Mandlebrot Explorer"
         self.organization_name: str = "Robin Carter Industries"
+        self._os: str = platform.system()
 
         self._application: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
         self._model: model.Model = model.Model()
@@ -57,6 +60,10 @@ class Application:
     @property
     def has_cuda(self):
         return self._gpu.has_cuda
+
+    @property
+    def os(self):
+        return self._os
 
 
 def launch_application():

@@ -4,8 +4,8 @@ from typing import Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import thread
-from mandel_app import controller, tuples
+# import thread
+from mandel_app import controller, tuples, application
 from mandel_app.model import mandelbrot, z_model
 from mandel_app.view import window, state, settings, z_window, enums
 from mandel_app.view.common import icon, clipboard
@@ -15,10 +15,11 @@ from mandel_app.view.common import icon, clipboard
 
 class View:
     # region Setup
-    def __init__(self, application: QtWidgets.QApplication, application_name: str):
-        self._application: QtWidgets.QApplication = application
+    def __init__(self, q_application: QtWidgets.QApplication, application_name: str):
+        self._q_application: QtWidgets.QApplication = q_application
         self._application_name: str = application_name
-        self._clipboard: clipboard.Clipboard = clipboard.Clipboard(application)
+        self._color_theme: str = ""
+        self._clipboard: clipboard.Clipboard = clipboard.Clipboard(q_application)
         self._controller: Optional[controller.Controller] = None
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
@@ -31,15 +32,26 @@ class View:
         self._controller = controller_
 
     def build(self):
+        self.set_color_theme()
         dock_icon = icon.Icon("mandel_icon.png")
-        self._application.setWindowIcon(dock_icon.q_icon)
-        self._window = window.Window(self._application_name)
+        self._q_application.setWindowIcon(dock_icon.q_icon)
+        self._window = window.Window(self._application_name, self._color_theme)
         self._window.build(self._view_settings.window_settings, self._view_state.cursor_shape)
         self._view_state.set_central(self._window.central)
         self._window.central.set_cursor(self._view_state.cursor_shape)
-        self._z_window = z_window.ZWindow(self._window.q_main_window, self._view_settings.z_window_settings)
+        self._z_window = z_window.ZWindow(self._window.q_main_window, self._color_theme)
+        self._z_window.build(self._view_settings.z_window_settings)
 
         self._connect_signals()
+
+    def set_color_theme(self):
+        app = application.Application.instance()
+        if app.os == "Windows":
+            self._color_theme = "default"
+        elif app.os == "Darwin":    # untested
+            self._color_theme = "default"
+        elif app.os == "Linux":
+            self._color_theme = "darkGray"
     # endregion
 
     # region Properties

@@ -6,22 +6,25 @@ from mandel_app.view.z_window import actions, central
 
 
 class ZWindow:
-    def __init__(self, parent: QtWidgets.QMainWindow, z_window_settings: dict):
+    def __init__(self, parent: QtWidgets.QMainWindow, color_theme: str):
         self.q_main_window: widgets.XMainWindow = widgets.XMainWindow(parent=parent)
+        self._color_theme: str = color_theme
         self.is_active: bool = False
         self.actions: actions.Actions = actions.Actions(self.q_main_window)
-        image_shape: tuples.ImageShape = tuples.image_shape_from_q_size(z_window_settings["size"])
-        self.central: central.Central = central.Central(self.q_main_window, image_shape)
+        self.central: central.Central = central.Central(self.q_main_window)
 
-        self._build(z_window_settings)
-
-    def _build(self, z_window_settings: dict):
+    def build(self, z_window_settings: dict):
         self.q_main_window.setWindowTitle('Z Tracing')
         self.q_main_window.resize(z_window_settings["size"])
         self.q_main_window.move(z_window_settings["pos"])
         self.q_main_window.setMinimumSize(200, 200)
+
         stylesheet = self._get_stylesheet()
         self.q_main_window.setStyleSheet(stylesheet)
+
+        image_shape: tuples.ImageShape = tuples.image_shape_from_q_size(z_window_settings["size"])
+        self.central.build(image_shape)
+
         self.q_main_window.show()
         self.central.refresh_image_space()
         self.q_main_window.setVisible(False)
@@ -36,9 +39,11 @@ class ZWindow:
         # self.q_main_window.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
     def _get_stylesheet(self):
-        stylesheet = """
-            background-color: darkGray
-        """
+        stylesheet = ""
+        if self._color_theme == "darkGray":
+            stylesheet += """
+                background-color: darkGray
+            """
         return stylesheet
 
     def hide(self):
