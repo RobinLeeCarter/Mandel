@@ -3,14 +3,23 @@ from __future__ import annotations
 from typing import Optional, Callable, List, Generator, Union
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 from mandel_app import tuples
 
 from mandel_app.model.mandelbrot import mandel, compute  # mandel_progress_estimator
 from mandel_app.model.mandelbrot.server import request
 
-xp_ndarray = Union[np.ndarray, cp.ndarray]
+if cp is None:
+    xp_ndarray = np.ndarray
+else:
+    xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 # generate one for each mandel calculation

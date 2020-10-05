@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 import utils
 

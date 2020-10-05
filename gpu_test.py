@@ -1,4 +1,8 @@
 try:
     import cupy as cp
 except ImportError:
-    print("No GPU")
+    cp = None
+except AttributeError:
+    cp = None
+
+

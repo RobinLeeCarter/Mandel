@@ -4,12 +4,21 @@ import math
 from typing import Generator, Optional, Union
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 from mandel_app import application
 from mandel_app.model.mandelbrot.compute import compute_xpu, compute_gpu, compute_cpu
 
-xp_ndarray = Union[np.ndarray, cp.ndarray]
+if cp is None:
+    xp_ndarray = np.ndarray
+else:
+    xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 # manager controls the calls to compute

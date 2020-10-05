@@ -4,11 +4,20 @@ from dataclasses import dataclass
 from typing import Optional, Callable, Union
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 from mandel_app import tuples
 
-xp_ndarray = Union[np.ndarray, cp.ndarray]
+if cp is None:
+    xp_ndarray = np.ndarray
+else:
+    xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 @dataclass
