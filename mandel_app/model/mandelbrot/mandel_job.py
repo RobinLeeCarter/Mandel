@@ -82,7 +82,9 @@ class MandelJob(thread.Job):
 
         algorithm_ = algorithm.Mesh(server_, self.progress_estimator)
 
-        self._new_mandel.iteration = yield from algorithm_.run()
+        # TODO: uncomment
+        # self._new_mandel.iteration = yield from algorithm_.run()
+        print("after run")
 
         # self._new_mandel.iteration_shape = self._new_mandel.shape
         # self._new_mandel.iteration_offset = self._new_mandel.offset
@@ -96,6 +98,7 @@ class MandelJob(thread.Job):
         # print("self._compute_manager.final_iteration=", self._compute_manager.final_iteration)
         if not self._new_mandel.has_border:
             self._new_mandel.final_iteration = self._compute_manager.final_iteration
+        print("_exec end")
 
     def get_pixel_count(self,
                         mandel_: mandel.Mandel
