@@ -24,7 +24,7 @@ class View:
         self._window: Optional[window.Window] = None
         self._z_window: Optional[z_window.ZWindow] = None
         self._view_state: state.State = state.State()
-        self._view_settings: settings.Settings = settings.Settings(reset=False)
+        self._settings: settings.Settings = settings.Settings(reset=False)
         # self._timer = utils.Timer()
         # self._timer.start()
 
@@ -36,11 +36,11 @@ class View:
         dock_icon = icon.Icon("mandel_icon.png")
         self._q_application.setWindowIcon(dock_icon.q_icon)
         self._window = window.Window(self._application_name, self._color_theme)
-        self._window.build(self._view_settings.window_settings, self._view_state.cursor_shape)
+        self._window.build(self._settings.window_settings, self._view_state.cursor_shape)
         self._view_state.set_central(self._window.central)
         self._window.central.set_cursor(self._view_state.cursor_shape)
         self._z_window = z_window.ZWindow(self._window.q_main_window, self._color_theme)
-        self._z_window.build(self._view_settings.z_window_settings)
+        self._z_window.build(self._settings.z_window_settings)
 
         self._connect_signals()
 
@@ -269,7 +269,7 @@ class View:
 
     def _on_z_close(self, close_event: QtGui.QCloseEvent):
         if close_event.spontaneous():
-            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
+            self._settings.write_z_window_settings(self._z_window.q_main_window)
             q_action = self._window.actions.z_mode.q_action
             if q_action.isChecked():
                 q_action.trigger()
@@ -290,8 +290,8 @@ class View:
     def _on_close(self):
         self._controller.stop_request()
         if self._z_window.q_main_window.isVisible():
-            self._view_settings.write_z_window_settings(self._z_window.q_main_window)
-        self._view_settings.write_window_settings(self._window.q_main_window)
+            self._settings.write_z_window_settings(self._z_window.q_main_window)
+        self._settings.write_window_settings(self._window.q_main_window)
 
     def _on_copy_press(self, _: QtGui.QMouseEvent):
         text = self._window.status_bar.verbose_mandel_statistics

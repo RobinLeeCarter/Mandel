@@ -29,11 +29,7 @@ class Settings:
         self._end_group()
 
     def _read_settings(self, reset: bool = False):
-        self._q_settings.setValue("test", 42)
-        self._q_settings.sync()
-        print("test", self._q_settings.value("test"))
         for setting, default in self._default.items():
-            print(setting, default)
             if reset:
                 self.initial[setting] = default
             else:
@@ -49,8 +45,6 @@ class Settings:
         return filtered
 
     def write_window_settings(self, q_main_window: QtWidgets.QMainWindow):
-        self._q_settings.setValue("test", 42)
-        print("test", self._q_settings.value("test"))
         self._q_settings.beginGroup("window")
         self._q_settings.setValue("pos", q_main_window.pos())
         self._q_settings.setValue("size", q_main_window.size())
