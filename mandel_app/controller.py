@@ -20,7 +20,7 @@ class Controller:
         # thread state is needed by the application._gpu object to optimally determine if the gpu is available
         app.set_thread_state(self._model.calc_thread_state)
         self._model.calc_new_mandel(save_history=True)
-        print("controller build end")
+        # print("controller build end")
     # endregion
 
     # region Requests from View
@@ -89,23 +89,18 @@ class Controller:
 
     # region Notifications from Model
     def progress_update(self, progress: float):
-        print("progress_update")
+        # print("progress_update")
         self._view.display_progress(progress)
 
     def stop_success(self):
-        print("stop_success")
+        # print("stop_success")
         self._view.stop_success()
 
     def new_is_ready(self, save_history: bool = False):
-        print("new_is_ready")
         if self._view.ready_to_display_new_mandel:
             # possibly pass an optional z0 in here
-            print("ready_to_display_new_mandel")
-            # TODO: Uncomment
-            # self._view.show_mandel(self._model.new_mandel)
-            print("show_mandel")
+            self._view.show_mandel(self._model.new_mandel)
             self._model.new_is_displayed(save_history=save_history)
-            print("new_is_displayed")
             if self._has_cuda and not self._model.displayed_mandel.has_border:
                 self._model.add_border(self._model.displayed_mandel)
     # endregion

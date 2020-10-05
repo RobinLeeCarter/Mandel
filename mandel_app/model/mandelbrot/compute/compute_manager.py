@@ -48,7 +48,10 @@ class ComputeManager:
             c: xp_ndarray,
             early_stopping_iteration: Optional[int] = None
     ) -> Generator[float, None, xp_ndarray]:
-        xp = cp.get_array_module(c)
+        if self._has_cuda:
+            xp = cp.get_array_module(c)
+        else:
+            xp = np
         z = xp.copy(c)
         # z = xp.zeros(shape=c.shape, dtype=xp.complex)
         iteration = xp.zeros(shape=c.shape, dtype=xp.int32)

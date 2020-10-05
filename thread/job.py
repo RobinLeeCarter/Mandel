@@ -47,7 +47,6 @@ class Job(ABC):
                 #     self._in_progress = False
                 #     return
         self._in_progress = False
-        print("run end")
 
     @abstractmethod
     def _exec(self) -> Generator[float, None, None]:

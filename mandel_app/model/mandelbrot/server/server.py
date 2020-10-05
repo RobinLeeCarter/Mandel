@@ -178,7 +178,10 @@ class Server:
 
     @property
     def new_request_count(self) -> int:
-        xp = cp.get_array_module(self._requested)
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(self._requested)
+        else:
+            xp = np
         return int(xp.count_nonzero(self._requested & ~self._completed))
 
     @property
@@ -257,7 +260,10 @@ class Server:
     def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
         new_requests = self._requested & ~self._completed  # ~ is logical_not
-        xp = cp.get_array_module(new_requests)
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(new_requests)
+        else:
+            xp = np
         request_count = xp.count_nonzero(new_requests)
         if request_count == 0:
             return

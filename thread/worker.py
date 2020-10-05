@@ -107,7 +107,6 @@ class Worker(QtCore.QObject):
 
             if not self._doing_queue:   # otherwise it will clean up here once the doing queue is empty
                 self._final_cleanup()
-        print("_job_loop end")
 
     def _final_cleanup(self):
         # execution about to end, do clean-up
@@ -133,7 +132,6 @@ class Worker(QtCore.QObject):
             self.jobComplete.emit(job_)
         # remove from doing queue
         self._doing_queue.remove(job_)
-        print("_do_job end")
 
     def _set_active(self, active: bool):
         if active != self._worker_active:
