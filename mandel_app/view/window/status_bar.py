@@ -83,7 +83,7 @@ class StatusBar:
 
     def _build_progress_bar(self) -> QtWidgets.QProgressBar:
         q_progress_bar = QtWidgets.QProgressBar()
-        q_progress_bar.setAlignment(QtCore.Qt.AlignRight)
+        q_progress_bar.setAlignment(QtCore.Qt.AlignCenter)
         q_progress_bar.setRange(0, 100)
         q_progress_bar.setMaximumHeight(15)
         q_progress_bar.setMaximumWidth(200)
@@ -99,8 +99,8 @@ class StatusBar:
         self._q_center_label.set_on_mouse_press(on_mouse_press)
 
     def display_progress(self, progress: float):
-        # pass
         progress_int_percentage = round(100*progress)
+        print(f"{progress_int_percentage}%")
         self._q_progress_bar.setValue(progress_int_percentage)
         self._q_right_label.setVisible(False)
         self._q_progress_bar.setVisible(True)
