@@ -68,8 +68,8 @@ class MandelJob(thread.Job):
             # pixel_count = self.get_pixel_count(self._new_mandel)  # , self._pan)
             expected_work = pixel_count * self._new_mandel.expected_iterations_per_pixel
             # print(f"pixel_count: {pixel_count}")
-            print(f"expected_it_per_pixel:\t{self._new_mandel.expected_iterations_per_pixel}")
-            print(f"expected_iterations:\t{expected_work}")
+            # print(f"expected_it_per_pixel:\t{self._new_mandel.expected_iterations_per_pixel}")
+            # print(f"expected_iterations:\t{expected_work}")
             self.progress_estimator.set_expected_work(expected_work)
 
         # run the algorithm
@@ -96,9 +96,13 @@ class MandelJob(thread.Job):
         # set mandel statistics
         if self.progress_estimator:
             self._new_mandel.iterations_performed = int(self.progress_estimator.cumulative_work)
-            self._new_mandel.iterations_per_pixel = float(self._new_mandel.iterations_performed) / float(pixel_count)
-            print(f"iterations_performed:\t{self._new_mandel.iterations_performed}")
-            print(f"iterations_per_pixel:\t{self._new_mandel.iterations_per_pixel}")
+            if self._new_mandel.iterations_performed == 0 or pixel_count == 0:
+                self._new_mandel.iterations_per_pixel = self._new_mandel.expected_iterations_per_pixel
+            else:
+                self._new_mandel.iterations_per_pixel = float(self._new_mandel.iterations_performed) /\
+                                                        float(pixel_count)
+            # print(f"iterations_performed:\t{self._new_mandel.iterations_performed}")
+            # print(f"iterations_per_pixel:\t{self._new_mandel.iterations_per_pixel}")
 
         # print("self._compute_manager.final_iteration=", self._compute_manager.final_iteration)
         if not self._new_mandel.has_border:

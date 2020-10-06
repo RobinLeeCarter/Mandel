@@ -38,6 +38,7 @@ class MandelProgressEstimator(thread.ProgressEstimator):
     def _work_proportion_estimate(self, work_done: float) -> float:
         self.cumulative_work += work_done
         # print(f"cumulative_work = {self.cumulative_work}")
+        # print(f"self._expected_work = {self._expected_work}")
         if self._expected_work == 0.0:
             proportion = 0.0
         else:
