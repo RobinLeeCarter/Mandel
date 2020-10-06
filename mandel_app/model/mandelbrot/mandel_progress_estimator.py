@@ -47,7 +47,7 @@ class MandelProgressEstimator(thread.ProgressEstimator):
                 proportion = done_vs_expected
             else:
                 # keeps increasing monotonically and never reaches 1.0 no matter how much unexpected work appears
-                proportion = cutoff + (1-cutoff) * math.tanh(done_vs_expected - cutoff)
+                proportion = cutoff + (1-cutoff) * math.tanh((done_vs_expected - cutoff)/(1-cutoff))
         return proportion
 
     def _progress_from_range(self, proportion: float) -> float:

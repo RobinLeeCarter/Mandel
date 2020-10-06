@@ -14,6 +14,7 @@ class ProgressEstimator:
     def stop(self):
         self.progress = 1.0
         self.timer.stop(show=False)
+        self.timer.show_cumulative_percentage()
 
     def estimate_progress(self, yielded: float):
         self._calculate_progress(yielded)

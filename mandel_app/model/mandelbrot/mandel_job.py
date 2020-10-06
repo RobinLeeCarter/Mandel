@@ -103,19 +103,3 @@ class MandelJob(thread.Job):
         # print("self._compute_manager.final_iteration=", self._compute_manager.final_iteration)
         if not self._new_mandel.has_border:
             self._new_mandel.final_iteration = self._compute_manager.final_iteration
-
-    def get_pixel_count(self,
-                        mandel_: mandel.Mandel
-                        # pan: Optional[tuples.PixelPoint]
-                        ) -> int:
-        pixel_count: int
-        if mandel_.pan is None:
-            pixel_count = mandel_.shape.x * mandel_.shape.y
-        else:
-            abs_pan_x = abs(mandel_.pan.x)
-            abs_pan_y = abs(mandel_.pan.y)
-            pixel_count = \
-                abs_pan_x * (mandel_.shape.y - abs_pan_y) + \
-                abs_pan_y * (mandel_.shape.x - abs_pan_x) + \
-                abs_pan_x * abs_pan_y
-        return pixel_count
