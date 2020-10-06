@@ -3,7 +3,13 @@ from __future__ import annotations
 import math
 from typing import Generator
 
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 from mandel_app.model.mandelbrot.compute import compute_xpu
 

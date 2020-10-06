@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from mandel_app import tuples
@@ -6,18 +8,19 @@ from mandel_app.view.z_window.central import canvas
 
 
 class Central:
-    def __init__(self, q_main_window: QtWidgets.QMainWindow, image_shape: tuples.ImageShape):
+    def __init__(self, q_main_window: QtWidgets.QMainWindow):
         # common of central area
-        self.q_scroll_area: XScrollArea = XScrollArea(q_main_window)
+        self._q_main_window: QtWidgets.QMainWindow = q_main_window
+        self.q_scroll_area: XScrollArea = XScrollArea(self._q_main_window)
         self.q_main = QtWidgets.QWidget()
         self.q_main_layout = QtWidgets.QVBoxLayout(self.q_main)
-        self.canvas: canvas.Canvas = canvas.Canvas(image_shape)
-        self.image_shape: tuples.ImageShape = image_shape
-        self.build(q_main_window)
+        self.canvas: canvas.Canvas = canvas.Canvas()
+        self.image_shape: Optional[tuples.ImageShape] = None
 
-    def build(self, q_main_window: QtWidgets.QMainWindow):
+    def build(self, image_shape: tuples.ImageShape):
+        self.image_shape = image_shape
         # make connections between common
-        q_main_window.setCentralWidget(self.q_scroll_area)
+        self._q_main_window.setCentralWidget(self.q_scroll_area)
         self.q_scroll_area.setWidget(self.q_main)
         self.q_main.setLayout(self.q_main_layout)
         self.q_main_layout.addWidget(self.canvas.figure_canvas, 1)
@@ -33,6 +36,7 @@ class Central:
         # self.q_main_layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.BottomToTop, self.q_main)
         self.q_main_layout.setSpacing(0)
         self.q_main_layout.setContentsMargins(0, 0, 0, 0)
+        self.canvas.build(self.image_shape)
 
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
         # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)

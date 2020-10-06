@@ -3,9 +3,18 @@ import abc
 from typing import Generator, Union
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
-xp_ndarray = Union[np.ndarray, cp.ndarray]
+if cp is None:
+    xp_ndarray = np.ndarray
+else:
+    xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 # could be gpu or cpu but not both

@@ -240,7 +240,7 @@ class Model:
         mandel = mandelbrot.Mandel(centre=complex(-0.5, 0.0),
                                    size=2.4,
                                    shape=self._frame_shape,
-                                   expected_iterations_per_pixel=1750
+                                   expected_iterations_per_pixel=500
                                    )
         return mandel
 

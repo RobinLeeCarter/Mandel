@@ -3,14 +3,23 @@ from __future__ import annotations
 from typing import Optional, Callable, List, Generator, Union
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 from mandel_app import tuples
 
 from mandel_app.model.mandelbrot import mandel, compute  # mandel_progress_estimator
 from mandel_app.model.mandelbrot.server import request
 
-xp_ndarray = Union[np.ndarray, cp.ndarray]
+if cp is None:
+    xp_ndarray = np.ndarray
+else:
+    xp_ndarray = Union[np.ndarray, cp.ndarray]
 
 
 # generate one for each mandel calculation
@@ -168,8 +177,19 @@ class Server:
         return self._completed.all()
 
     @property
+    def incomplete_count(self) -> int:
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(self._requested)
+        else:
+            xp = np
+        return int(xp.count_nonzero(~self._completed))
+
+    @property
     def new_request_count(self) -> int:
-        xp = cp.get_array_module(self._requested)
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(self._requested)
+        else:
+            xp = np
         return int(xp.count_nonzero(self._requested & ~self._completed))
 
     @property
@@ -248,7 +268,10 @@ class Server:
     def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
         new_requests = self._requested & ~self._completed  # ~ is logical_not
-        xp = cp.get_array_module(new_requests)
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(new_requests)
+        else:
+            xp = np
         request_count = xp.count_nonzero(new_requests)
         if request_count == 0:
             return
