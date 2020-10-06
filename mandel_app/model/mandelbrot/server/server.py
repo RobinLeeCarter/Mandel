@@ -177,6 +177,14 @@ class Server:
         return self._completed.all()
 
     @property
+    def incomplete_count(self) -> int:
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(self._requested)
+        else:
+            xp = np
+        return int(xp.count_nonzero(~self._completed))
+
+    @property
     def new_request_count(self) -> int:
         if self._compute_manager.has_cuda:
             xp = cp.get_array_module(self._requested)
