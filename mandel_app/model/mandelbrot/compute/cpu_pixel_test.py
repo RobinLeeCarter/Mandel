@@ -1,6 +1,5 @@
 import multiprocessing
 import itertools
-import time
 import numpy as np
 
 from mandel_app.model.mandelbrot.compute import cpu_pixel

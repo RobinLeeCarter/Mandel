@@ -1,7 +1,6 @@
 from typing import List
 
-# import cupy as cp
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore
 
 from thread import job, enums
 

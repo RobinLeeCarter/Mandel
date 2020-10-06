@@ -100,7 +100,7 @@ class ComputeManager:
             start_iter = end_iter
             end_iter = min(start_iter + iterations_per_loop, self.max_iterations)
             # print(f"{start_iter}->{end_iter}")
-            count_continuing = xp.count_nonzero(continuing)
+            # count_continuing = xp.count_nonzero(continuing)
             # print(f"count_continuing:\t{count_continuing}")
 
             # print(f"continuing_c.shape: {continuing_c.shape}")
@@ -174,8 +174,8 @@ class ComputeManager:
             continuing[continuing] = still_continuing
             # loop += 1
 
-        trapped = (iteration == -1)
-        trapped_count = xp.count_nonzero(trapped)
+        # trapped = (iteration == -1)
+        # trapped_count = xp.count_nonzero(trapped)
         # print(f"trapped: {trapped_count}")
         iteration[iteration == -1] = self.max_iterations
 

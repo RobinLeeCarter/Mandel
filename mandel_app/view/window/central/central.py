@@ -2,7 +2,6 @@ from typing import Optional
 
 from PyQt5 import QtWidgets, QtCore
 
-import thread
 from mandel_app import tuples
 from mandel_app.model import mandelbrot
 from mandel_app.view import widgets, portal
