@@ -47,9 +47,10 @@ def do_pixel(c: complex,
             yy = y * y
             cont = xx + yy < 4.0
 
-    if x in prev_x:
-        if (x, y) in zip(prev_x, prev_y):
-            k = -1
+    if k == end_iter:
+        if x in prev_x:
+            if (x, y) in zip(prev_x, prev_y):
+                k = -1
 
     z = complex(x, y)
     iterations = k

@@ -45,6 +45,9 @@ class MandelJob(thread.Job):
         if self.progress_estimator:
             pixel_count = self.get_pixel_count(self._new_mandel)  # , self._pan)
             expected_work = pixel_count * self._new_mandel.expected_iterations_per_pixel
+            print(f"pixel_count: {pixel_count}")
+            print(f"expected_iterations_per_pixel: {self._new_mandel.expected_iterations_per_pixel}")
+            print(f"expected_work: {expected_work}")
             self.progress_estimator.set_expected_work(expected_work)
 
         yield 0.0
@@ -92,6 +95,7 @@ class MandelJob(thread.Job):
         if self.progress_estimator:
             self._new_mandel.iterations_performed = int(self.progress_estimator.cumulative_work)
             self._new_mandel.iterations_per_pixel = float(self._new_mandel.iterations_performed) / float(pixel_count)
+            print(f"self._new_mandel.iterations_per_pixel = {self._new_mandel.iterations_per_pixel}")
 
         # print("self._compute_manager.final_iteration=", self._compute_manager.final_iteration)
         if not self._new_mandel.has_border:
@@ -105,10 +109,10 @@ class MandelJob(thread.Job):
         if mandel_.pan is None:
             pixel_count = mandel_.shape.x * mandel_.shape.y
         else:
-            abs_x = abs(mandel_.pan.x)
-            abs_y = abs(mandel_.pan.y)
+            abs_pan_x = abs(mandel_.pan.x)
+            abs_pan_y = abs(mandel_.pan.y)
             pixel_count = \
-                abs_x * (mandel_.shape.y - abs_y) + \
-                abs_y * (mandel_.shape.x - abs_x) + \
-                abs_x * abs_y
+                abs_pan_x * (mandel_.shape.y - abs_pan_y) + \
+                abs_pan_y * (mandel_.shape.x - abs_pan_x) + \
+                abs_pan_x * abs_pan_y
         return pixel_count

@@ -100,7 +100,7 @@ class StatusBar:
 
     def display_progress(self, progress: float):
         progress_int_percentage = round(100*progress)
-        print(f"{progress_int_percentage}%")
+        # print(f"{progress_int_percentage}%")
         self._q_progress_bar.setValue(progress_int_percentage)
         self._q_right_label.setVisible(False)
         self._q_progress_bar.setVisible(True)
