@@ -1,6 +1,12 @@
 from typing import Optional
 
-import cupy as cp
+# import cupy as cp
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
+except AttributeError:
+    cp = None
 
 
 class Gpu:
@@ -8,10 +14,13 @@ class Gpu:
         self._has_cuda: Optional[bool] = None
         self._devices: Optional[int] = None
 
-        try:
-            self._devices = cp.cuda.runtime.getDeviceCount()
-        except cp.cuda.runtime.CUDARuntimeError:
+        if cp is None:
             self._devices = 0
+        else:
+            try:
+                self._devices = cp.cuda.runtime.getDeviceCount()
+            except cp.cuda.runtime.CUDARuntimeError:
+                self._devices = 0
 
         self._has_cuda = self._devices > 0
 

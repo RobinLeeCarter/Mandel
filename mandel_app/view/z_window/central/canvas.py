@@ -13,7 +13,7 @@ from mandel_app.view.z_window.central import snake
 
 
 class Canvas:
-    def __init__(self, image_shape: tuples.ImageShape):
+    def __init__(self):
         # was in learnpyqt tutorial and probably no harm but doesn't seem to do anything
         matplotlib.use('Qt5Agg')
 
@@ -23,10 +23,10 @@ class Canvas:
         self._figure_canvas: backend_qt5agg.FigureCanvasQTAgg = backend_qt5agg.FigureCanvasQTAgg(self._fig)
         self._snake: snake.Snake = snake.Snake(fig=self._fig, ax=self._ax)
         self._z_model: Optional[z_model.ZModel] = None
-        self._image_shape: tuples.ImageShape = image_shape
-        self.build()
+        self._image_shape: Optional[tuples.ImageShape] = None
 
-    def build(self):
+    def build(self, image_shape: tuples.ImageShape):
+        self._image_shape = image_shape
         self._set_margins()
         self._set_limits()
 

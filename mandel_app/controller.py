@@ -20,6 +20,7 @@ class Controller:
         # thread state is needed by the application._gpu object to optimally determine if the gpu is available
         app.set_thread_state(self._model.calc_thread_state)
         self._model.calc_new_mandel(save_history=True)
+        # print("controller build end")
     # endregion
 
     # region Requests from View
@@ -88,9 +89,11 @@ class Controller:
 
     # region Notifications from Model
     def progress_update(self, progress: float):
+        # print("progress_update")
         self._view.display_progress(progress)
 
     def stop_success(self):
+        # print("stop_success")
         self._view.stop_success()
 
     def new_is_ready(self, save_history: bool = False):

@@ -68,9 +68,9 @@ class ComputeCpu(compute_xpu.ComputeXpu):
         # print(self._z[100])
 
         # approximation to the work done
-        # return self._request_size * self.iterations_per_kernel
+        return self._request_size * self.iterations_per_kernel
         # full calculation code:
-        new_total_iterations = np.sum(self._iteration)
-        iterations_done = new_total_iterations - self._prev_total_iterations
-        self._prev_total_iterations = new_total_iterations
-        return iterations_done
+        # new_total_iterations = np.sum(self._iteration)
+        # iterations_done = new_total_iterations - self._prev_total_iterations
+        # self._prev_total_iterations = new_total_iterations
+        # return iterations_done

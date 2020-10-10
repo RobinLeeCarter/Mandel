@@ -42,11 +42,7 @@ class MandelJob(thread.Job):
     def _exec(self) -> Generator[float, None, None]:
         pixel_count: int = 0    # just to make warning go away
 
-        if self.progress_estimator:
-            pixel_count = self.get_pixel_count(self._new_mandel)  # , self._pan)
-            expected_work = pixel_count * self._new_mandel.expected_iterations_per_pixel
-            self.progress_estimator.set_expected_work(expected_work)
-
+        # set up arrays and do any copy-over from previous results that's possible
         yield 0.0
         if self.progress_estimator:
             self.progress_estimator.set_progress_range(0.05)
@@ -64,8 +60,17 @@ class MandelJob(thread.Job):
             self._prev_mandel,
             self._offset
         )
-
         yield 1.0
+
+        # find expected work after any copy-over (e.g. from panning)
+        if self.progress_estimator:
+            pixel_count = server_.incomplete_count
+            # pixel_count = self.get_pixel_count(self._new_mandel)  # , self._pan)
+            expected_work = pixel_count * self._new_mandel.expected_iterations_per_pixel
+            # print(f"pixel_count: {pixel_count}")
+            # print(f"expected_it_per_pixel:\t{self._new_mandel.expected_iterations_per_pixel}")
+            # print(f"expected_iterations:\t{expected_work}")
+            self.progress_estimator.set_expected_work(expected_work)
 
         # run the algorithm
 
@@ -91,24 +96,14 @@ class MandelJob(thread.Job):
         # set mandel statistics
         if self.progress_estimator:
             self._new_mandel.iterations_performed = int(self.progress_estimator.cumulative_work)
-            self._new_mandel.iterations_per_pixel = float(self._new_mandel.iterations_performed) / float(pixel_count)
+            if self._new_mandel.iterations_performed == 0 or pixel_count == 0:
+                self._new_mandel.iterations_per_pixel = self._new_mandel.expected_iterations_per_pixel
+            else:
+                self._new_mandel.iterations_per_pixel = float(self._new_mandel.iterations_performed) /\
+                                                        float(pixel_count)
+            # print(f"iterations_performed:\t{self._new_mandel.iterations_performed}")
+            # print(f"iterations_per_pixel:\t{self._new_mandel.iterations_per_pixel}")
 
         # print("self._compute_manager.final_iteration=", self._compute_manager.final_iteration)
         if not self._new_mandel.has_border:
             self._new_mandel.final_iteration = self._compute_manager.final_iteration
-
-    def get_pixel_count(self,
-                        mandel_: mandel.Mandel
-                        # pan: Optional[tuples.PixelPoint]
-                        ) -> int:
-        pixel_count: int
-        if mandel_.pan is None:
-            pixel_count = mandel_.shape.x * mandel_.shape.y
-        else:
-            abs_x = abs(mandel_.pan.x)
-            abs_y = abs(mandel_.pan.y)
-            pixel_count = \
-                abs_x * (mandel_.shape.y - abs_y) + \
-                abs_y * (mandel_.shape.x - abs_x) + \
-                abs_x * abs_y
-        return pixel_count
