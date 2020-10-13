@@ -86,13 +86,20 @@ class Server:
         complex_grid: np.ndarray = m.centre + x*m.x_unit + y*m.y_unit
 
         if self._compute_manager.has_cuda:
+            complex_grid_gpu = cp.asarray(complex_grid)
             if m.mandel_julia == "mandel":
-                self.pixels.c = cp.asarray(complex_grid)
-                self.pixels.z = cp.copy(self.pixels.c)
+                self.pixels.c = complex_grid_gpu
+                self.pixels.z = cp.copy(complex_grid_gpu)
+            elif m.mandel_julia == "julia":
+                self.pixels.c[:] = m.c
+                self.pixels.z = complex_grid_gpu
         else:
             if m.mandel_julia == "mandel":
                 self.pixels.c = complex_grid
                 self.pixels.z = np.copy(self.pixels.c)
+            elif m.mandel_julia == "julia":
+                self.pixels.c[:] = m.c
+                self.pixels.z = complex_grid
 
     def _copy_over_prev(self):
         new = self._new_mandel.shape
@@ -237,6 +244,7 @@ class Server:
         if not self.pixels.has_new_requests:
             return
         # use 1D arrays of new values to compute
+
         result_flat = yield from self._compute_manager.compute_flat_array(
             self.pixels.new_requests_c,
             self.pixels.new_requests_z,
