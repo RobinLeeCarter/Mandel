@@ -64,7 +64,7 @@ class MandelJob(thread.Job):
 
         # find expected work after any copy-over (e.g. from panning)
         if self.progress_estimator:
-            pixel_count = server_.incomplete_count
+            pixel_count = server_.pixels.incomplete_count
             # pixel_count = self.get_pixel_count(self._new_mandel)  # , self._pan)
             expected_work = pixel_count * self._new_mandel.expected_iterations_per_pixel
             # print(f"pixel_count: {pixel_count}")

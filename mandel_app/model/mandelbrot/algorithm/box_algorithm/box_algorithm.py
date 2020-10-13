@@ -58,7 +58,7 @@ class BoxAlgorithm:
                 box_.call_method_at_depth(request_edge_compute, depth)
                 self.server.serve()
                 box_.call_method_at_depth(check_if_can_fill, depth)
-                complete = self.server.complete
+                complete = self.server.pixels.complete
                 if complete:
                     break
                 if depth != max_depth:
@@ -75,4 +75,4 @@ class BoxAlgorithm:
         # if self.server.complete:
         #     print("complete")
 
-        return self.server.iteration_cpu
+        return self.server.pixels.iteration_cpu

@@ -14,7 +14,7 @@ except AttributeError:
 from mandel_app import tuples
 
 from mandel_app.model.mandelbrot import mandel, compute
-from mandel_app.model.mandelbrot.server import request, pixels
+from mandel_app.model.mandelbrot.server import request
 
 if cp is None:
     xp_ndarray = np.ndarray
@@ -47,34 +47,32 @@ class Server:
         #     self._mandel.pan_centre()
 
         shape = (self._new_mandel.shape.y, self._new_mandel.shape.x)
-        self.pixels: pixels.Pixels = pixels.Pixels(shape=shape, has_cuda=self._compute_manager.has_cuda)
 
-        # self._iteration: xp_ndarray
-        # self._completed: xp_ndarray
-        # self._requested: xp_ndarray
-        # self._c: xp_ndarray
-        # if self._compute_manager.has_cuda:
-        #     self._iteration = cp.zeros(shape=shape, dtype=cp.int32)
-        #     self._completed = cp.zeros(shape=shape, dtype=cp.bool)
-        #     self._requested = cp.zeros(shape=shape, dtype=cp.bool)
-        #     self._c = cp.zeros(shape=shape, dtype=cp.float64)
-        # else:
-        #     self._iteration = np.zeros(shape=shape, dtype=np.int32)
-        #     self._completed = np.zeros(shape=shape, dtype=np.bool)
-        #     self._requested = np.zeros(shape=shape, dtype=np.bool)
-        #     self._c = np.zeros(shape=shape, dtype=np.float64)
+        self._iteration: xp_ndarray
+        self._completed: xp_ndarray
+        self._requested: xp_ndarray
+        self._c: xp_ndarray
+        if self._compute_manager.has_cuda:
+            self._iteration = cp.zeros(shape=shape, dtype=cp.int32)
+            self._completed = cp.zeros(shape=shape, dtype=cp.bool)
+            self._requested = cp.zeros(shape=shape, dtype=cp.bool)
+            self._c = cp.zeros(shape=shape, dtype=cp.float64)
+        else:
+            self._iteration = np.zeros(shape=shape, dtype=np.int32)
+            self._completed = np.zeros(shape=shape, dtype=np.bool)
+            self._requested = np.zeros(shape=shape, dtype=np.bool)
+            self._c = np.zeros(shape=shape, dtype=np.float64)
 
         self._requests: List[request.Request] = []
 
         self._box_fills: bool = False
-        # self._box_iter_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.int32)
-        # self._box_fill_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.bool)
+        self._box_iter_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.int32)
+        self._box_fill_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.bool)
 
         self._build()
 
     def _build(self):
-        self.pixels.c = self._generate_c()
-        # self._c = self._generate_c()
+        self._c = self._generate_c()
 
         if self._prev_mandel is not None and self._offset is not None:
             self._copy_over_prev()
@@ -166,47 +164,47 @@ class Server:
             else:
                 prev_iteration = self._prev_mandel.iteration
 
-            self.pixels.iteration[new_slice_y, new_slice_x] = prev_iteration[prev_slice_y, prev_slice_x]
-            self.pixels.completed[new_slice_y, new_slice_x] = True
+            self._iteration[new_slice_y, new_slice_x] = prev_iteration[prev_slice_y, prev_slice_x]
+            self._completed[new_slice_y, new_slice_x] = True
     # endregion
 
     @property
     def shape(self) -> tuples.ImageShape:
         return self._new_mandel.shape
 
-    # @property
-    # def complete(self) -> bool:
-    #     return self.pixels.completed.all()
+    @property
+    def complete(self) -> bool:
+        return self._completed.all()
 
-    # @property
-    # def incomplete_count(self) -> int:
-    #     if self._compute_manager.has_cuda:
-    #         xp = cp.get_array_module(self.pixels.requested)
-    #     else:
-    #         xp = np
-    #     return int(xp.count_nonzero(~self.pixels.completed))
+    @property
+    def incomplete_count(self) -> int:
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(self._requested)
+        else:
+            xp = np
+        return int(xp.count_nonzero(~self._completed))
 
-    # @property
-    # def new_request_count(self) -> int:
-    #     if self._compute_manager.has_cuda:
-    #         xp = cp.get_array_module(self.pixels.requested)
-    #     else:
-    #         xp = np
-    #     return int(xp.count_nonzero(self.pixels.requested & ~self.pixels.completed))
+    @property
+    def new_request_count(self) -> int:
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(self._requested)
+        else:
+            xp = np
+        return int(xp.count_nonzero(self._requested & ~self._completed))
 
-    # @property
-    # def iteration_cpu(self) -> np.ndarray:
-    #     if self._compute_manager.has_cuda:
-    #         return cp.asnumpy(self.pixels.iteration)
-    #     else:
-    #         return self.pixels.iteration
+    @property
+    def iteration_cpu(self) -> np.ndarray:
+        if self._compute_manager.has_cuda:
+            return cp.asnumpy(self._iteration)
+        else:
+            return self._iteration
 
-    # @property
-    # def c_cpu(self) -> np.ndarray:
-    #     if self._compute_manager.has_cuda:
-    #         return cp.asnumpy(self.pixels.c)
-    #     else:
-    #         return self.pixels.c
+    @property
+    def c_cpu(self) -> np.ndarray:
+        if self._compute_manager.has_cuda:
+            return cp.asnumpy(self._c)
+        else:
+            return self._iteration
 
     # TODO: implement for flatten
     def compute_flat_array(self, gpu_c_flat: cp.ndarray) -> cp.ndarray:
@@ -222,17 +220,17 @@ class Server:
     ):
         request_ = request.Request(bottom_left, top_right, same_value, completed)
         self._requests.append(request_)
-        self.pixels.requested[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = True
+        self._requested[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = True
 
     def grid_lines_request(
             self,
             step: int
     ):
-        self.pixels.requested[:, ::step] = True
-        self.pixels.requested[::step, :] = True
+        self._requested[:, ::step] = True
+        self._requested[::step, :] = True
 
     def request_incomplete(self):
-        self.pixels.requested = ~self.pixels.completed
+        self._requested = ~self._completed
 
     def fill_box_request(
             self,
@@ -243,8 +241,8 @@ class Server:
     ):
         # avoid device switching
         # self._box_iter_cpu[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = 10
-        self.pixels.box_iter_cpu[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = value
-        self.pixels.box_fill_cpu[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = True
+        self._box_iter_cpu[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = value
+        self._box_fill_cpu[bottom_left.y: top_right.y + 1, bottom_left.x: top_right.x + 1] = True
         self._box_fills = True
         if completed is not None:
             completed()
@@ -258,34 +256,31 @@ class Server:
 
     def _do_box_fills(self):
         if self._compute_manager.has_cuda:
-            box_fill_gpu = cp.asarray(self.pixels.box_fill_cpu)
-            box_iter_gpu = cp.asarray(self.pixels.box_iter_cpu)
+            box_fill_gpu = cp.asarray(self._box_fill_cpu)
+            box_iter_gpu = cp.asarray(self._box_iter_cpu)
 
-            self.pixels.completed[box_fill_gpu] = True
-            self.pixels.iteration[box_fill_gpu] = box_iter_gpu[box_fill_gpu]
+            self._completed[box_fill_gpu] = True
+            self._iteration[box_fill_gpu] = box_iter_gpu[box_fill_gpu]
         else:
-            self.pixels.completed[self.pixels.box_fill_cpu] = True
-            self.pixels.iteration[self.pixels.box_fill_cpu] = self.pixels.box_iter_cpu[self.pixels.box_fill_cpu]
+            self._completed[self._box_fill_cpu] = True
+            self._iteration[self._box_fill_cpu] = self._box_iter_cpu[self._box_fill_cpu]
 
     def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
-        # new_requests = self.pixels.requested & ~self.pixels.completed  # ~ is logical_not
-        self.pixels.update_new_requests()
-        # new_requests = self.pixels.new_requests
-        # if self._compute_manager.has_cuda:
-        #     xp = cp.get_array_module(new_requests)
-        # else:
-        #     xp = np
-        # request_count = xp.count_nonzero(new_requests)
-        if self.pixels.new_request_count == 0:
+        new_requests = self._requested & ~self._completed  # ~ is logical_not
+        if self._compute_manager.has_cuda:
+            xp = cp.get_array_module(new_requests)
+        else:
+            xp = np
+        request_count = xp.count_nonzero(new_requests)
+        if request_count == 0:
             return
         # print(f"\n# requests = \t{request_count}")
         # create 1D array of new c values to compute
-        # new_requests = self.pixels.new_requests
-        # to_compute_flat = self.pixels.c[new_requests]
+        to_compute_flat = self._c[new_requests]
         # get the result as a flat array
         result_flat = yield from self._compute_manager.compute_flat_array(
-            self.pixels.new_requests_c,
+            to_compute_flat,
             self._early_stopping_iteration
         )
         # early_stop_iteration = self._compute_manager.early_stop_iteration
@@ -294,17 +289,16 @@ class Server:
 
         # print(f"result_flat_max = {cp.amax(result_flat)}")
         # mark all the new_requests as completed (so don't compute again)
-        self.pixels.completed[self.pixels.new_requests] = True
+        self._completed[new_requests] = True
         # populate 2D iteration array with the results
-        self.pixels.iteration[self.pixels.new_requests] = result_flat
+        self._iteration[new_requests] = result_flat
 
     def _respond_to_requests(self):
         for request_ in self._requests:
-            request_.respond(self.pixels.iteration)
+            request_.respond(self._iteration)
 
     def _reset(self):
-        self.pixels.requested.fill(False)
+        self._requested.fill(False)
         self._requests.clear()
-        self.pixels.box_iter_cpu.fill(0)
-        self.pixels.box_fill_cpu.fill(False)
-        self._box_fills = False
+        self._box_iter_cpu.fill(0)
+        self._box_fill_cpu.fill(False)

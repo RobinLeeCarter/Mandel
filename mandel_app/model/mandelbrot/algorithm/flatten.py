@@ -18,7 +18,7 @@ class Flatten:
 
     def __init__(self, server_: server.Server):
         self.server: server.Server = server_
-        self._cpu_c: np.ndarray = self.server.c_cpu
+        self._cpu_c: np.ndarray = self.server.pixels.c_cpu
         self._timer: utils.Timer = utils.Timer()
 
     # simplest algorithm: just flatten the array, move it to the gpu and process all of it

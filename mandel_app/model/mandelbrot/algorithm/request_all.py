@@ -18,4 +18,4 @@ class RequestAll:
         top_right = tuples.PixelPoint(x=self.shape.x, y=self.shape.y)
         self.server.box_request(bottom_left, top_right)
         self.server.serve()
-        return self.server.iteration_cpu
+        return self.server.pixels.iteration_cpu

@@ -50,7 +50,7 @@ class Mesh:
         yield from self.server.serve()
         # self._timer.lap("serve    \t")
 
-        self.iteration = self.server.iteration_cpu
+        self.iteration = self.server.pixels.iteration_cpu
         # self._timer.lap("retrieve \t")
         self._verticals()
         self._horizontals()
@@ -66,7 +66,7 @@ class Mesh:
         # self._timer.lap("request  \t")
         yield from self.server.serve()
         # self._timer.lap("serve    \t")
-        self.iteration = self.server.iteration_cpu
+        self.iteration = self.server.pixels.iteration_cpu
         # self._timer.lap("retrieve \t")
         # self._timer.stop()
 
