@@ -73,28 +73,26 @@ class Server:
         self._build()
 
     def _build(self):
-        self.pixels.c = self._generate_c()
-        # self._c = self._generate_c()
+        self._initialize_c_and_z()
 
         if self._prev_mandel is not None and self._offset is not None:
             self._copy_over_prev()
-        # if self._new_mandel.pan is not None:
-        #     self._copy_over_pan()
-        # self._new_mandel.pan = None
-        #
-        # if self._new_mandel.has_border:
-        #     self._copy_over_center()
 
-    def _generate_c(self) -> xp_ndarray:
+    def _initialize_c_and_z(self):
         """Found to be faster using numpy, ogrid presumably not possible to parallelize."""
         m = self._new_mandel
         y, x = np.ogrid[-m.y_size/2.0: m.y_size/2.0: m.shape.y * 1j,
                         -m.x_size/2.0: m.x_size/2.0: m.shape.x * 1j]
-        c = m.centre + x*m.x_unit + y*m.y_unit
+        complex_grid: np.ndarray = m.centre + x*m.x_unit + y*m.y_unit
+
         if self._compute_manager.has_cuda:
-            return cp.asarray(c)
+            if m.mandel_julia == "mandel":
+                self.pixels.c = cp.asarray(complex_grid)
+                self.pixels.z = cp.copy(self.pixels.c)
         else:
-            return c
+            if m.mandel_julia == "mandel":
+                self.pixels.c = complex_grid
+                self.pixels.z = np.copy(self.pixels.c)
 
     def _copy_over_prev(self):
         new = self._new_mandel.shape
@@ -174,40 +172,6 @@ class Server:
     def shape(self) -> tuples.ImageShape:
         return self._new_mandel.shape
 
-    # @property
-    # def complete(self) -> bool:
-    #     return self.pixels.completed.all()
-
-    # @property
-    # def incomplete_count(self) -> int:
-    #     if self._compute_manager.has_cuda:
-    #         xp = cp.get_array_module(self.pixels.requested)
-    #     else:
-    #         xp = np
-    #     return int(xp.count_nonzero(~self.pixels.completed))
-
-    # @property
-    # def new_request_count(self) -> int:
-    #     if self._compute_manager.has_cuda:
-    #         xp = cp.get_array_module(self.pixels.requested)
-    #     else:
-    #         xp = np
-    #     return int(xp.count_nonzero(self.pixels.requested & ~self.pixels.completed))
-
-    # @property
-    # def iteration_cpu(self) -> np.ndarray:
-    #     if self._compute_manager.has_cuda:
-    #         return cp.asnumpy(self.pixels.iteration)
-    #     else:
-    #         return self.pixels.iteration
-
-    # @property
-    # def c_cpu(self) -> np.ndarray:
-    #     if self._compute_manager.has_cuda:
-    #         return cp.asnumpy(self.pixels.c)
-    #     else:
-    #         return self.pixels.c
-
     # TODO: implement for flatten
     def compute_flat_array(self, gpu_c_flat: cp.ndarray) -> cp.ndarray:
         raise NotImplementedError
@@ -269,23 +233,13 @@ class Server:
 
     def _compute_new_requests(self) -> Generator[float, None, None]:
         # find new requests (2D)
-        # new_requests = self.pixels.requested & ~self.pixels.completed  # ~ is logical_not
         self.pixels.update_new_requests()
-        # new_requests = self.pixels.new_requests
-        # if self._compute_manager.has_cuda:
-        #     xp = cp.get_array_module(new_requests)
-        # else:
-        #     xp = np
-        # request_count = xp.count_nonzero(new_requests)
         if not self.pixels.has_new_requests:
             return
-        # print(f"\n# requests = \t{request_count}")
-        # create 1D array of new c values to compute
-        # new_requests = self.pixels.new_requests
-        # to_compute_flat = self.pixels.c[new_requests]
-        # get the result as a flat array
+        # use 1D arrays of new values to compute
         result_flat = yield from self._compute_manager.compute_flat_array(
             self.pixels.new_requests_c,
+            self.pixels.new_requests_z,
             self._early_stopping_iteration
         )
         # early_stop_iteration = self._compute_manager.early_stop_iteration

@@ -35,18 +35,21 @@ class Pixels:
         self.completed: xp_ndarray
         self.requested: xp_ndarray
         self.c: xp_ndarray
+        self.z: xp_ndarray
         if has_cuda:
             self.iteration = cp.zeros(shape=shape, dtype=cp.int32)
             self.completed = cp.zeros(shape=shape, dtype=cp.bool)
             self.requested = cp.zeros(shape=shape, dtype=cp.bool)
             self.new_requests = cp.zeros(shape=shape, dtype=cp.bool)
             self.c = cp.zeros(shape=shape, dtype=cp.float64)
+            self.z = cp.zeros(shape=shape, dtype=cp.float64)
         else:
             self.iteration = np.zeros(shape=shape, dtype=np.int32)
             self.completed = np.zeros(shape=shape, dtype=np.bool)
             self.requested = np.zeros(shape=shape, dtype=np.bool)
             self.new_requests = np.zeros(shape=shape, dtype=np.bool)
             self.c = np.zeros(shape=shape, dtype=np.float64)
+            self.z = np.zeros(shape=shape, dtype=np.float64)
 
         self.box_iter_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.int32)
         self.box_fill_cpu: np.ndarray = np.zeros(shape=shape, dtype=np.bool)
@@ -100,6 +103,10 @@ class Pixels:
     #         return int(np.count_nonzero(self.new_requests))
 
     @property
-    def new_requests_c(self) -> np.ndarray:
+    def new_requests_c(self) -> xp_ndarray:
         return self.c[self.new_requests]
+
+    @property
+    def new_requests_z(self) -> xp_ndarray:
+        return self.z[self.new_requests]
     # endregion

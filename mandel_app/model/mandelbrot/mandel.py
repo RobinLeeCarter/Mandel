@@ -19,6 +19,7 @@ class Mandel:
     theta_degrees: int = 0
     expected_iterations_per_pixel: float = 0.0
     has_border: bool = False
+    mandel_julia: str = "mandel"
 
     def __post_init__(self):
         # self.original_shape: tuples.ImageShape = self.shape
