@@ -1,20 +1,14 @@
 from __future__ import annotations
 
-from typing import Optional, Callable, List, Generator, Union
+from typing import Union
 
 import numpy as np
-# import cupy as cp
 try:
     import cupy as cp
 except ImportError:
     cp = None
 except AttributeError:
     cp = None
-
-from mandel_app import tuples
-
-from mandel_app.model.mandelbrot import mandel, compute
-from mandel_app.model.mandelbrot.server import request
 
 if cp is None:
     xp_ndarray = np.ndarray
@@ -90,11 +84,20 @@ class Pixels:
         self.new_requests = self.requested & ~self.completed
 
     @property
-    def new_request_count(self) -> int:
+    def has_new_requests(self) -> bool:
         if self._has_cuda:
-            return int(cp.count_nonzero(self.new_requests))
+            # TODO: Test if this works: should do
+            return bool(cp.any(self.new_requests))
+            # return int(cp.count_nonzero(self.new_requests))
         else:
-            return int(np.count_nonzero(self.new_requests))
+            return np.any(self.new_requests)
+
+    # @property
+    # def new_request_count(self) -> int:
+    #     if self._has_cuda:
+    #         return int(cp.count_nonzero(self.new_requests))
+    #     else:
+    #         return int(np.count_nonzero(self.new_requests))
 
     @property
     def new_requests_c(self) -> np.ndarray:

@@ -277,7 +277,7 @@ class Server:
         # else:
         #     xp = np
         # request_count = xp.count_nonzero(new_requests)
-        if self.pixels.new_request_count == 0:
+        if not self.pixels.has_new_requests:
             return
         # print(f"\n# requests = \t{request_count}")
         # create 1D array of new c values to compute
