@@ -15,10 +15,10 @@ class Central:
         self._q_main = QtWidgets.QWidget()
         self._q_main_layout = QtWidgets.QVBoxLayout(self._q_main)
         self.canvas: canvas.Canvas = canvas.Canvas()
-        self.image_shape: Optional[tuples.ImageShape] = None
+        self.frame_shape: Optional[tuples.ImageShape] = None
 
     def build(self, image_shape: tuples.ImageShape):
-        self.image_shape = image_shape
+        self.frame_shape = image_shape
         # make connections between common
         self._q_main_window.setCentralWidget(self._q_scroll_area)
         self._q_scroll_area.setWidget(self._q_main)
@@ -36,7 +36,7 @@ class Central:
         # self.q_main_layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.BottomToTop, self.q_main)
         self._q_main_layout.setSpacing(0)
         self._q_main_layout.setContentsMargins(0, 0, 0, 0)
-        self.canvas.build(self.image_shape)
+        self.canvas.build(self.frame_shape)
 
         # self.q_main_layout.setAlignment(Qt.AlignBottom)
         # self.q_layout.setAlignment(self.canvas.mandel_canvas, QtCore.Qt.AlignCenter)
@@ -50,14 +50,14 @@ class Central:
     def show_graph(self, z_model_: z_model.ZModel):
         self.canvas.draw_graph(z_model_)
         self._q_main.setVisible(True)
-        self._q_main.resize(self.image_shape.x, self.image_shape.y)  # changed
+        self._q_main.resize(self.frame_shape.x, self.frame_shape.y)  # changed
         self._q_main_layout.update()
 
     def hide_graph(self):
         self.canvas.clear_graph()
 
     def refresh_image_space(self):
-        self.image_shape = self._determine_image_space()
+        self.frame_shape = self._determine_image_space()
 
     def _determine_image_space(self) -> tuples.ImageShape:
         # self.q_scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)

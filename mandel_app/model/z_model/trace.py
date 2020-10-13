@@ -6,12 +6,14 @@ MAX_ITERATIONS = 10000
 
 class Trace:
     def __init__(self):
-        self.z0: Optional[complex] = None
+        self.c: complex = 0.0
+        self.z0: complex = 0.0
         self.x_values: List[float] = []
         self.y_values: List[float] = []
         self.z_values: List[complex] = []
 
-    def build(self, z0: complex) -> Trace:
+    def build(self, c: complex, z0: complex) -> Trace:
+        self.c = c
         self.z0 = z0
         self._generate_z_values()
         self._convert_to_x_y_arrays()
@@ -26,7 +28,7 @@ class Trace:
         cont: bool = (z_squared_norm < 4)
 
         while cont:
-            z = z**2 + self.z0
+            z = z**2 + self.c
             if z in self.z_values:
                 cont = False
             self.z_values.append(z)

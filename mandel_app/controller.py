@@ -14,7 +14,7 @@ class Controller:
 
     def build(self):
         self._view.build()
-        self._model.build(self._view.frame_shape)
+        self._model.build(self._view.frame_shape, self._view.z_frame_shape)
         app = application.Application.instance()
         self._has_cuda = app.has_cuda
         # thread state is needed by the application._gpu object to optimally determine if the gpu is available
@@ -74,12 +74,13 @@ class Controller:
 
     def perform_z_trace(self, z0: complex):
         self._view.show_z0_marker(z0)
-        self._model.z_model.build(z0=z0)
+        self._model.build_z_model(z0)
+        # self._model.z_model.build(z0=z0)
         self._view.show_z_graph(self._model.z_model)
 
-    def redraw_z_trace(self, image_shape: tuples.ImageShape):
+    def redraw_z_trace(self, frame_shape: tuples.ImageShape):
         self._view.hide_z_graph()
-        self._model.z_model.build(image_shape=image_shape)
+        self._model.z_model.resize(frame_shape=frame_shape)
         self._view.show_z_graph(self._model.z_model)
 
     def hide_z_trace(self):

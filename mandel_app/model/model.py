@@ -26,7 +26,7 @@ class Model:
     def set_controller(self, controller_: controller.Controller):
         self._controller = controller_
 
-    def build(self, frame_shape: tuples.ImageShape):
+    def build(self, frame_shape: tuples.ImageShape, z_frame_shape: tuples.ImageShape):
         self._frame_shape = frame_shape
         self.displayed_mandel = self._initial_mandel()
         # self.displayed_mandel = self._sticky_mandel()
@@ -40,12 +40,24 @@ class Model:
             on_stop_success=self._on_stop_success,
             on_job_complete=self._on_job_complete
         )
-        self.z_model = z_model.ZModel()
-        # self.z_model.build(z0=complex(real=0.24091, imag=0.55),
-        self.z_model.build(z0=self.displayed_mandel.centre,
-                           image_shape=tuples.ImageShape(x=700, y=700))
+        self.z_model = z_model.ZModel(z_frame_shape)
+        self.build_z_model(self.displayed_mandel.centre)
+        # mandel_julia = self.displayed_mandel.mandel_julia
+        # if mandel_julia == "mandel":
+        #     self.z_model.build(c=self.displayed_mandel.centre,
+        #                        z0=self.displayed_mandel.centre)
+        # elif mandel_julia == "julia":
+        #     self.z_model.build(c=self.displayed_mandel.c,
+        #                        z0=self.displayed_mandel.centre)
 
         self._calc_thread_manager.start_thread()
+
+    def build_z_model(self, z0: complex):
+        mandel_julia = self.displayed_mandel.mandel_julia
+        if mandel_julia == "mandel":
+            self.z_model.build(c=z0, z0=z0)
+        elif mandel_julia == "julia":
+            self.z_model.build(c=self.displayed_mandel.c, z0=z0)
 
     # @property
     # def calc_thread_active(self) -> bool:

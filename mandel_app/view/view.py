@@ -70,6 +70,10 @@ class View:
         return self._window.central.frame_shape
 
     @property
+    def z_frame_shape(self) -> Optional[tuples.ImageShape]:
+        return self._z_window.central.frame_shape
+
+    @property
     def center_frame_point(self) -> Optional[tuples.ImageShape]:
         frame_shape = self.frame_shape
         if frame_shape is None:
@@ -284,7 +288,7 @@ class View:
     def _on_z_resized(self):
         z_central = self._z_window.central
         z_central.refresh_image_space()
-        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.image_shape)
+        image_shape: tuples.ImageShape = z_central.canvas.on_resized(z_central.frame_shape)
         self._controller.redraw_z_trace(image_shape)
 
     def _on_close(self):

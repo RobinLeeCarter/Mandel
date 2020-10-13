@@ -23,15 +23,15 @@ class Canvas:
         self._figure_canvas: backend_qt5agg.FigureCanvasQTAgg = backend_qt5agg.FigureCanvasQTAgg(self._fig)
         self._snake: snake.Snake = snake.Snake(fig=self._fig, ax=self._ax)
         self._z_model: Optional[z_model.ZModel] = None
-        self._image_shape: Optional[tuples.ImageShape] = None
+        self._frame_shape: Optional[tuples.ImageShape] = None
 
-    def build(self, image_shape: tuples.ImageShape):
-        self._image_shape = image_shape
+    def build(self, frame_shape: tuples.ImageShape):
+        self._frame_shape = frame_shape
         self._set_margins()
         self._set_limits()
 
     def _set_margins(self):
-        width_px, height_px = self._image_shape
+        width_px, height_px = self._frame_shape
         left_px, right_px = 40, 10
         bottom_px, top_px = 32, 10
         left_pc = left_px / width_px
@@ -69,7 +69,7 @@ class Canvas:
         self._set_margins()
         self._set_limits()  # reset limits because sometimes matplotlib gets confused
         self._draw_background()
-        if self._image_shape.x >= 400 and self._image_shape.y >= 400:   # only draw if large enough
+        if self._frame_shape.x >= 400 and self._frame_shape.y >= 400:   # only draw if large enough
             self._draw_legend()
         counter = self._draw_counter()
         self._snake.draw_snake(trace_=z_model_.trace, counter=counter)
@@ -77,7 +77,7 @@ class Canvas:
 
     def clear_graph(self):
         self._snake.stop_snake()
-        self._figure_canvas.resize(self._image_shape.x, self._image_shape.y)
+        self._figure_canvas.resize(self._frame_shape.x, self._frame_shape.y)
         self._ax.clear()
 
     def _draw_background(self):
@@ -148,5 +148,5 @@ class Canvas:
     def on_resized(self, new_image_shape: tuples.ImageShape) -> tuples.ImageShape:
         self.clear_graph()
         min_length = min(new_image_shape.x, new_image_shape.y)
-        self._image_shape = tuples.PixelPoint(x=min_length, y=min_length)
-        return self._image_shape
+        self._frame_shape = tuples.PixelPoint(x=min_length, y=min_length)
+        return self._frame_shape

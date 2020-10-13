@@ -8,32 +8,30 @@ from mandel_app import tuples
 
 class Field:
     def __init__(self):
-        self.z0: Optional[complex] = None
+        self.c: complex = 0.0
+        self.z0: complex = 0.0
         self.solutions: Optional[List[complex]] = None
-        self.image_shape: Optional[tuples.ImageShape] = None
+        self.frame_shape: Optional[tuples.ImageShape] = None
 
     # noinspection PyAttributeOutsideInit
     def build(self,
-              z0: Optional[complex] = None,
-              solutions: Optional[List[complex]] = None,
-              image_shape: Optional[tuples.ImageShape] = None
+              c: complex,
+              z0: complex,
+              solutions: List[complex],
+              frame_shape: tuples.ImageShape
               ) -> Field:
-        if z0 is not None:
-            self.z0 = z0
-            self.solutions = solutions
-        if image_shape is not None:
-            self.image_shape = image_shape
-
-        if self.z0 is None or self.solutions is None or self.image_shape is None:
-            raise Exception("model.z_model.field.Field build requirements not met")
+        self.c = c
+        self.z0 = z0
+        self.solutions = solutions
+        self.frame_shape = frame_shape
 
         min_val = -2.0
         max_val = 2.0
 
-        y, x = np.ogrid[min_val: max_val: self.image_shape.y * 1j,
-                        min_val: max_val: self.image_shape.x * 1j]
+        y, x = np.ogrid[min_val: max_val: self.frame_shape.y * 1j,
+                        min_val: max_val: self.frame_shape.x * 1j]
         z = x + y*1j
-        z_next = z*z + self.z0
+        z_next = z*z + self.c
         diff = z_next - z
 
         self.x = np.real(z)
