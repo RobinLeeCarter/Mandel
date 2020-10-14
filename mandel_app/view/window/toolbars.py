@@ -20,7 +20,7 @@ class Toolbars:
         # self._add_actions(self.file_tool_bar, ["load", "save", "close"])
 
         self.view_tool_bar: QtWidgets.QToolBar = self._q_main_window.addToolBar("View")
-        self._add_actions(self.view_tool_bar, ["full_screen", "z_mode"])
+        self._add_actions(self.view_tool_bar, ["full_screen", "z_mode", "julia_mode"])
 
         self.dial: dial.Dial = dial.Dial(self._q_main_window, size=40)
         self.view_tool_bar.addWidget(self.dial.q_dial)

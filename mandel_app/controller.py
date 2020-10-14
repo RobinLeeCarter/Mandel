@@ -48,6 +48,9 @@ class Controller:
         modulated_theta = theta_degrees % 360
         self._model.rotate_and_calc(modulated_theta)
 
+    def julia_request(self):
+        self._model.switch_to_julia()
+
     def stop_request(self):
         self._model.request_stop()
         # self._model.revert_to_displayed_as_new()

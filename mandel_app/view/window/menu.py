@@ -15,7 +15,7 @@ class Menu:
         # self._add_actions(self.file_menu, ["load", "save", "close"])
 
         self._view_menu: QtWidgets.QMenu = self.q_menu_bar.addMenu("&View")
-        self._add_actions(self._view_menu, ["full_screen", "z_mode", "max_iterations"])
+        self._add_actions(self._view_menu, ["full_screen", "z_mode", "julia_mode", "max_iterations"])
 
     def _add_actions(self, menu_: QtWidgets.QMenu, action_names: List[str]):
         for action_name in action_names:

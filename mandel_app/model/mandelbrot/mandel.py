@@ -74,7 +74,9 @@ class Mandel:
                   size_per_gap: Optional[float] = None,
                   theta_degrees: Optional[int] = None,
                   expected_iterations_per_pixel: Optional[float] = None,
-                  has_border: Optional[bool] = None
+                  has_border: Optional[bool] = None,
+                  mandel_julia: Optional[str] = None,
+                  c: Optional[complex] = None
                   ) -> Mandel:
         centre = self._if_none(centre, self.centre)
         shape = self._if_none(shape, self.shape)
@@ -83,6 +85,8 @@ class Mandel:
         theta_degrees = self._if_none(theta_degrees, self.theta_degrees)
         expected_iterations_per_pixel = self._if_none(expected_iterations_per_pixel, self.expected_iterations_per_pixel)
         has_border = self._if_none(has_border, self.has_border)
+        mandel_julia = self._if_none(mandel_julia, self.mandel_julia)
+        c = self._if_none(c, self.c)
 
         return Mandel(
             centre=centre,
@@ -92,8 +96,8 @@ class Mandel:
             theta_degrees=theta_degrees,
             expected_iterations_per_pixel=expected_iterations_per_pixel,
             has_border=has_border,
-            mandel_julia=self.mandel_julia,
-            c=self.c
+            mandel_julia=mandel_julia,
+            c=c
         )
 
     # region Methods

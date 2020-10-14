@@ -23,10 +23,20 @@ class Actions(common.Actions):
             name="z_mode",
             icon_filename="pin.png",
             text="Z Trace",
-            status_tip="Trace the z values for a point",
+            status_tip="Trace the z values starting from the complex value selected",
             checkable=True
         )
         self._add_action(self.z_mode)
+
+        self.julia_mode: common.Action = common.Action(
+            q_main_window=self._q_main_window,
+            name="julia_mode",
+            icon_filename="julia.png",
+            text="Julia Mode",
+            status_tip="Explore the Julia set of the complex value selected",
+            checkable=True
+        )
+        self._add_action(self.julia_mode)
 
         self.max_iterations: common.Action = common.Action(
             q_main_window=self._q_main_window,

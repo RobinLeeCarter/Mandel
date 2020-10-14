@@ -110,7 +110,7 @@ class View:
         # enums.ImageAction.DRAWING prevents view acting on most events
         # QtWidgets.QApplication.processEvents()
         self._set_action(enums.ImageAction.NONE)
-        self._window.central.save_source("julia_icon.png")
+        # self._window.central.save_source("julia_icon.png")
         # self._timer.stop()
         # self._timer.start()
 
@@ -154,6 +154,7 @@ class View:
         self._connect_escape()
         self._connect_full_screen()
         self._connect_z_mode()
+        self._connect_julia_mode()
         self._connect_dial_rotate()
         self._connect_iteration_slider()
         self._connect_central_label()
@@ -170,6 +171,9 @@ class View:
 
     def _connect_z_mode(self):
         self._window.actions.z_mode.set_on_triggered(on_triggered=self._on_set_z_mode)
+
+    def _connect_julia_mode(self):
+        self._window.actions.julia_mode.set_on_triggered(on_triggered=self._on_set_julia_mode)
 
     def _connect_dial_rotate(self):
         self._window.toolbars.dial.set_on_rotating(on_rotating=self._on_rotating)
@@ -260,6 +264,18 @@ class View:
         self._view_state.is_z_mode = is_z_mode
         self._z_window.q_main_window.setVisible(is_z_mode)
         self._update_cursor()
+
+    def _on_set_julia_mode(self, is_julia_mode: bool):
+        if is_julia_mode:
+            # disable z_mode
+            self._window.actions.z_mode.q_action.setChecked(False)
+            # create julia set for selected point
+            self._controller.julia_request()
+        else:
+            # return to previous_mandlebrot
+            pass
+            # self._controller.hide_z_trace()
+        self._view_state.is_julia_mode = is_julia_mode
 
     def _on_active(self):
         # print("_on_main_active")

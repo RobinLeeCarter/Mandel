@@ -10,7 +10,8 @@ from mandel_app.view.window import central
 class State:
     def __init__(self):
         self._central: Optional[central.Central] = None
-        self.is_z_mode: bool = False  # Pan button on toolbar depressed
+        self.is_z_mode: bool = False        # Z-mode button on toolbar depressed
+        self.is_julia_mode: bool = False    # Julia-mode button on toolbar depressed
 
         self._action_in_progress: enums.ImageAction = enums.ImageAction.NONE
         self.pan_start: Optional[tuples.PixelPoint] = None
