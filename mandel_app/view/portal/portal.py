@@ -106,3 +106,6 @@ class Portal:
 
     def source_to_transformed_frame(self, source_point: tuples.PixelPoint):
         return self._frame.source_to_transformed_frame(source_point)
+
+    def save_source(self, filename: str):
+        self._canvas_source.save(filename)

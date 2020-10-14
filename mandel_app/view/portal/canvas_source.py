@@ -30,3 +30,6 @@ class CanvasSource(canvas_base.CanvasBase):
         self._buf: memoryview = self._figure_canvas.buffer_rgba()
         # print(self._buf)
         self._rgba_output = np.asarray(self._buf)
+
+    def save(self, filename: str):
+        self._fig.savefig(filename)

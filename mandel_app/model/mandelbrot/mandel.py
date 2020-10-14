@@ -19,8 +19,8 @@ class Mandel:
     theta_degrees: int = 0
     expected_iterations_per_pixel: float = 0.0
     has_border: bool = False
-    mandel_julia: str = "julia"
-    c: complex = -0.835-0.2321j
+    mandel_julia: str = "mandel"
+    c: complex = 0.0
 
     def __post_init__(self):
         # self.original_shape: tuples.ImageShape = self.shape
@@ -91,7 +91,9 @@ class Mandel:
             size_per_gap=size_per_gap,
             theta_degrees=theta_degrees,
             expected_iterations_per_pixel=expected_iterations_per_pixel,
-            has_border=has_border
+            has_border=has_border,
+            mandel_julia=self.mandel_julia,
+            c=self.c
         )
 
     # region Methods
@@ -99,7 +101,8 @@ class Mandel:
     def _if_none(var, val):
         if var is None:
             return val
-        return var
+        else:
+            return var
 
     # def pan_centre(self, pan: tuples.PixelPoint):
     #     new_centre_pixel = tuples.PixelPoint(

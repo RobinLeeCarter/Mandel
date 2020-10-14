@@ -110,7 +110,7 @@ class View:
         # enums.ImageAction.DRAWING prevents view acting on most events
         # QtWidgets.QApplication.processEvents()
         self._set_action(enums.ImageAction.NONE)
-        # self._window.central.canvas.save("mandel_icon.png")
+        self._window.central.save_source("julia_icon.png")
         # self._timer.stop()
         # self._timer.start()
 

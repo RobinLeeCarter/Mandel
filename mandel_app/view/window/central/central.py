@@ -44,6 +44,9 @@ class Central:
         self._portal.prepare_source_and_frame()
         self._portal.display()
 
+    def save_source(self, filename: str):
+        self._portal.save_source(filename)
+
     @property
     def frame_shape(self) -> Optional[tuples.ImageShape]:
         return self._portal.frame.frame_shape
