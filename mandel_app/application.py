@@ -39,6 +39,11 @@ class Application:
         self._controller: controller.Controller = controller.Controller(self._model, self._view)
         self._gpu: gpu.Gpu = gpu.Gpu()
 
+        # uncomment for CPU version
+        # self._gpu._devices = 0
+        # self._gpu._has_cuda = False
+        # print(f"self._gpu.ready = {self._gpu.ready}")
+
         self.build()
 
     def build(self):

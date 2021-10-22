@@ -8,7 +8,7 @@ import utils
 
 class CpuPixelTest:
     def __init__(self):
-        self.calls = 2000000
+        self.calls = 2000
         self.end_iter = 10000
         self.timer = utils.Timer()
 

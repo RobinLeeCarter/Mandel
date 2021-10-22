@@ -49,7 +49,9 @@ class ComputeManager:
             new_requests_z: xp_ndarray,
             early_stopping_iteration: Optional[int] = None
     ) -> Generator[float, None, xp_ndarray]:
+        # print("compute_flat_array")
         # print(early_stopping_iteration)
+        # print(self._has_cuda)
 
         if self._has_cuda:
             xp = cp
@@ -81,16 +83,17 @@ class ComputeManager:
             start_iter = end_iter
             end_iter = min(start_iter + iterations_per_loop, self.max_iterations)
             # print(f"{start_iter}->{end_iter}")
-            # count_continuing = xp.count_nonzero(continuing)
+            count_continuing = xp.count_nonzero(continuing)
             # print(f"count_continuing:\t{count_continuing}")
 
             yield from self._compute.compute_iterations(c, z, iteration, start_iter, end_iter)
 
+            # print(f"iteration.shape:\t{iteration.shape}")
             # noinspection PyTypeChecker
             still_continuing: xp.ndarray = (iteration == end_iter)
+            count_still_continuing: int = xp.count_nonzero(still_continuing)
             trapped: xp.ndarray = (iteration == -1)
 
-            count_still_continuing: int = xp.count_nonzero(still_continuing)
             count_stopped: int = xp.count_nonzero(xp.invert(still_continuing))
             count_trapped: int = xp.count_nonzero(trapped)
             count_escaped: int = count_stopped - count_trapped
@@ -98,19 +101,26 @@ class ComputeManager:
             # print(f"count_stopped:\t{count_stopped}")
             # print(f"count_trapped:\t{count_trapped}")
             # print(f"count_escaped:\t{count_escaped}")
+            # print(f"continuing non-zero:\t{xp.count_nonzero(continuing)}")
 
-            # print(f"loop={loop} has {xp.count_nonzero(still_continuing)} pixels continuing")
+            # print(f"iteration_output.shape:\t{iteration_output.shape}")
+            # print(f"continuing.shape:\t{continuing.shape}")
+            # print(f"iteration.shape:\t{iteration.shape}")
+            # print(f"iteration_output.dtype:\t{iteration_output.dtype}")
+            # print(f"continuing.dtype:\t{continuing.dtype}")
+            # print(f"iteration.dtype:\t{iteration.dtype}")
 
             # good time to stop if no more were eliminated, assume the rest run to max_iterations
             # added check that this isn't because all pixels are continuing as this indicates
             # looking at a region where required iterations are high everywhere
             iteration_output[continuing] = iteration
-            # if count_still_continuing == 0 or end_iter == self.max_iterations:
-            #     if count_still_continuing == 0:
-            #         print("0 continuing")
-            #     else:
-            #         print("max iterations")
-            #     break
+
+            if count_still_continuing == 0 or end_iter == self.max_iterations:
+                # if count_still_continuing == 0:
+                #     print("0 continuing")
+                # else:
+                #     print("max iterations")
+                break
 
             if self.early_stopping:
                 if ((early_stopping_iteration is not None and

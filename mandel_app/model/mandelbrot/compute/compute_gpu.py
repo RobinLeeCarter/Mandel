@@ -26,7 +26,7 @@ class ComputeGpu(compute_xpu.ComputeXpu):
         self._mandel_kernel: cp.RawKernel = self._load_mandel_kernel()
 
         # according to cuda occupancy calculator this should give 100% occupancy
-        self._BLOCK_SIZE: int = 64
+        self._BLOCK_SIZE: int = 32
         # vs 50% for 32 (but actual difference is slight)
         # self._BLOCK_SIZE: int = 32
         # self._BLOCK_SIZE: int = 1024
